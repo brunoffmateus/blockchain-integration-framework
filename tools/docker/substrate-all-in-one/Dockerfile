@@ -1,5 +1,5 @@
 FROM paritytech/ci-linux:production
-LABEL AUTHORS="Rafael Belchior, Catarina Pedreira" 
+LABEL AUTHORS="Rafael Belchior, Catarina Pedreira"
 LABEL VERSION="2021-09-10"
 LABEL org.opencontainers.image.source=https://github.com/hyperledger/cactus
 
@@ -9,6 +9,7 @@ ARG CONTAINER_NAME=contracts-node-template-cactus
 ARG PORT=9944
 ARG DOCKER_PORT=9944
 ARG CARGO_HOME=/var/www/node-template/.cargo
+EXPOSE ${PORT} ${DOCKER_PORT}
 
 ENV CARGO_HOME=${CARGO_HOME}
 ENV CACTUS_CFG_PATH=/etc/hyperledger/cactus

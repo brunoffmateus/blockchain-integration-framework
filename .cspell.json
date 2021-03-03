@@ -95,6 +95,9 @@
         "Oidc",
         "oneofs",
         "onsi",
+        "ccid",
+        "adminpw",
+        "caio",
         "OpenAPI",
         "openethereum",
         "organisation",
@@ -132,6 +135,7 @@
         "uuidv",
         "vscc",
         "wasm",
+        "WSPROVIDER",
         "Xdai",
         "goquorum"
     ],
