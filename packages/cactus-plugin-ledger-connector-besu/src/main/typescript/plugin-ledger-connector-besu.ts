@@ -94,6 +94,7 @@ import { RunTransactionEndpoint } from "./web-services/run-transaction-endpoint"
 import { GetBlockEndpoint } from "./web-services/get-block-v1-endpoint-";
 import { GetBesuRecordEndpointV1 } from "./web-services/get-besu-record-endpoint-v1";
 import { AbiItem } from "web3-utils";
+import { MetricModel } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/metric-model";
 
 export const E_KEYCHAIN_NOT_FOUND = "cactus.connector.besu.keychain_not_found";
 
@@ -173,10 +174,9 @@ export class PluginLedgerConnectorBesu
     return this.prometheusExporter;
   }
 
-  public async getPrometheusExporterMetrics(): Promise<string> {
-    const res: string = await this.prometheusExporter.getPrometheusMetrics();
-    this.log.debug(`getPrometheusExporterMetrics() response: %o`, res);
-    return res;
+  public async getPrometheusExporterMetrics(): Promise<MetricModel[]> {
+    //TODO for generic
+   return await this.prometheusExporter.getPrometheusMetrics();
   }
 
   public getInstanceId(): string {
