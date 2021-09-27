@@ -10,13 +10,8 @@ import {
   IWebServiceEndpoint,
   ICactusPlugin,
   ICactusPluginOptions,
-  LedgerType,
 } from "@hyperledger/cactus-core-api";
 //import { BesuApiClient} from "@hyperledger/cactus-plugin-ledger-connector-besu/src/main/typescript/public-api";
-import { stringify } from 'csv-stringify';
-
-import fs from 'fs';
-import path from 'path';
 
 import { PluginRegistry } from "@hyperledger/cactus-core";
 
