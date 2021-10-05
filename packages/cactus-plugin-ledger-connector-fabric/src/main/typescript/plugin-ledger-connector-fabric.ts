@@ -249,6 +249,11 @@ export class PluginLedgerConnectorFabric
     }
   }
 
+  public closeConnection(): Promise<void>  {
+    this.log.info("Closing Amqp connection");
+    return this.amqpConnection?.close();
+  }
+
   public getOpenApiSpec(): unknown {
     return OAS;
   }
