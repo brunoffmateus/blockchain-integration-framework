@@ -789,6 +789,12 @@ export interface RunTransactionRequest {
     endorsingPeers?: Array<string>;
     /**
      * 
+     * @type {string}
+     * @memberof RunTransactionRequest
+     */
+    caseID?: string;
+    /**
+     * 
      * @type {object}
      * @memberof RunTransactionRequest
      */
