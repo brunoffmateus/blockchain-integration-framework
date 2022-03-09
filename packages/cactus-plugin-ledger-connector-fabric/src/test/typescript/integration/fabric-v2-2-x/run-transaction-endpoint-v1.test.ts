@@ -228,25 +228,6 @@ describe(testCase, () => {
     }
 
     {
-      const res = await apiClient.getPrometheusMetricsV1();
-      const promMetricsOutput =
-        "# HELP " +
-        K_CACTUS_FABRIC_TOTAL_TX_COUNT +
-        " Total transactions executed\n" +
-        "# TYPE " +
-        K_CACTUS_FABRIC_TOTAL_TX_COUNT +
-        " gauge\n" +
-        K_CACTUS_FABRIC_TOTAL_TX_COUNT +
-        '{type="' +
-        K_CACTUS_FABRIC_TOTAL_TX_COUNT +
-        '"} 3';
-      expect(res).toBeTruthy();
-      expect(res.data).toBeTruthy();
-      expect(res.status).toEqual(200);
-      expect(res.data.includes(promMetricsOutput)).toBeTrue();
-    }
-
-    {
       const req: RunTransactionRequest = {
         signingCredential,
         gatewayOptions: {
