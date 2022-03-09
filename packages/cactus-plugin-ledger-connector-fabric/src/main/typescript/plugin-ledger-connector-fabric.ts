@@ -11,7 +11,6 @@ import {
   SSHExecCommandOptions,
   SSHExecCommandResponse,
 } from "node-ssh";
-import {MetricModel} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/metric-model";
 import {
   DefaultEventHandlerOptions,
   DefaultEventHandlerStrategies,
@@ -110,7 +109,7 @@ import {
   getTransactionReceiptByTxID,
   IGetTransactionReceiptByTxIDOptions,
 } from "./common/get-transaction-receipt-by-tx-id";
-import {performance} from "perf_hooks";
+// import {performance} from "perf_hooks";
 import * as amqp from "amqp-ts";
 import {FabricV2TxReceipt, IsVisualizable} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
 //import {IsVisualizable} from "@hyperledger/cactus-plugin-cc-tx-visualization";
@@ -174,7 +173,6 @@ export class PluginLedgerConnectorFabric
   private endpoints: IWebServiceEndpoint[] | undefined;
   private readonly secureIdentity: SecureIdentityProviders;
   private readonly certStore: CertDatastore;
-  public transactionReceipts: any[]=[];
  
   private amqpConnection: amqp.Connection | undefined;
   private amqpQueue: amqp.Queue | undefined;
@@ -263,35 +261,12 @@ export class PluginLedgerConnectorFabric
     return this.prometheusExporter;
   }
 
-  public async getPrometheusExporterMetrics(): Promise<MetricModel[]> {
-    const res = await this.prometheusExporter.getPrometheusMetrics();
-    //TODO: check the amount of metrics gathered
-    const results:MetricModel[] = [];
-    for (let index = 0; index < 2; index++) {
-      console.log(res[index].name);
-      results.push(new MetricModel(res[index]));
-    }
-
-   // this.log.debug(`getPrometheusExporterMetrics() response: %o`, results.values.toString());
-    return results;
+  public async getPrometheusExporterMetrics(): Promise<string> {
+    const res: string = await this.prometheusExporter.getPrometheusMetrics();
+    this.log.debug(`getPrometheusExporterMetrics() response: %o`, res);
+    return res;
   }
-
-  //TODO merging with Jason's code to get each transaction receipt
-  //
-
-  // public async getTransactionReceiptByTxID(
-  //   req: RunTransactionRequest,
-  // ): Promise<GetTransactionReceiptResponse> {
-  //   const gateway = await this.createGateway(req);
-  //   const options: IGetTransactionReceiptByTxIDOptions = {
-  //     channelName: req.channelName,
-  //     params: req.params,
-  //     gateway: gateway,
-  //   };
-  //   return await getTransactionReceiptForLockContractByTxID(options);
-  // }
-
-
+  
   //TODO returns Promise<FabricTransactionReceipt>
   public async getTransactionReceiptsList(): Promise<void>  {
     //returns list
@@ -1029,7 +1004,7 @@ export class PluginLedgerConnectorFabric
     req: RunTransactionRequest,
   ): Promise<RunTransactionResponse> {
     //start transaction time
-    const startTx = performance.now();
+    // const startTx = performance.now();
 
     //start tx
     const fnTag = `${this.className}#transact()`;
@@ -1138,10 +1113,9 @@ export class PluginLedgerConnectorFabric
           throw new Error(`${fnTag} unknown ${message}`);
         }
       }
-      //end of Tx
-      const endTx = performance.now();
-      const txTimer = endTx - startTx;
-      this.prometheusExporter.addTimerOfCurrentTransaction(txTimer);
+      //TODO do we need this?
+      // const endTx = performance.now();
+      // const txTimer = end Tx - startTx;
 
       if (this.collectTransactionReceipts && transactionId !== "")  {
         const txParams = req.params;
@@ -1152,13 +1126,13 @@ export class PluginLedgerConnectorFabric
         //req.params get are stored in the basicTxReceipt rwsetWriteData
         const basicTxReceipt = await this.getTransactionReceiptByTxID(req);
         const extendedReceipt: FabricV2TxReceipt={
-          caseID:req.caseID || "FABRIC_TBD",
+          caseID: req.caseID || "FABRIC_TBD",
           blockchainID: LedgerType.Fabric2,
           invocationType: req.invocationType,
           methodName: req.methodName,
           parameters: txParams,
           timestamp: new Date(),
-          channelName: req.channelName ,
+          channelName: req.channelName,
           contractName: req.contractName,
           signingCredentials: req.signingCredential,
           endorsingParties: req.endorsingParties,
@@ -1169,9 +1143,9 @@ export class PluginLedgerConnectorFabric
           blockMetaData: basicTxReceipt.blockMetaData,
           chainCodeName: basicTxReceipt.chainCodeName,
           blockNumber: basicTxReceipt.blockNumber,
-          chainCodeVersion:basicTxReceipt.chainCodeVersion,
-          responseStatus:basicTxReceipt.responseStatus,
-        };
+          chainCodeVersion: basicTxReceipt.chainCodeVersion,
+          responseStatus: basicTxReceipt.responseStatus,
+          };
         const txReceipt = new amqp.Message(extendedReceipt);
         this.amqpQueue?.send(txReceipt);
         this.log.debug(`Sent transaction receipt to queue ${this.queueId}`);
