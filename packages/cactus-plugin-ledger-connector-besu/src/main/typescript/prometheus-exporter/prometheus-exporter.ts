@@ -1,6 +1,7 @@
 import promClient, { Registry } from "prom-client";
 import { Transactions } from "./response.type";
 import { collectMetrics } from "./data-fetcher";
+import { K_CACTUS_BESU_TOTAL_TX_COUNT } from "./metrics";
 import { totalTxCount } from "./metrics";
 
 export interface IPrometheusExporterOptions {
@@ -24,9 +25,10 @@ export class PrometheusExporter {
     collectMetrics(this.transactions);
   }
 
-  public async getPrometheusMetrics(): Promise<promClient.metric[]> {
-    //TODO for generic
-    const result = await this.registry.getMetricsAsJSON();
+  public async getPrometheusMetrics(): Promise<string> {
+    const result = await this.registry.getSingleMetricAsString(
+      K_CACTUS_BESU_TOTAL_TX_COUNT,
+    );
     return result;
   }
 

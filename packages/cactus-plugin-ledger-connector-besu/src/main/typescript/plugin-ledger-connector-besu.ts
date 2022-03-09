@@ -96,7 +96,6 @@ import { RunTransactionEndpoint } from "./web-services/run-transaction-endpoint"
 import { GetBlockEndpoint } from "./web-services/get-block-v1-endpoint-";
 import { GetBesuRecordEndpointV1 } from "./web-services/get-besu-record-endpoint-v1";
 import { AbiItem } from "web3-utils";
-import { MetricModel } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/metric-model";
 import * as amqp from "amqp-ts";
 import {
   BesuV2TxReceipt,
@@ -215,14 +214,15 @@ export class PluginLedgerConnectorBesu
     return this.prometheusExporter;
   }
 
+  public async getPrometheusExporterMetrics(): Promise<string> {
+    const res: string = await this.prometheusExporter.getPrometheusMetrics();
+    this.log.debug(`getPrometheusExporterMetrics() response: %o`, res);
+    return res;
+  }
+
   public closeConnection(): Promise<void> {
     this.log.info("Closing Amqp connection");
     return this.amqpConnection?.close();
-  }
-
-  public async getPrometheusExporterMetrics(): Promise<MetricModel[]> {
-    //TODO for generic
-   return await this.prometheusExporter.getPrometheusMetrics();
   }
 
   public getInstanceId(): string {
