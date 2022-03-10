@@ -18,7 +18,6 @@ export interface TransactionReceipt {
 
 export interface IsVisualizable {
   // list of transaction receipts, that will be sent to cc-tx-viz
-  transactionReceipts: any[];
   collectTransactionReceipts: boolean;
 }
 
