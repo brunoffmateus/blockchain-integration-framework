@@ -48,7 +48,9 @@
     "test:plugin-htlc-besu-erc20": "tap --jobs=1 --timeout=600 \"packages/*htlc-eth-besu-erc20/src/test/typescript/{unit,integration}/\"",
     "test:plugin": "tap --jobs=1 --timeout=600 \"packages/*test-plugin-htlc-eth-besu/src/test/typescript/{unit,integration}/\"",
     "test:plugin-ledger-connector-quorum": "tap --ts --jobs=1 --timeout=60 \"packages/cactus-*-quorum/src/test/typescript/{unit,integration}/\"",
-    "test:plugin-ledger-connector-iroha": "tap --ts --jobs=1 --timeout=600 \"packages/cactus-*-iroha/src/test/typescript/{unit,integration}/\"",
+      "test:cctxviz": "tap --jobs=1 --timeout=600 \"packages/cactus-plugin-cc-tx-visualization/src/test/typescript/{unit,integration}/\"",
+
+      "test:plugin-ledger-connector-iroha": "tap --ts --jobs=1 --timeout=600 \"packages/cactus-*-iroha/src/test/typescript/{unit,integration}/\"",
     "test:plugin-htlc-besu": "tap --jobs=1 --timeout=600 \"packages/*htlc-eth-besu/src/test/typescript/{integration}/\"",
     "build:dev:plugin-consortium-manual": "lerna exec --stream --scope '*/*manual-consortium' -- 'del-cli dist/** && tsc --project ./tsconfig.json && webpack --env=dev --target=node --config ../../webpack.config.js'",
     "build:dev:plugin-cc-tx-visualization": "lerna exec --stream --scope '*/*cc-tx-visualization' -- 'del-cli dist/** && tsc --project ./tsconfig.json && webpack --env=dev --target=node --config ../../webpack.config.js'",
