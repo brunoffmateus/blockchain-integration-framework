@@ -24,7 +24,6 @@ import {
 } from "@hyperledger/cactus-common";
 
 import { PrometheusExporter } from "./prometheus-exporter/prometheus-exporter";
-import { MetricModel } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/metric-model";
 import { CrossChainEvent, CrossChainEventLog } from "./models/cross-chain-event";
 
 export interface IWebAppOptions {
@@ -56,7 +55,6 @@ export interface IPluginCcTxVisualizationOptions extends ICactusPluginOptions {
   connectorRegistry?: PluginRegistry;
   logLevel?: LogLevelDesc;
   webAppOptions?: IWebAppOptions;
-  configApiClients?: APIConfig[];
   eventProvider: string;
   channelOptions: IChannelOptions;
   instanceId: string;
@@ -73,9 +71,8 @@ export class CcTxVisualization
   private readonly instanceId: string;
   private endpoints: IWebServiceEndpoint[] | undefined;
   private httpServer: Server | SecureServer | null = null;
-  private apiClients: any[] = [] ;
   // TODO in the future logs (or a serialization of logs) could be given as an option
-  private crossChainLogs: CrossChainEventLog;
+  private crossChainLog: CrossChainEventLog;
     private readonly eventProvider: string;
     private amqpConnection: Amqp.Connection;
     private amqpQueue: Amqp.Queue;
@@ -102,7 +99,7 @@ export class CcTxVisualization
       options.prometheusExporter ||
     new PrometheusExporter({ pollingIntervalInMin: 1 });
     this.instanceId = this.options.instanceId;
-    this.crossChainLogs = new CrossChainEventLog({name:"CC-TX-VIZ_EVENT_LOGS"});
+    this.crossChainLog = new CrossChainEventLog({name:"CC-TX-VIZ_EVENT_LOGS"});
     this.txReceipts = [];
     this.persistMessages = options.channelOptions.persistMessages || false;
     this.eventProvider = options.eventProvider;
@@ -118,7 +115,9 @@ export class CcTxVisualization
     throw new Error("Method not implemented.");
   }
 
-
+  get numberEventsLog(): number {
+    return this.crossChainLog.numberEvents();
+  }
 
   get messages(): any[] {
     return this.txReceipts;
@@ -214,18 +213,6 @@ export class CcTxVisualization
     return `@hyperledger/cactus-plugin-cc-tx-visualization`;
   }
 
-  public async getAllPrometheusMetrics():Promise<MetricModel[]>{
-    const results: MetricModel[]=[];
-    for (let index =0; index<this.apiClients.length;index++){
-      const res = await this.apiClients[index].getPrometheusMetricsV1();
-      results.push(...res.data);
-    }
-
-    return results;
-  }
-
-
-  // Receives raw transaction receipts from RabbitMQ
   public pollTxReceipts(): Promise<void>  {
     const fnTag = `${this.className}#pollTxReceipts()`;
     this.log.debug(fnTag);
@@ -244,6 +231,9 @@ export class CcTxVisualization
   public async txReceiptToCrossChainEventLogEntry(): Promise<CrossChainEvent[]|void> {
     const fnTag = `${this.className}#pollTxReceipts()`;
     this.log.debug(fnTag);
+    // We are processing receipts to update the CrossChainLog.
+    // At the end of the processing, we need to clear the transaction receipts that have been processed
+    // Therefore, we need a listen method that cctxviz is always running, doing polls every X seconds, followed by receipt processing (this method)
     try {    
       this.txReceipts.forEach(receipt => {
         switch(receipt.blockchainID) {
@@ -257,8 +247,9 @@ export class CcTxVisualization
               parameters:besuReceipt.parameters,
               timestamp: besuReceipt.timestamp,
             };
-            this.crossChainLogs.addCrossChainEvent(ccEventFromBesu);
+            this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
             this.log.info("Added Cross Chain event from BESU");
+            this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromBesu)}`);
             break;
           case LedgerType.Fabric2:
             const fabricReceipt: FabricV2TxReceipt = receipt;
@@ -270,15 +261,30 @@ export class CcTxVisualization
               parameters: fabricReceipt.parameters,
               timestamp: fabricReceipt.timestamp,
             };
-            this.crossChainLogs.addCrossChainEvent(ccEventFromFabric);
+            this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");
+            this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromFabric)}`);
+            break;
+          // used to test cctxviz
+          case "TEST":
+            const ccEventTest:CrossChainEvent = {
+              caseID: receipt.caseID,
+              blockchainID: receipt.blockchainID,
+              invocationType: receipt.invocationType,
+              methodName: receipt.methodName,
+              parameters: receipt.parameters,
+              timestamp: receipt.timestamp,
+            };
+            this.crossChainLog.addCrossChainEvent(ccEventTest);
+            this.log.info("Added Cross Chain event TEST");
+            this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventTest)}`);
             break;
           default:
-            this.log.info("Tx Receipt is not supported");
+            this.log.warn("Tx Receipt is not supported");
             break;
         }
         
-      });
+      }); 
       // Clear receipt array
       this.txReceipts = [];
     return;
@@ -288,21 +294,18 @@ export class CcTxVisualization
 
   }
 
-
-  // takes CrossChainEvent list and feeds a crosschain event log
-  public async updateCrossChainLog(): Promise<CrossChainEventLog|void>  {
-    return;
-  }
-
+  // Receives raw transaction receipts from RabbitMQ
+  // TODO create listen method that is in a loop doing this polling
+  // 
   // Calculates e2e latency, e2e throughput, e2e cost
-  public async processCrossChainEventLog(): Promise<void> {
+  public async process(): Promise<void> {
     return;
-    //Pause the connection for all the channels
-    //creates log
-    //clears arrays
-    //resumes connections
+    // 1 step: in a loop, poll for tx receipts
+    // 2 step: txReceiptToCrossChainEventLogEntry
+    // 3 step update cc model (optionally) 
   }
 
+    // TODO only called once we have a minimum number of receipts X;
   public async createCrossChainModel(): Promise<CrossChainModel|void>  {
     return;
   }
@@ -312,8 +315,5 @@ export class CcTxVisualization
     return;
   }
 
-  // TODO endpoints for e2e latency, e2e throughput, e2e cost
-  public async getE2ELatencyAverage(): Promise<number|void> {
-    return;
-  }
+
 }
