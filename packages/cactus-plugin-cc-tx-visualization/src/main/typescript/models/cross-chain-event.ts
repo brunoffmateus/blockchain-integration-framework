@@ -16,7 +16,7 @@ export interface ICrossChainEventLog {
 }
 
 export class CrossChainEventLog {
-  private eventLogList: CrossChainEvent[] = [];
+  private crossChainEvents: CrossChainEvent[] = [];
   private creationDate: Date;
   private lastUpdateDate: Date;
   public readonly logName: string;
@@ -28,6 +28,9 @@ export class CrossChainEventLog {
     this.logName = options.name;
   }
 
+  public numberEvents(): number {
+    return this.crossChainEvents.length;
+  }
   public getCreationDate(): Date {
     return this.creationDate;
   }
@@ -41,7 +44,7 @@ export class CrossChainEventLog {
   // persist on IPFS/mysql
 
   public addCrossChainEvent(event: CrossChainEvent): void {
-    this.eventLogList.push(event);
+    this.crossChainEvents.push(event);
     this.lastUpdateDate = new Date();
   }
 }
