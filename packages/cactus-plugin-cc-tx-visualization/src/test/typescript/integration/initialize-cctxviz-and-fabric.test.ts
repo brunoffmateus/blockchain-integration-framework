@@ -5,8 +5,6 @@ import {
   IChannelOptions,
 } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-//import { Server as SocketIoServer } from "socket.io";
-import { LedgerType } from "@hyperledger/cactus-core-api";
 import test, { Test } from "tape-promise/tape";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -20,7 +18,6 @@ import express from "express";
 import { DiscoveryOptions } from "fabric-network";
 import { AddressInfo } from "net";
 import {
-  Containers,
   FabricTestLedgerV1,
   pruneDockerAllIfGithubAction,
 } from "@hyperledger/cactus-test-tooling";
@@ -65,10 +62,6 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
   };
 
   //initialize FABRIC
-  test.onFailure(async () => {
-    await Containers.logDiagnostics({ logLevel });
-  });
-
   const FabricTestLedger = new FabricTestLedgerV1({
     emitContainerLogs: true,
     publishAllPorts: true,
@@ -82,13 +75,11 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
   });
   t.ok(FabricTestLedger, "ledger (FabricTestLedgerV1) truthy OK");
 
-  const tearDownLedger = async () => {
+  test.onFinish(async () => {
     await FabricTestLedger.stop();
     await FabricTestLedger.destroy();
     await pruneDockerAllIfGithubAction({ logLevel });
-  };
-
-  test.onFinish(tearDownLedger);
+  });
 
   await FabricTestLedger.start();
 
@@ -189,7 +180,6 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
     logLevel: logLevel,
     eventProvider: "amqp://localhost",
     channelOptions: channelOptions,
-    configApiClients: [{ type: LedgerType.Fabric2, basePath: apiHostFabric }],
     connectorRegistry: testConnectorRegistry,
   };
 
@@ -206,7 +196,6 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
 
   await testServer.start();
   t.ok(testServer);
-
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // FABRIC transactions
@@ -264,7 +253,6 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
   );
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  // TODO problem ledger is destroyed but something is hanging
   t.end();
 });

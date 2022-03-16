@@ -99,6 +99,7 @@ test(testCase, async (t: Test) => {
   t.comment("Fourth message sent!");
   t.comment("Processing last message");
   await cctxViz.txReceiptToCrossChainEventLogEntry();
+  t.assert(cctxViz.numberEventsLog === 0);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   t.end();

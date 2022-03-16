@@ -12,11 +12,7 @@ import { randomUUID } from "crypto";
 //import * as amqp from "amqp-ts";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { Server as SocketIoServer } from "socket.io";
-import {
-  Constants,
-  LedgerType,
-  PluginImportType,
-} from "@hyperledger/cactus-core-api";
+import { Constants, PluginImportType } from "@hyperledger/cactus-core-api";
 import { v4 as uuidv4 } from "uuid";
 import { IListenOptions, Servers } from "@hyperledger/cactus-common";
 import bodyParser from "body-parser";
@@ -132,7 +128,9 @@ test(testCase, async (t: Test) => {
   const addressInfoBesu = (await Servers.listen(
     listenOptionsBesu,
   )) as AddressInfo;
+
   test.onFinish(async () => await Servers.shutdown(serverBesu));
+
   const addressBesu: string = addressInfoBesu.address;
   const portBesu: number = addressInfoBesu.port;
   const apiHostBesu = `http://${addressBesu}:${portBesu}`;
@@ -160,7 +158,6 @@ test(testCase, async (t: Test) => {
     logLevel: logLevel,
     eventProvider: "amqp://localhost",
     channelOptions: channelOptions,
-    configApiClients: [{ type: LedgerType.Besu2X, basePath: apiHostBesu }],
     connectorRegistry: testConnectorRegistry,
   };
 
@@ -316,6 +313,6 @@ test(testCase, async (t: Test) => {
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
   await new Promise((resolve) => setTimeout(resolve, 1000));
-
+  // TODO problem rabbitmq does not close
   t.end();
 });

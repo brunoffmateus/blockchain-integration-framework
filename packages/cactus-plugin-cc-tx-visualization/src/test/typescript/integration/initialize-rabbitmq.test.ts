@@ -26,7 +26,7 @@ test(testCase, async (t: Test) => {
   const testServer = new RabbitMQTestServer(options);
   const tearDown = async () => {
     await testServer.stop();
-    // Destruction is handled by RabbitMQ's image
+    // Destruction occurs when the RabbitMQ stops and has no listening connections
     //await testServer.destroy();
     await pruneDockerAllIfGithubAction({ logLevel });
   };
