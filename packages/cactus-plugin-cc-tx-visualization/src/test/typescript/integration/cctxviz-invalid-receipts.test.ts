@@ -11,7 +11,8 @@ import { randomUUID } from "crypto";
 import * as amqp from "amqp-ts";
 //import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
 
-const testCase = "Instantiate plugin";
+const testCase =
+  "Instantiate plugin, send 4 invalid receipts, one test receipt";
 const logLevel: LogLevelDesc = "TRACE";
 const queueName = "cc-tx-log-entry-test";
 const firstMessage = "[1] Hello Nexus-6";
@@ -89,18 +90,23 @@ test(testCase, async (t: Test) => {
 
   // Give some time for the second and third messages to be processed
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  t.assert(cctxViz.messages.length === 3);
+  t.assert(cctxViz.numberUnprocessedReceipts === 3);
+
   await cctxViz.txReceiptToCrossChainEventLogEntry();
+
   const message4 = new amqp.Message({
     success: true,
     message: "And you passed!",
   });
   queue.send(message4);
   t.comment("Fourth message sent!");
-  t.comment("Processing last message");
+
+  t.comment("waiting for RabbitMQ to send last message");
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  t.assert(cctxViz.numberUnprocessedReceipts === 1);
+
   await cctxViz.txReceiptToCrossChainEventLogEntry();
   t.assert(cctxViz.numberEventsLog === 0);
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   t.end();
 });

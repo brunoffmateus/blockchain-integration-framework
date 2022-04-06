@@ -9,6 +9,7 @@ export type CrossChainEvent = {
   invocationType: string;
   methodName: string;
   parameters: string[];
+  identity: string;
 };
 
 export interface ICrossChainEventLog {
@@ -39,9 +40,9 @@ export class CrossChainEventLog {
     return this.lastUpdateDate;
   }
 
-  //todo add crosschain event
-  // purge logs - so memory exceptions wont happen, should be persisted first
-  // persist on IPFS/mysql
+  public purgeLogs(): void {
+    this.crossChainEvents = [];
+  }
 
   public addCrossChainEvent(event: CrossChainEvent): void {
     this.crossChainEvents.push(event);

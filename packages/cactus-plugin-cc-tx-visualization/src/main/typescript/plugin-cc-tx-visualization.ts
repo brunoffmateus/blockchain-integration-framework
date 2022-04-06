@@ -119,8 +119,12 @@ export class CcTxVisualization
     return this.crossChainLog.numberEvents();
   }
 
-  get messages(): any[] {
-    return this.txReceipts;
+  get numberUnprocessedReceipts(): number {
+    return this.txReceipts.length;
+  }
+
+  public purgeCrossChainEvents(): void {
+    this.crossChainLog.purgeLogs();
   }
 
   public closeConnection(): Promise<void>  {
@@ -246,6 +250,7 @@ export class CcTxVisualization
               methodName:besuReceipt.methodName,
               parameters:besuReceipt.parameters,
               timestamp: besuReceipt.timestamp,
+              identity: besuReceipt.from,
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
             this.log.info("Added Cross Chain event from BESU");
@@ -260,6 +265,7 @@ export class CcTxVisualization
               methodName: fabricReceipt.methodName,
               parameters: fabricReceipt.parameters,
               timestamp: fabricReceipt.timestamp,
+              identity: fabricReceipt.signingCredentials.keychainRef,
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");
@@ -274,13 +280,14 @@ export class CcTxVisualization
               methodName: receipt.methodName,
               parameters: receipt.parameters,
               timestamp: receipt.timestamp,
+              identity: receipt.identity,
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");
             this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventTest)}`);
             break;
           default:
-            this.log.warn("Tx Receipt is not supported");
+            this.log.warn(`Tx Receipt with case ID ${receipt.caseID} is not supported`);
             break;
         }
         
