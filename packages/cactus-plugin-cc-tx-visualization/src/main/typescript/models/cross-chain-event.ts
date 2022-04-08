@@ -1,6 +1,9 @@
-//import { randomUUID } from "crypto";
-//import { BesuV2TxReceipt } from "./transaction-receipt";
-//import { v4 as uuidv4 } from "uuid";
+type TupleUnion<U extends string, R extends string[] = []> = {
+  [S in U]: Exclude<U, S> extends never
+    ? [...R, S]
+    : TupleUnion<Exclude<U, S>, [...R, S]>;
+}[U] &
+  string[];
 
 export type CrossChainEvent = {
   caseID: string;
@@ -29,6 +32,10 @@ export class CrossChainEventLog {
     this.logName = options.name;
   }
 
+  get logEntries(): CrossChainEvent[] {
+    return this.crossChainEvents;
+  }
+
   public numberEvents(): number {
     return this.crossChainEvents.length;
   }
@@ -47,5 +54,18 @@ export class CrossChainEventLog {
   public addCrossChainEvent(event: CrossChainEvent): void {
     this.crossChainEvents.push(event);
     this.lastUpdateDate = new Date();
+  }
+
+  public getCrossChainLogAttributes(): string[] {
+    const CrossChainLogSchema: TupleUnion<keyof CrossChainEvent> = [
+      "caseID",
+      "timestamp",
+      "blockchainID",
+      "invocationType",
+      "methodName",
+      "parameters",
+      "identity",
+    ];
+    return CrossChainLogSchema;
   }
 }
