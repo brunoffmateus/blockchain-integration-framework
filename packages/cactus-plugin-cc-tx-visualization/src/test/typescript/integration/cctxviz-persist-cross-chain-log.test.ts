@@ -48,10 +48,15 @@ test(testCase, async (t: Test) => {
   const testServer = new RabbitMQTestServer(options);
   const tearDown = async () => {
     // Connections to the RabbitMQ server need to be closed
-    await cctxViz.closeConnection();
-    await connection.close();
+
     await testServer.stop();
-    await pruneDockerAllIfGithubAction({ logLevel });
+    // todo problem connection closing is hanging here and l56
+    await connection.close();
+
+    await cctxViz.closeConnection();
+
+    //await testServer.destroy();
+    //await pruneDockerAllIfGithubAction({ logLevel });
   };
 
   test.onFinish(tearDown);
@@ -76,23 +81,23 @@ test(testCase, async (t: Test) => {
 
   const testMessage = new amqp.Message({
     caseID: "caseID-TEST 1",
-    timestamp: "timestamp-TEST",
+    timestamp: new Date(),
     blockchainID: "TEST",
-    invocationType: "invocationType-TEST",
-    methodName: "methodName-TEST",
-    parameters: ["TEST"],
-    identity: "test",
+    invocationType: "call",
+    methodName: "methodName",
+    parameters: ["0", "2"],
+    identity: "person 1",
   });
   queue.send(testMessage);
 
   const testMessage2 = new amqp.Message({
     caseID: "caseID-TEST 2",
-    timestamp: "timestamp-TEST",
+    timestamp: new Date(),
     blockchainID: "TEST",
-    invocationType: "invocationType-TEST",
-    methodName: "methodName-TEST",
-    parameters: ["TEST"],
-    identity: "test",
+    invocationType: "call",
+    methodName: "methodName",
+    parameters: ["0", "2"],
+    identity: "person 2",
   });
   queue.send(testMessage2);
 
@@ -106,7 +111,7 @@ test(testCase, async (t: Test) => {
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   const logName = await cctxViz.persistCrossChainLogCsv();
+  console.log(logName);
   t.ok(logName);
-
   t.end();
 });

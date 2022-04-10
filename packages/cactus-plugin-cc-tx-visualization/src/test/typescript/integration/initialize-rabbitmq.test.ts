@@ -34,6 +34,6 @@ test(testCase, async (t: Test) => {
   test.onFinish(tearDown);
   await testServer.start();
   t.ok(testServer);
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  //await new Promise((resolve) => setTimeout(resolve, 3000));
   t.end();
 });
