@@ -131,9 +131,10 @@ export class CcTxVisualization
     this.crossChainLog.purgeLogs();
   }
 
-  public closeConnection(): Promise<void>  {
+  // todo connection closing is  problematic, tests are left hanging
+  public async closeConnection(): Promise<void>  {
     this.log.info("Closing Amqp connection");
-    return this.amqpConnection.close();
+    this.amqpConnection.close();
   }
 
   public getInstanceId(): string {
@@ -337,12 +338,14 @@ export class CcTxVisualization
     , {
       header: true,
       columns:  columns,
-    }, function(err, data){
-      console.log(data);
+    }, (err, data) =>{
+      if (err)  {
+        this.log.error(err);
+        throw new Error("failed to stringify log");
+      }
+      this.log.debug(data);
       fs.writeFileSync(logPath, data);
-    
     });
-
     return logName;
   }
 
