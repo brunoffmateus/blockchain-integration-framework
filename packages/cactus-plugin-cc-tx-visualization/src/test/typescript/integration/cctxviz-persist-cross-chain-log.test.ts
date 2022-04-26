@@ -61,7 +61,7 @@ test(testCase, async (t: Test) => {
 
   test.onFinish(tearDown);
 
-  await testServer.start();
+  await testServer.start(true);
   t.ok(testServer);
 
   // Simulates a Cactus Ledger Connector plugin

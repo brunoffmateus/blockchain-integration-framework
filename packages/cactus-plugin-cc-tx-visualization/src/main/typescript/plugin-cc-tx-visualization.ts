@@ -338,6 +338,7 @@ export class CcTxVisualization
     , {
       header: true,
       columns:  columns,
+      delimiter: ";",
     }, (err, data) =>{
       if (err)  {
         this.log.error(err);
