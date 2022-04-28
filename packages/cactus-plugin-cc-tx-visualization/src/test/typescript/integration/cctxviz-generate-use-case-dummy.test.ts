@@ -9,6 +9,7 @@ import {
 } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
 import * as amqp from "amqp-ts";
+import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
 //import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
 
 const testCase = "persist logs";
@@ -79,7 +80,7 @@ test(testCase, async (t: Test) => {
   // dummy use case based on Fig. 3 paper "[1] “Do You Need a Distributed Ledger Technology Interoperability Solution?,” Feb. 2022, doi: 10.36227/.18786527.v1"
   // consider 2 emission consortia (two different case ids);
 
-  const currentTime = new Date().getTime();
+  const currentTime = new Date();
 
   // caseID 1; registar emissions; Fabric blockchain, test message; parameters: asset 1, 100 units
   const testMessageCase1Msg1 = new amqp.Message({
@@ -107,7 +108,7 @@ test(testCase, async (t: Test) => {
 
   const testMessageCase1Msg2 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime + 100000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 100000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "registerEmission",
@@ -119,7 +120,7 @@ test(testCase, async (t: Test) => {
   // several days after, get emissions from company A, by auditor
   const testMessageCase1Msg3 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime + 1000000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 1000000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "getEmissions",
@@ -131,7 +132,7 @@ test(testCase, async (t: Test) => {
   // soon enough, mint token on Ethereum (test)
   const testMessageCase1Msg4 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime + 1100000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 1100000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "mintEmissionToken",
@@ -143,7 +144,7 @@ test(testCase, async (t: Test) => {
   //Company B performs its operations a bit later than company A
   const testMessageCase2Msg2 = new amqp.Message({
     caseID: "2",
-    timestamp: new Date(currentTime + 110000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 110000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "registerEmission",
@@ -155,7 +156,7 @@ test(testCase, async (t: Test) => {
   // several days after, get emissions from company A, by auditor
   const testMessageCase2Msg3 = new amqp.Message({
     caseID: "2",
-    timestamp: new Date(currentTime + 1100000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 1100000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "getEmissions",
@@ -167,7 +168,7 @@ test(testCase, async (t: Test) => {
   // soon enough, mint token on Ethereum (test)
   const testMessageCase2Msg4 = new amqp.Message({
     caseID: "2",
-    timestamp: new Date(currentTime + 1200000000).getTime(),
+    timestamp: new Date(currentTime.getTime() + 1200000000),
     blockchainID: "TEST",
     invocationType: "send",
     methodName: "mintEmissionToken",
@@ -186,6 +187,13 @@ test(testCase, async (t: Test) => {
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   const logName = await cctxViz.persistCrossChainLogCsv();
+  const map =
+    "{'registerEmission': (node:registerEmission connections:{registerEmission:[0.6666666666666666], getEmissions:[0.6666666666666666]}), 'getEmissions': (node:getEmissions connections:{mintEmissionToken:[0.6666666666666666]}), 'mintEmissionToken': (node:mintEmissionToken connections:{})}";
+  // Persist heuristic map that is generated from the script that takes this input
+  await cctxViz.saveModel(CrossChainModelType.HeuristicMiner, map);
+  const savedModel = await cctxViz.getModel(CrossChainModelType.HeuristicMiner);
+  t.assert(map === savedModel);
+
   console.log(logName);
   t.ok(logName);
   t.end();

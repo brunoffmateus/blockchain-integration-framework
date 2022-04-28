@@ -35,7 +35,7 @@ export interface IWebAppOptions {
   hostname: string;
 }
 import * as Amqp from "amqp-ts";
-import { CrossChainModel } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
+import { CrossChainModel, CrossChainModelType } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
 import { BesuV2TxReceipt, FabricV2TxReceipt } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
 
 export interface IChannelOptions {
@@ -75,8 +75,8 @@ export class CcTxVisualization
   private readonly instanceId: string;
   private endpoints: IWebServiceEndpoint[] | undefined;
   private httpServer: Server | SecureServer | null = null;
-  // TODO in the future logs (or a serialization of logs) could be given as an option
   private crossChainLog: CrossChainEventLog;
+  private crossChainModel: CrossChainModel;
     private readonly eventProvider: string;
     private amqpConnection: Amqp.Connection;
     private amqpQueue: Amqp.Queue;
@@ -104,6 +104,8 @@ export class CcTxVisualization
     new PrometheusExporter({ pollingIntervalInMin: 1 });
     this.instanceId = this.options.instanceId;
     this.crossChainLog = new CrossChainEventLog({name:"CC-TX-VIZ_EVENT_LOGS"});
+    //todo should allow different models to be instantiated
+    this.crossChainModel = new CrossChainModel();
     this.txReceipts = [];
     this.persistMessages = options.channelOptions.persistMessages || false;
     this.eventProvider = options.eventProvider;
@@ -350,4 +352,12 @@ export class CcTxVisualization
     return logName;
   }
 
+  // Receives a serialized model
+  public async saveModel (modelType: CrossChainModelType, model :string): Promise<void> {
+    this.crossChainModel.saveModel(modelType, model);
+  }
+
+  public async getModel (modelType: CrossChainModelType): Promise<string|undefined> {
+    return this.crossChainModel.getModel(modelType);
+  }
 }
