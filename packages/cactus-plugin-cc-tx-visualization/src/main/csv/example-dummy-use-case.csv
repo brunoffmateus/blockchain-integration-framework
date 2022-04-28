@@ -1,0 +1,9 @@
+caseID;timestamp;blockchainID;invocationType;methodName;parameters;identity
+1;1649605789842;TEST;send;registerEmission;"[""1,100""]";company_A
+2;1649605789842;TEST;send;registerEmission;"[""2,100""]";company_B
+1;1649705789842;TEST;send;registerEmission;"[""2,100""]";company_A
+1;1650605789842;TEST;send;getEmissions;"[""company_A""]";auditor
+1;1650705789842;TEST;send;mintEmissionToken;"[""uuidTokenEmissions""]";protocol_administrator
+2;1649715789842;TEST;send;registerEmission;"[""2,100""]";company_B
+2;1650705789842;TEST;send;getEmissions;"[""company_B""]";auditor
+2;1650805789842;TEST;send;mintEmissionToken;"[""uuidTokenEmissions""]";protocol_administrator
