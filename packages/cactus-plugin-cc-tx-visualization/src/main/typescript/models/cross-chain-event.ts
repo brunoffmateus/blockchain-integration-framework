@@ -1,10 +1,3 @@
-type TupleUnion<U extends string, R extends string[] = []> = {
-  [S in U]: Exclude<U, S> extends never
-    ? [...R, S]
-    : TupleUnion<Exclude<U, S>, [...R, S]>;
-}[U] &
-  string[];
-
 export type CrossChainEvent = {
   caseID: string;
   timestamp: Date;
@@ -13,6 +6,9 @@ export type CrossChainEvent = {
   methodName: string;
   parameters: string[];
   identity: string;
+  cost?: number;
+  carbonFootprint?: number;
+  latency?: number;
 };
 
 export interface ICrossChainEventLog {
@@ -57,7 +53,7 @@ export class CrossChainEventLog {
   }
 
   public getCrossChainLogAttributes(): string[] {
-    const CrossChainLogSchema: TupleUnion<keyof CrossChainEvent> = [
+    return [
       "caseID",
       "timestamp",
       "blockchainID",
@@ -65,7 +61,9 @@ export class CrossChainEventLog {
       "methodName",
       "parameters",
       "identity",
+      "cost",
+      "carbonFootprint",
+      "latency",
     ];
-    return CrossChainLogSchema;
   }
 }

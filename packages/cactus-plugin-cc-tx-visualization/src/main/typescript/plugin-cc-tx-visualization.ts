@@ -69,7 +69,6 @@ export interface IPluginCcTxVisualizationOptions extends ICactusPluginOptions {
 
 export class CcTxVisualization
   implements ICactusPlugin, IPluginWebService {
-  [x: string]: any;
   public prometheusExporter: PrometheusExporter;
   private readonly log: Logger;
   private readonly instanceId: string;
@@ -83,6 +82,7 @@ export class CcTxVisualization
     private amqpExchange: Amqp.Exchange;
     public readonly className = "plugin-cc-tx-visualization";
     private readonly queueId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private txReceipts: any[];
     private readonly persistMessages: boolean;
   constructor(public readonly options: IPluginCcTxVisualizationOptions) {
@@ -136,6 +136,9 @@ export class CcTxVisualization
   // todo connection closing is  problematic, tests are left hanging
   public async closeConnection(): Promise<void>  {
     this.log.info("Closing Amqp connection");
+    //this.amqpConnection.removeAllListeners();
+    this.amqpExchange.close();
+    this.amqpQueue.close();
     this.amqpConnection.close();
   }
 
@@ -182,6 +185,7 @@ export class CcTxVisualization
       webApp.use(bodyParser.json({ limit: "50mb" }));
 
       const address = await new Promise((resolve, reject) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const httpServer = webApp.listen(port, hostname, (err?: any) => {
           if (err) {
             reject(err);
@@ -224,7 +228,7 @@ export class CcTxVisualization
     return `@hyperledger/cactus-plugin-cc-tx-visualization`;
   }
 
-  public pollTxReceipts(): Promise<void>  {
+  public  pollTxReceipts(): Promise<void>  {
     const fnTag = `${this.className}#pollTxReceipts()`;
     this.log.debug(fnTag);
     return this.amqpQueue.activateConsumer( (message) => {
@@ -258,6 +262,7 @@ export class CcTxVisualization
               parameters:besuReceipt.parameters,
               timestamp: besuReceipt.timestamp,
               identity: besuReceipt.from,
+              // latency
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
             this.log.info("Added Cross Chain event from BESU");
@@ -312,20 +317,15 @@ export class CcTxVisualization
   // TODO create listen method that is in a loop doing this polling
   // 
   // Calculates e2e latency, e2e throughput, e2e cost
-  public async process(): Promise<void> {
+  public async updateModel(): Promise<void> {
     return;
     // 1 step: in a loop, poll for tx receipts
     // 2 step: txReceiptToCrossChainEventLogEntry
     // 3 step update cc model (optionally) 
+    // 4 step: calls for updateCrossChainMetrics
   }
 
-    // TODO only called once we have a minimum number of receipts X;
-  public async createCrossChainModel(): Promise<CrossChainModel|void>  {
-    return;
-  }
-  
-  // TODO endpoint calling this function
-  public async getCrossChainModel(): Promise<CrossChainModel|void> {
+  public async updateCrossChainMetrics(): Promise<void> {
     return;
   }
 

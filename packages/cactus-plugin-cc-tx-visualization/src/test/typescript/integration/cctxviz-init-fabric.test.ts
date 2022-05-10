@@ -48,13 +48,12 @@ test(testCase, async (t: Test) => {
 
   const testServer = new RabbitMQTestServer(options);
   const tearDown = async () => {
-    t.comment("shutdown starts");
     // Connections to the RabbitMQ server need to be closed
 
     await testServer.stop();
     // todo problem connection closing is hanging here and l56
     await connection.close();
-    await cctxViz.shutdown();
+
     await cctxViz.closeConnection();
 
     //await testServer.destroy();
