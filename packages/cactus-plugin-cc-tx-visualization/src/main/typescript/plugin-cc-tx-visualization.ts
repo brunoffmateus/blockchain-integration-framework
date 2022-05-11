@@ -26,7 +26,7 @@ import {
   LoggerProvider,
   LogLevelDesc,
 } from "@hyperledger/cactus-common";
-
+import { calculateCarbonFootPrintBesu, calculateCarbonFootPrintFabric, calculateGasPriceBesu } from "./models/carbon-footprint";
 import { PrometheusExporter } from "./prometheus-exporter/prometheus-exporter";
 import { CrossChainEvent, CrossChainEventLog } from "./models/cross-chain-event";
 
@@ -43,11 +43,6 @@ export interface IChannelOptions {
   dltTechnology: LedgerType | null,
   persistMessages: boolean
 }
-
-// export enum LedgerType {
-//   FABRIC,
-//   BESU,
-// }
 
 export type APIConfig = {
   type:LedgerType, 
@@ -232,14 +227,17 @@ export class CcTxVisualization
     const fnTag = `${this.className}#pollTxReceipts()`;
     this.log.debug(fnTag);
     return this.amqpQueue.activateConsumer( (message) => {
-      //const messageContent = message.content.toString();
       const messageContent = message.getContent();
-     // this.log.debug(`Received message from ${this.queueId}: ${messageContent}`);
       this.log.debug(`Received message from ${this.queueId}: ${message.content.toString()}`);
       this.txReceipts.push(messageContent);
       message.ack();
     }, { noAck: false });
   }
+
+  // Pipeline: pollTxReceipts (gets RabbitMQ messages)
+  //           txReceiptToCrossChainEventLogEntry (messages -> Tx Receipts -> cross chain event log)
+  //           aggregateCCTx (cc event log into cc tx log )          
+
 
   // convert data into CrossChainEvent
   // returns a list of CrossChainEvent
@@ -262,7 +260,11 @@ export class CcTxVisualization
               parameters:besuReceipt.parameters,
               timestamp: besuReceipt.timestamp,
               identity: besuReceipt.from,
-              // latency
+              cost: calculateGasPriceBesu(besuReceipt.gasPrice, besuReceipt.gasUsed),
+              carbonFootprint: calculateCarbonFootPrintBesu(),
+              latency: new Date().getTime() - receipt.timestamp,
+
+
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
             this.log.info("Added Cross Chain event from BESU");
@@ -278,6 +280,9 @@ export class CcTxVisualization
               parameters: fabricReceipt.parameters,
               timestamp: fabricReceipt.timestamp,
               identity: fabricReceipt.signingCredentials.keychainRef,
+              cost: receipt.cost || 0,
+              carbonFootprint: calculateCarbonFootPrintFabric(fabricReceipt.endorsingPeers),
+              latency: new Date().getTime() - receipt.timestamp,
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");
@@ -293,6 +298,9 @@ export class CcTxVisualization
               parameters: receipt.parameters,
               timestamp: receipt.timestamp,
               identity: receipt.identity,
+              cost: receipt.cost || 0,
+              carbonFootprint: 1,
+              latency: new Date().getTime() - receipt.timestamp,
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");
@@ -311,6 +319,11 @@ export class CcTxVisualization
       this.log.error(error);
     }
 
+  }
+
+  // Parses the cross chain event log and creates a cctx: (local transactions, rules (reference to model), metrics)
+  public async aggregateCCTx(): Promise<void> {
+    return;
   }
 
   // Receives raw transaction receipts from RabbitMQ
