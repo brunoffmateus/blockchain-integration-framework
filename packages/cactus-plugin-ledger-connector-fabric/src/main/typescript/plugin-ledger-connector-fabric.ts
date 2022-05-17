@@ -235,7 +235,7 @@ export class PluginLedgerConnectorFabric
       this.log.debug("Initializing connection to RabbitMQ");
       this.amqpConnection = new amqp.Connection(this.eventProvider);
       this.log.info("Connection to RabbitMQ server initialized");
-      const queue = this.opts.queueId || "cc-tx-viz-exchange";
+      const queue = this.opts.queueId || "cc-tx-viz-queue";
       this.queueId = queue;
       this.persistMessages = this.opts.persistMessages || false;
       this.amqpExchange = this.amqpConnection.declareExchange(`cc-tx-viz-exchange`, "direct", {durable: this.persistMessages});
