@@ -6,8 +6,8 @@ export type CrossChainEvent = {
   methodName: string;
   parameters: string[];
   identity: string;
-  cost?: number;
-  carbonFootprint?: number;
+  cost?: number | string;
+  carbonFootprint?: number | string;
   latency?: number | Date;
 };
 

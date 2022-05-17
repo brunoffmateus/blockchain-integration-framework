@@ -323,7 +323,10 @@ export class CcTxVisualization
   }
 
   // Parses the cross chain event log and creates a cctx: (local transactions, rules (reference to model), metrics)
-  public async aggregateCCTx(): Promise<void> {
+  // This is part of the cc model; have a set that maps case id to data structure; this data structure are the consolidated metrics for a cctx, stores each txid
+  // run over cc log; if case id is unique create new entry, otherwise add tx to cctx, update metrics, update last update; this is an updatable model
+  public async aggregateCcTx(): Promise<void> {
+    // 
     return;
   }
 

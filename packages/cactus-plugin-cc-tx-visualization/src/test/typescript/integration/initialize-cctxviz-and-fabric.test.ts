@@ -407,6 +407,8 @@ test(testCase, async () => {
   // Number of messages on queue: 0
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBe(1);
+
+  await cctxViz.aggregateCcTx();
 });
 afterAll(async () => {
   await cctxViz.closeConnection();
