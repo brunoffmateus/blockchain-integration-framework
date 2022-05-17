@@ -111,8 +111,8 @@ test(testCase, async () => {
   log.info("Fourth message sent!");
 
   log.info("waiting for RabbitMQ to send last message");
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  expect(cctxViz.numberUnprocessedReceipts).toBe(1);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
   expect(cctxViz.numberEventsLog).toBe(1);

@@ -1,126 +1,192 @@
-import { LogLevelDesc } from "@hyperledger/cactus-common";
-import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
+import "jest-extended";
 import {
-  // APIConfig,
-  IChannelOptions,
-} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
-import { PluginRegistry } from "@hyperledger/cactus-core";
-import test, { Test } from "tape-promise/tape";
-import { v4 as uuidv4 } from "uuid";
+  Checks,
+  IListenOptions,
+  LoggerProvider,
+  LogLevelDesc,
+  Servers,
+} from "@hyperledger/cactus-common";
 import {
-  IPluginCcTxVisualizationOptions,
-  CcTxVisualization,
-} from "../../../main/typescript/plugin-cc-tx-visualization";
-import { Configuration } from "@hyperledger/cactus-core-api";
-import { IListenOptions, Servers } from "@hyperledger/cactus-common";
-import bodyParser from "body-parser";
-import express from "express";
-import { DiscoveryOptions } from "fabric-network";
-import { AddressInfo } from "net";
-import {
+  Containers,
   FabricTestLedgerV1,
   pruneDockerAllIfGithubAction,
 } from "@hyperledger/cactus-test-tooling";
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
+import { IPluginCcTxVisualizationOptions } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript";
 import {
-  PluginLedgerConnectorFabric,
-  DefaultApi,
-  DefaultEventHandlerStrategy,
-  FabricSigningCredential,
-  IPluginLedgerConnectorFabricOptions,
-  FabricContractInvocationType,
-  RunTransactionRequest,
-} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
-import http from "http";
+  CcTxVisualization,
+  IChannelOptions,
+} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
+import { IRabbitMQTestServerOptions } from "@hyperledger/cactus-test-tooling/dist/lib/main/typescript/rabbitmq-test-server/rabbit-mq-test-server";
+//import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
+import { v4 as uuidv4 } from "uuid";
+import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import { PluginRegistry } from "@hyperledger/cactus-core";
+import { DiscoveryOptions } from "fabric-network";
+import { Configuration } from "@hyperledger/cactus-core-api";
+import fs from "fs-extra";
 
-const testCase = "Instantiate plugin with FABRIC";
+import {
+  ChainCodeProgrammingLanguage,
+  DefaultEventHandlerStrategy,
+  FabricContractInvocationType,
+  FileBase64,
+  PluginLedgerConnectorFabric,
+  IPluginLedgerConnectorFabricOptions,
+} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import express from "express";
+import bodyParser from "body-parser";
+import http from "http";
+import path from "path";
+import { DefaultApi as FabricApi } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { AddressInfo } from "net";
+
+const testCase =
+  "Instantiate plugin, send 4 invalid receipts, one test receipt";
 const logLevel: LogLevelDesc = "TRACE";
-const queueName = "cc-tx-viz-exchange";
+const queueName = "cc-tx-log-entry-test";
 
-test("BEFORE " + testCase, async (t: Test) => {
-  const pruning = pruneDockerAllIfGithubAction({ logLevel });
-  await t.doesNotReject(pruning, "Pruning didn't throw OK");
-  t.end();
+const log = LoggerProvider.getOrCreate({
+  level: logLevel,
+  label: "cctxviz-irt",
 });
+const fixturesPath =
+  "../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures";
 
-test("Connector Instantiaton with Fabric", async (t: Test) => {
-  //initialize rabbitmq
-  const options = {
+let cctxViz: CcTxVisualization;
+let options: IRabbitMQTestServerOptions;
+let channelOptions: IChannelOptions;
+let testServer: RabbitMQTestServer;
+let cctxvizOptions: IPluginCcTxVisualizationOptions;
+let ledger: FabricTestLedgerV1;
+const expressApp = express();
+expressApp.use(bodyParser.json({ limit: "250mb" }));
+const server = http.createServer(expressApp);
+beforeAll(async () => {
+  pruneDockerAllIfGithubAction({ logLevel })
+    .then(() => {
+      log.info("Pruning throw OK");
+    })
+    .catch(async () => {
+      await Containers.logDiagnostics({ logLevel });
+      fail("Pruning didn't throw OK");
+    });
+  options = {
     publishAllPorts: true,
     port: 5672,
+    logLevel: logLevel,
     imageName: "rabbitmq",
     imageTag: "3.9-management",
     emitContainerLogs: true,
     envVars: new Map([["AnyNecessaryEnvVar", "Can be set here"]]),
-    logLevel: logLevel,
   };
-  const channelOptions: IChannelOptions = {
+  channelOptions = {
     queueId: queueName,
     dltTechnology: null,
     persistMessages: false,
   };
 
-  //initialize FABRIC
-  const FabricTestLedger = new FabricTestLedgerV1({
+  cctxvizOptions = {
+    instanceId: randomUUID(),
+    logLevel: logLevel,
+    eventProvider: "amqp://localhost",
+    channelOptions: channelOptions,
+  };
+  testServer = new RabbitMQTestServer(options);
+
+  await testServer.start();
+
+  ledger = new FabricTestLedgerV1({
     emitContainerLogs: true,
     publishAllPorts: true,
-    logLevel,
     imageName: "ghcr.io/hyperledger/cactus-fabric2-all-in-one",
-    imageVersion: "2021-04-20-nodejs",
-    envVars: new Map([
-      ["FABRIC_VERSION", "2.2.0"],
-      ["CA_VERSION", "1.4.9"],
-    ]),
+    envVars: new Map([["FABRIC_VERSION", "2.2.0"]]),
+    logLevel,
   });
-  t.ok(FabricTestLedger, "ledger (FabricTestLedgerV1) truthy OK");
+  await ledger.start();
 
-  test.onFinish(async () => {
-    await FabricTestLedger.stop();
-    await FabricTestLedger.destroy();
-    await pruneDockerAllIfGithubAction({ logLevel });
-  });
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+});
 
-  await FabricTestLedger.start();
+test(testCase, async () => {
+  expect(testServer).toBeDefined();
+  const channelId = "mychannel";
+  const channelName = channelId;
 
-  const enrollAdminOut = await FabricTestLedger.enrollAdmin();
+  const connectionProfile = await ledger.getConnectionProfileOrg1();
+  const enrollAdminOut = await ledger.enrollAdmin();
   const adminWallet = enrollAdminOut[1];
-  const [userIdentity] = await FabricTestLedger.enrollUser(adminWallet);
+  const [userIdentity] = await ledger.enrollUser(adminWallet);
+  const sshConfig = await ledger.getSshConfig();
 
-  const connectionProfile = await FabricTestLedger.getConnectionProfileOrg1();
+  const keychainInstanceId = uuidv4();
+  const keychainId = uuidv4();
+  const keychainEntryKey = "user2";
+  const keychainEntryValue = JSON.stringify(userIdentity);
 
-  const sshConfig = await FabricTestLedger.getSshConfig();
-
-  const keychainInstanceIdFabric = uuidv4();
-  const keychainIdFabric = uuidv4();
-  const keychainEntryKeyFabric = "user2";
-  const keychainEntryValueFabric = JSON.stringify(userIdentity);
-
-  const keychainPluginFabric = new PluginKeychainMemory({
-    instanceId: keychainInstanceIdFabric,
-    keychainId: keychainIdFabric,
+  const keychainPlugin = new PluginKeychainMemory({
+    instanceId: keychainInstanceId,
+    keychainId,
     logLevel,
     backend: new Map([
-      [keychainEntryKeyFabric, keychainEntryValueFabric],
+      [keychainEntryKey, keychainEntryValue],
       ["some-other-entry-key", "some-other-entry-value"],
     ]),
   });
 
-  const FabricPluginRegistry = new PluginRegistry({
-    plugins: [keychainPluginFabric],
-  });
+  const pluginRegistry = new PluginRegistry({ plugins: [keychainPlugin] });
 
   const discoveryOptions: DiscoveryOptions = {
     enabled: true,
     asLocalhost: true,
   };
 
-  const FabricPluginOptions: IPluginLedgerConnectorFabricOptions = {
+  // This is the directory structure of the Fabirc 2.x CLI container (fabric-tools image)
+  // const orgCfgDir = "/fabric-samples/test-network/organizations/";
+  const orgCfgDir =
+    "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/";
+
+  // these below mirror how the fabric-samples sets up the configuration
+  const org1Env = {
+    CORE_LOGGING_LEVEL: "debug",
+    FABRIC_LOGGING_SPEC: "debug",
+    CORE_PEER_LOCALMSPID: "Org1MSP",
+
+    ORDERER_CA: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+
+    FABRIC_CFG_PATH: "/etc/hyperledger/fabric",
+    CORE_PEER_TLS_ENABLED: "true",
+    CORE_PEER_TLS_ROOTCERT_FILE: `${orgCfgDir}peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt`,
+    CORE_PEER_MSPCONFIGPATH: `${orgCfgDir}peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp`,
+    CORE_PEER_ADDRESS: "peer0.org1.example.com:7051",
+    ORDERER_TLS_ROOTCERT_FILE: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+  };
+
+  // these below mirror how the fabric-samples sets up the configuration
+  const org2Env = {
+    CORE_LOGGING_LEVEL: "debug",
+    FABRIC_LOGGING_SPEC: "debug",
+    CORE_PEER_LOCALMSPID: "Org2MSP",
+
+    FABRIC_CFG_PATH: "/etc/hyperledger/fabric",
+    CORE_PEER_TLS_ENABLED: "true",
+    ORDERER_CA: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+
+    CORE_PEER_ADDRESS: "peer0.org2.example.com:9051",
+    CORE_PEER_MSPCONFIGPATH: `${orgCfgDir}peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp`,
+    CORE_PEER_TLS_ROOTCERT_FILE: `${orgCfgDir}peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt`,
+    ORDERER_TLS_ROOTCERT_FILE: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+  };
+
+  const pluginOptions: IPluginLedgerConnectorFabricOptions = {
     instanceId: uuidv4(),
-    pluginRegistry: FabricPluginRegistry,
-    sshConfig,
-    cliContainerEnv: {},
+    dockerBinary: "/usr/local/bin/docker",
     peerBinary: "/fabric-samples/bin/peer",
+    goBinary: "/usr/local/go/bin/go",
+    pluginRegistry,
+    cliContainerEnv: org1Env,
+    sshConfig,
     logLevel,
     connectionProfile,
     discoveryOptions,
@@ -128,131 +194,221 @@ test("Connector Instantiaton with Fabric", async (t: Test) => {
       strategy: DefaultEventHandlerStrategy.NetworkScopeAllfortx,
       commitTimeout: 300,
     },
-    collectTransactionReceipts: true,
-    queueId: queueName,
   };
-  const fabricConnector = new PluginLedgerConnectorFabric(FabricPluginOptions);
+  const plugin = new PluginLedgerConnectorFabric(pluginOptions);
 
-  const expressAppFabric = express();
-  expressAppFabric.use(bodyParser.json({ limit: "250mb" }));
-  const serverFabric = http.createServer(expressAppFabric);
-  const listenOptionsFabric: IListenOptions = {
+  const listenOptions: IListenOptions = {
     hostname: "localhost",
     port: 0,
-    server: serverFabric,
+    server,
   };
-  const addressInfoFabric = (await Servers.listen(
-    listenOptionsFabric,
-  )) as AddressInfo;
-  test.onFinish(async () => await Servers.shutdown(serverFabric));
-  const { address, port } = addressInfoFabric;
-  const apiHostFabric = `http://${address}:${port}`;
-  t.comment(
-    `Metrics URL: ${apiHostFabric}/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/get-prometheus-exporter-metrics`,
+  const addressInfo = (await Servers.listen(listenOptions)) as AddressInfo;
+  const { port } = addressInfo;
+
+  await plugin.getOrCreateWebServices();
+  await plugin.registerWebServices(expressApp);
+  const apiUrl = `http://localhost:${port}`;
+
+  const config = new Configuration({ basePath: apiUrl });
+
+  const apiClient = new FabricApi(config);
+
+  const contractName = "basic-asset-transfer-2";
+
+  const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
+  const contractDir = path.join(__dirname, fixturesPath, contractRelPath);
+
+  // ├── package.json
+  // ├── src
+  // │   ├── assetTransfer.ts
+  // │   ├── asset.ts
+  // │   └── index.ts
+  // ├── tsconfig.json
+  // └── tslint.json
+  const sourceFiles: FileBase64[] = [];
+  {
+    const filename = "./tslint.json";
+    const relativePath = "./";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+  {
+    const filename = "./tsconfig.json";
+    const relativePath = "./";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+  {
+    const filename = "./package.json";
+    const relativePath = "./";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+  {
+    const filename = "./index.ts";
+    const relativePath = "./src/";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+  {
+    const filename = "./asset.ts";
+    const relativePath = "./src/";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+  {
+    const filename = "./assetTransfer.ts";
+    const relativePath = "./src/";
+    const filePath = path.join(contractDir, relativePath, filename);
+    const buffer = await fs.readFile(filePath);
+    sourceFiles.push({
+      body: buffer.toString("base64"),
+      filepath: relativePath,
+      filename,
+    });
+  }
+
+  const res = await apiClient.deployContractV1({
+    channelId,
+    ccVersion: "1.0.0",
+    // constructorArgs: { Args: ["john", "99"] },
+    sourceFiles,
+    ccName: contractName,
+    targetOrganizations: [org1Env, org2Env],
+    caFile: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+    ccLabel: "basic-asset-transfer-2",
+    ccLang: ChainCodeProgrammingLanguage.Typescript,
+    ccSequence: 1,
+    orderer: "orderer.example.com:7050",
+    ordererTLSHostnameOverride: "orderer.example.com",
+    connTimeout: 60,
+  });
+
+  const { packageIds, lifecycle, success } = res.data;
+  expect(success).toBe(true);
+  expect(res.status).toBe(200);
+  const {
+    approveForMyOrgList,
+    installList,
+    queryInstalledList,
+    commit,
+    packaging,
+    queryCommitted,
+  } = lifecycle;
+
+  Checks.truthy(packageIds, `packageIds truthy OK`);
+  Checks.truthy(
+    Array.isArray(packageIds),
+    `Array.isArray(packageIds) truthy OK`,
   );
+  Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
+  Checks.truthy(
+    Array.isArray(approveForMyOrgList),
+    `Array.isArray(approveForMyOrgList) truthy OK`,
+  );
+  Checks.truthy(installList, `installList truthy OK`);
+  Checks.truthy(
+    Array.isArray(installList),
+    `Array.isArray(installList) truthy OK`,
+  );
+  Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
+  Checks.truthy(
+    Array.isArray(queryInstalledList),
+    `Array.isArray(queryInstalledList) truthy OK`,
+  );
+  Checks.truthy(commit, `commit truthy OK`);
+  Checks.truthy(packaging, `packaging truthy OK`);
+  Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
 
-  const FabricApiConfig = new Configuration({ basePath: apiHostFabric });
+  // FIXME - without this wait it randomly fails with an error claiming that
+  // the endorsement was impossible to be obtained. The fabric-samples script
+  // does the same thing, it just waits 10 seconds for good measure so there
+  // might not be a way for us to avoid doing this, but if there is a way we
+  // absolutely should not have timeouts like this, anywhere...
+  await new Promise((resolve) => setTimeout(resolve, 10000));
 
-  await fabricConnector.getOrCreateWebServices();
-  await fabricConnector.registerWebServices(expressAppFabric);
-
-  const channelName = "mychannel";
-  const contractName = "basic";
-  const signingCredential: FabricSigningCredential = {
-    keychainId: keychainIdFabric,
-    keychainRef: keychainEntryKeyFabric,
-  };
-
-  //test Fabric transactions purposes
-  // const assetId = "asset277";
+  const assetId = uuidv4();
   const assetOwner = uuidv4();
 
-  //apiClients
-  const apiClientFabric = new DefaultApi(FabricApiConfig);
+  // CreateAsset(id string, color string, size int, owner string, appraisedValue int)
+  const createRes = await apiClient.runTransactionV1({
+    contractName,
+    channelName,
+    params: [assetId, "Green", "19", assetOwner, "9999"],
+    methodName: "CreateAsset",
+    invocationType: FabricContractInvocationType.Send,
+    signingCredential: {
+      keychainId,
+      keychainRef: keychainEntryKey,
+    },
+  });
 
-  //add connector reference to the registry
-  const testConnectorRegistry = new PluginRegistry();
-  testConnectorRegistry.add(fabricConnector);
-
-  //cctxviz options
-  const cctxvizOptions: IPluginCcTxVisualizationOptions = {
-    instanceId: randomUUID(),
-    logLevel: logLevel,
-    eventProvider: "amqp://localhost",
-    channelOptions: channelOptions,
-    connectorRegistry: testConnectorRegistry,
-  };
-
-  const testServer = new RabbitMQTestServer(options);
-  const tearDown = async () => {
-    // Connections to the RabbitMQ server need to be closed
-    await cctxViz.closeConnection();
-    await fabricConnector.closeConnection();
-    await testServer.stop();
-    await pruneDockerAllIfGithubAction({ logLevel });
-  };
-
-  test.onFinish(tearDown);
-
-  await testServer.start();
-  t.ok(testServer);
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  // FABRIC transactions
-  {
-    const res = await apiClientFabric.runTransactionV1({
-      signingCredential,
-      channelName,
-      contractName,
-      invocationType: FabricContractInvocationType.Call,
-      methodName: "GetAllAssets",
-      params: [],
-    } as RunTransactionRequest);
-    t.ok(res);
-    t.ok(res.data);
-    t.equal(res.status, 200);
-    t.doesNotThrow(() => JSON.parse(res.data.functionOutput));
-  }
-
-  {
-    const req: RunTransactionRequest = {
-      caseID: "FABRIC_CASE_ID_TBD",
-      signingCredential,
-      gatewayOptions: {
-        identity: keychainEntryKeyFabric,
-        wallet: {
-          json: keychainEntryValueFabric,
-        },
-      },
-      channelName,
-      invocationType: FabricContractInvocationType.Send,
-      contractName,
-      methodName: "CreateAsset",
-      params: ["asset388", "green", "111", assetOwner, "299"],
-      endorsingPeers: ["org1.example.com", "Org2MSP"],
-    };
-
-    const res = await apiClientFabric.runTransactionV1(req);
-    t.ok(res, "Create green asset response truthy OK");
-    t.ok(res.data, "Create green asset response.data truthy OK");
-    t.equal(res.status, 200, "Create green asset response.status=200 OK");
-  }
-
-  //
+  expect(createRes).toBe(true);
+  const getRes = await apiClient.runTransactionV1({
+    contractName,
+    channelName,
+    params: [assetId],
+    methodName: "ReadAsset",
+    invocationType: FabricContractInvocationType.Call,
+    signingCredential: {
+      keychainId,
+      keychainRef: keychainEntryKey,
+    },
+  });
+  expect(getRes).toBe(true);
 
   // Initialize our plugin
-  const cctxViz = new CcTxVisualization(cctxvizOptions);
-  t.ok(cctxViz);
-  t.comment("cctxviz plugin is ok");
+  cctxViz = new CcTxVisualization(cctxvizOptions);
+  expect(cctxViz).toBeDefined();
+  log.info("cctxviz plugin is ok");
 
-  // Poll messages
+  // Number of messages on queue: 1
+  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
+  expect(cctxViz.numberEventsLog).toBe(0);
+
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   await cctxViz.pollTxReceipts();
 
-  t.comment(
-    `Number of TxReceipts Received:${cctxViz.messages.length.toString()}`,
-  );
+  // Number of messages on queue: 0
+  expect(cctxViz.numberUnprocessedReceipts).toBe(1);
+  expect(cctxViz.numberEventsLog).toBe(0);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
-  // TODO problem ledger is destroyed but something is hanging
-  t.end();
+
+  // Number of messages on queue: 0
+  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
+  expect(cctxViz.numberEventsLog).toBe(1);
+});
+afterAll(async () => {
+  await cctxViz.closeConnection();
+  await testServer.stop();
+  await ledger.stop();
+  await ledger.destroy();
+  await Servers.shutdown(server);
+  await pruneDockerAllIfGithubAction({ logLevel });
 });
