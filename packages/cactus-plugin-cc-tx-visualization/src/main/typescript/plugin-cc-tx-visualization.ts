@@ -263,7 +263,7 @@ export class CcTxVisualization
               identity: besuReceipt.from,
               cost: calculateGasPriceBesu(besuReceipt.gasPrice, besuReceipt.gasUsed),
               carbonFootprint: calculateCarbonFootPrintBesu(),
-              latency: new Date().getTime() - receipt.timestamp,
+              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
 
 
             };
@@ -283,7 +283,7 @@ export class CcTxVisualization
               identity: fabricReceipt.signingCredentials.keychainRef,
               cost: receipt.cost || 0,
               carbonFootprint: calculateCarbonFootPrintFabric(fabricReceipt.endorsingPeers),
-              latency: new Date().getTime() - receipt.timestamp,
+              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");

@@ -42,17 +42,18 @@ import path from "path";
 import { DefaultApi as FabricApi } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 import { AddressInfo } from "net";
 
-const testCase =
-  "Instantiate plugin, send 4 invalid receipts, one test receipt";
+const testCase = "Instantiate plugin with fabric, send 2 transactions";
 const logLevel: LogLevelDesc = "TRACE";
-const queueName = "cc-tx-log-entry-test";
+
+// By default that's the Fabric connector queue
+const queueName = "cc-tx-viz-queue";
 
 const log = LoggerProvider.getOrCreate({
   level: logLevel,
-  label: "cctxviz-irt",
+  label: "cctxviz-fabtest",
 });
 const fixturesPath =
-  "../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures";
+  "../../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures";
 
 let cctxViz: CcTxVisualization;
 let options: IRabbitMQTestServerOptions;
@@ -96,6 +97,7 @@ beforeAll(async () => {
   testServer = new RabbitMQTestServer(options);
 
   await testServer.start();
+  cctxViz = new CcTxVisualization(cctxvizOptions);
 
   ledger = new FabricTestLedgerV1({
     emitContainerLogs: true,
@@ -180,6 +182,7 @@ test(testCase, async () => {
   };
 
   const pluginOptions: IPluginLedgerConnectorFabricOptions = {
+    collectTransactionReceipts: true,
     instanceId: uuidv4(),
     dockerBinary: "/usr/local/bin/docker",
     peerBinary: "/fabric-samples/bin/peer",
@@ -357,6 +360,7 @@ test(testCase, async () => {
 
   // CreateAsset(id string, color string, size int, owner string, appraisedValue int)
   const createRes = await apiClient.runTransactionV1({
+    caseID: "Fabric-TEST",
     contractName,
     channelName,
     params: [assetId, "Green", "19", assetOwner, "9999"],
@@ -367,9 +371,10 @@ test(testCase, async () => {
       keychainRef: keychainEntryKey,
     },
   });
+  expect(createRes).toBeDefined();
 
-  expect(createRes).toBe(true);
   const getRes = await apiClient.runTransactionV1({
+    caseID: "Fabric-TEST",
     contractName,
     channelName,
     params: [assetId],
@@ -380,10 +385,9 @@ test(testCase, async () => {
       keychainRef: keychainEntryKey,
     },
   });
-  expect(getRes).toBe(true);
+  expect(getRes).toBeDefined();
 
   // Initialize our plugin
-  cctxViz = new CcTxVisualization(cctxvizOptions);
   expect(cctxViz).toBeDefined();
   log.info("cctxviz plugin is ok");
 
@@ -391,7 +395,7 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBe(0);
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   await cctxViz.pollTxReceipts();
 
   // Number of messages on queue: 0
