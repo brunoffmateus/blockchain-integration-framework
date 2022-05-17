@@ -122,7 +122,7 @@ export class CcTxVisualization
 
   get numberUnprocessedReceipts(): number {
     return this.txReceipts.length;
-  }
+  }  
 
   public purgeCrossChainEvents(): void {
     this.crossChainLog.purgeLogs();
@@ -130,11 +130,12 @@ export class CcTxVisualization
 
   // todo connection closing is  problematic, tests are left hanging
   public async closeConnection(): Promise<void>  {
-    this.log.info("Closing Amqp connection");
-    //this.amqpConnection.removeAllListeners();
-    this.amqpExchange.close();
-    this.amqpQueue.close();
-    this.amqpConnection.close();
+    this.log.debug("Closing Amqp connection");
+    await this.amqpQueue.stopConsumer();
+    await this.amqpQueue.close();
+    //await this.amqpConnection.close();
+    this.log.debug(" Amqp connection closed");
+
   }
 
   public getInstanceId(): string {
@@ -300,7 +301,7 @@ export class CcTxVisualization
               identity: receipt.identity,
               cost: receipt.cost || 0,
               carbonFootprint: 1,
-              latency: new Date().getTime() - receipt.timestamp,
+              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");

@@ -8,7 +8,7 @@ export type CrossChainEvent = {
   identity: string;
   cost?: number;
   carbonFootprint?: number;
-  latency?: number;
+  latency?: number | Date;
 };
 
 export interface ICrossChainEventLog {
