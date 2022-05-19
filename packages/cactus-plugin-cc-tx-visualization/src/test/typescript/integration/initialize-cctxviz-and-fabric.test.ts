@@ -19,7 +19,6 @@ import {
 } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
 import { IRabbitMQTestServerOptions } from "@hyperledger/cactus-test-tooling/dist/lib/main/typescript/rabbitmq-test-server/rabbit-mq-test-server";
-//import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
 import { v4 as uuidv4 } from "uuid";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import { PluginRegistry } from "@hyperledger/cactus-core";
@@ -107,8 +106,6 @@ beforeAll(async () => {
     logLevel,
   });
   await ledger.start();
-
-  await new Promise((resolve) => setTimeout(resolve, 3000));
 });
 
 test(testCase, async () => {
@@ -216,19 +213,14 @@ test(testCase, async () => {
 
   const apiClient = new FabricApi(config);
 
+  // Setup: contract name
   const contractName = "basic-asset-transfer-2";
 
+  // Setup: contract directory
   const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
   const contractDir = path.join(__dirname, fixturesPath, contractRelPath);
-
-  // ├── package.json
-  // ├── src
-  // │   ├── assetTransfer.ts
-  // │   ├── asset.ts
-  // │   └── index.ts
-  // ├── tsconfig.json
-  // └── tslint.json
   const sourceFiles: FileBase64[] = [];
+  // Setup: push files
   {
     const filename = "./tslint.json";
     const relativePath = "./";
@@ -296,6 +288,7 @@ test(testCase, async () => {
     });
   }
 
+  // Setup: Deploy smart contract
   const res = await apiClient.deployContractV1({
     channelId,
     ccVersion: "1.0.0",
@@ -358,7 +351,7 @@ test(testCase, async () => {
   const assetId = uuidv4();
   const assetOwner = uuidv4();
 
-  // CreateAsset(id string, color string, size int, owner string, appraisedValue int)
+  // Setup: transact
   const createRes = await apiClient.runTransactionV1({
     caseID: "Fabric-TEST",
     contractName,
@@ -395,7 +388,7 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBe(0);
 
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   await cctxViz.pollTxReceipts();
 
   // Number of messages on queue: 0
@@ -408,7 +401,7 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBe(1);
 
-  await cctxViz.aggregateCcTx();
+  await cctxViz.persistCrossChainLogCsv();
 });
 afterAll(async () => {
   await cctxViz.closeConnection();

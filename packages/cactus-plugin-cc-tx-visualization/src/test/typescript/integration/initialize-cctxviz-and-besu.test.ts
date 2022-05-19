@@ -267,18 +267,21 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBe(0);
 
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 1500));
   await cctxViz.pollTxReceipts();
 
   // Number of messages on queue: 0
-  expect(cctxViz.numberUnprocessedReceipts).toBe(1);
-  expect(cctxViz.numberEventsLog).toBe(0);
+  // Depending on the latency, we might have 4 or 5 receipts received
+  expect(cctxViz.numberUnprocessedReceipts).toBeGreaterThanOrEqual(4);
+  expect(cctxViz.numberEventsLog).toBeLessThanOrEqual(1);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   // Number of messages on queue: 0
-  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
-  expect(cctxViz.numberEventsLog).toBe(1);
+  expect(cctxViz.numberUnprocessedReceipts).toBeLessThanOrEqual(1);
+  expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(4);
+
+  await cctxViz.persistCrossChainLogCsv();
 });
 afterAll(async () => {
   await cctxViz.closeConnection();
