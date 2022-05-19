@@ -1113,11 +1113,9 @@ export class PluginLedgerConnectorFabric
           throw new Error(`${fnTag} unknown ${message}`);
         }
       }
-      //TODO do we need this?
-      // const endTx = performance.now();
-      // const txTimer = end Tx - startTx;
-
-      if (this.collectTransactionReceipts && transactionId !== "")  {
+      
+      // if we don't want to collect reads, than add condition  && transactionId !== ""
+      if (this.collectTransactionReceipts)  {
         const txParams = req.params;
         //getTransactionReceiptByTxID requires 2 params in req.params => channelName and txID
         req.params = [];

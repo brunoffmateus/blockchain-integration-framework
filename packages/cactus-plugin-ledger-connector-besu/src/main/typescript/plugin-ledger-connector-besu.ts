@@ -569,7 +569,7 @@ export class PluginLedgerConnectorBesu
       //TODO
       if (this.collectTransactionReceipts) {
         const extendedReceipt: BesuV2TxReceipt = {
-          caseID: "BESU_TBD",
+          caseID: req.caseID || "BESU_TBD",
           blockchainID: LedgerType.Besu2X,
           invocationType: req.invocationType,
           methodName: req.methodName,
