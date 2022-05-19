@@ -1,54 +1,74 @@
-/*
-import test, { Test } from "tape-promise/tape";
-import { LogLevelDesc } from "@hyperledger/cactus-common";
-import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
-import { pruneDockerAllIfGithubAction } from "@hyperledger/cactus-test-tooling";
-import { IPluginCcTxVisualizationOptions } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript";
-import {
-  // APIConfig,
-  CcTxVisualization,
-  IChannelOptions,
-} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
-import { randomUUID } from "crypto";
-//import * as amqp from "amqp-ts";
-import { PluginRegistry } from "@hyperledger/cactus-core";
-import { Server as SocketIoServer } from "socket.io";
-import { Constants, PluginImportType } from "@hyperledger/cactus-core-api";
-import { v4 as uuidv4 } from "uuid";
-import { IListenOptions, Servers } from "@hyperledger/cactus-common";
-import bodyParser from "body-parser";
-import express from "express";
-import { AddressInfo } from "net";
-import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
-import http from "http";
+import "jest-extended";
 import {
   EthContractInvocationType,
   Web3SigningCredentialType,
   PluginLedgerConnectorBesu,
   PluginFactoryLedgerConnector,
+  //Web3SigningCredentialCactusKeychainRef,
   ReceiptType,
-  BesuApiClient,
-  WatchBlocksV1Progress,
-  Web3BlockHeader,
-  BesuApiClientOptions,
-} from "@hyperledger/cactus-plugin-ledger-connector-besu/src/main/typescript/public-api";
+} from "@hyperledger/cactus-plugin-ledger-connector-besu";
+
+import { PluginImportType } from "@hyperledger/cactus-core-api";
+
+import {
+  LoggerProvider,
+  LogLevelDesc,
+  Servers,
+} from "@hyperledger/cactus-common";
+import {
+  BesuTestLedger,
+  Containers,
+  pruneDockerAllIfGithubAction,
+} from "@hyperledger/cactus-test-tooling";
+import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
+import { IPluginCcTxVisualizationOptions } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript";
+import {
+  CcTxVisualization,
+  IChannelOptions,
+} from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
+import { randomUUID } from "crypto";
+import { IRabbitMQTestServerOptions } from "@hyperledger/cactus-test-tooling/dist/lib/main/typescript/rabbitmq-test-server/rabbit-mq-test-server";
+import { v4 as uuidv4 } from "uuid";
+import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import { PluginRegistry } from "@hyperledger/cactus-core";
 import Web3 from "web3";
-import HelloWorldContractJson from "@hyperledger/cactus-plugin-ledger-connector-besu/src/test/solidity/hello-world-contract/HelloWorld.json";
 
-const testCase = "Instantiate plugin with BESU";
+import express from "express";
+import bodyParser from "body-parser";
+import http from "http";
+
+const testCase = "Instantiate plugin with besu, send 2 transactions";
 const logLevel: LogLevelDesc = "TRACE";
-const queueName = "cc-tx-viz-exchange";
 
-test("BEFORE " + testCase, async (t: Test) => {
-  const pruning = pruneDockerAllIfGithubAction({ logLevel });
-  await t.doesNotReject(pruning, "Pruning didn't throw OK");
-  t.end();
+// By default that's the Fabric connector queue
+const queueName = "cc-tx-viz-queue";
+
+const log = LoggerProvider.getOrCreate({
+  level: logLevel,
+  label: "cctxviz-fabtest",
 });
+import LockAssetContractJson from "../../solidity/LockAsset.json";
 
-test(testCase, async (t: Test) => {
-  //initialize rabbitmq
-  const options = {
+let cctxViz: CcTxVisualization;
+let options: IRabbitMQTestServerOptions;
+let channelOptions: IChannelOptions;
+let testServer: RabbitMQTestServer;
+let cctxvizOptions: IPluginCcTxVisualizationOptions;
+let besuTestLedger: BesuTestLedger;
+const expressApp = express();
+expressApp.use(bodyParser.json({ limit: "250mb" }));
+const server = http.createServer(expressApp);
+
+beforeAll(async () => {
+  pruneDockerAllIfGithubAction({ logLevel })
+    .then(() => {
+      log.info("Pruning throw OK");
+    })
+    .catch(async () => {
+      await Containers.logDiagnostics({ logLevel });
+      fail("Pruning didn't throw OK");
+    });
+  options = {
     publishAllPorts: true,
     port: 5672,
     logLevel: logLevel,
@@ -57,133 +77,80 @@ test(testCase, async (t: Test) => {
     emitContainerLogs: true,
     envVars: new Map([["AnyNecessaryEnvVar", "Can be set here"]]),
   };
-  const channelOptions: IChannelOptions = {
+  channelOptions = {
     queueId: queueName,
     dltTechnology: null,
     persistMessages: false,
   };
 
-  //initialize BESU
-  const besuTestLedger = new BesuTestLedger();
+  cctxvizOptions = {
+    instanceId: randomUUID(),
+    logLevel: logLevel,
+    eventProvider: "amqp://localhost",
+    channelOptions: channelOptions,
+  };
+  testServer = new RabbitMQTestServer(options);
+
+  await testServer.start();
+  cctxViz = new CcTxVisualization(cctxvizOptions);
+
+  besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
+});
 
-  test.onFinish(async () => {
-    await besuTestLedger.stop();
-    await besuTestLedger.destroy();
-    await pruneDockerAllIfGithubAction({ logLevel });
-  });
-
+test(testCase, async () => {
   const rpcApiHttpHost = await besuTestLedger.getRpcApiHttpHost();
   const rpcApiWsHost = await besuTestLedger.getRpcApiWsHost();
 
+  /**
+   * Constant defining the standard 'dev' Besu genesis.json contents.
+   *
+   * @see https://github.com/hyperledger/besu/blob/1.5.1/config/src/main/resources/dev.json
+   */
   const firstHighNetWorthAccount = besuTestLedger.getGenesisAccountPubKey();
   const besuKeyPair = {
     privateKey: besuTestLedger.getGenesisAccountPrivKey(),
   };
+  const contractName = "LockAsset";
 
   const web3 = new Web3(rpcApiHttpHost);
   const testEthAccount = web3.eth.accounts.create(uuidv4());
 
-  const keychainEntryKeyBesu = uuidv4();
-  const keychainEntryValueBesu = testEthAccount.privateKey;
-  const keychainPluginBesu = new PluginKeychainMemory({
+  const keychainEntryKey = uuidv4();
+  const keychainEntryValue = testEthAccount.privateKey;
+  const keychainPlugin = new PluginKeychainMemory({
     instanceId: uuidv4(),
     keychainId: uuidv4(),
     // pre-provision keychain with mock backend holding the private key of the
     // test account that we'll reference while sending requests with the
     // signing credential pointing to this keychain entry.
-    backend: new Map([[keychainEntryKeyBesu, keychainEntryValueBesu]]),
+    backend: new Map([[keychainEntryKey, keychainEntryValue]]),
     logLevel,
   });
-  keychainPluginBesu.set(
-    HelloWorldContractJson.contractName,
-    JSON.stringify(HelloWorldContractJson),
+  keychainPlugin.set(
+    LockAssetContractJson.contractName,
+    JSON.stringify(LockAssetContractJson),
   );
   const factory = new PluginFactoryLedgerConnector({
     pluginImportType: PluginImportType.Local,
   });
-
-  const besuConnector: PluginLedgerConnectorBesu = await factory.create({
+  const connector: PluginLedgerConnectorBesu = await factory.create({
+    collectTransactionReceipts: true,
     rpcApiHttpHost,
     rpcApiWsHost,
-    logLevel,
     instanceId: uuidv4(),
-    pluginRegistry: new PluginRegistry({ plugins: [keychainPluginBesu] }),
-    collectTransactionReceipts: true,
-    queueId: queueName,
+    pluginRegistry: new PluginRegistry({ plugins: [keychainPlugin] }),
   });
 
-  const expressAppBesu = express();
-  expressAppBesu.use(bodyParser.json({ limit: "250mb" }));
-  const serverBesu = http.createServer(expressAppBesu);
-
-  const wsApi = new SocketIoServer(serverBesu, {
-    path: Constants.SocketIoConnectionPathV1,
-  });
-
-  const listenOptionsBesu: IListenOptions = {
-    hostname: "localhost",
-    port: 0,
-    server: serverBesu,
-  };
-  const addressInfoBesu = (await Servers.listen(
-    listenOptionsBesu,
-  )) as AddressInfo;
-
-  test.onFinish(async () => await Servers.shutdown(serverBesu));
-
-  const addressBesu: string = addressInfoBesu.address;
-  const portBesu: number = addressInfoBesu.port;
-  const apiHostBesu = `http://${addressBesu}:${portBesu}`;
-  t.comment(
-    `Metrics URL: ${apiHostBesu}/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-besu/get-prometheus-exporter-metrics`,
-  );
-
-  const wsBasePath = apiHostBesu + Constants.SocketIoConnectionPathV1;
-  t.comment("WS base path: " + wsBasePath);
-  const besuApiClientOptions = new BesuApiClientOptions({
-    basePath: apiHostBesu,
-  });
-  const besuApiClient = new BesuApiClient(besuApiClientOptions);
-
-  await besuConnector.getOrCreateWebServices();
-  await besuConnector.registerWebServices(expressAppBesu, wsApi);
-
-  //add connector reference to the registry
-  const testConnectorRegistry = new PluginRegistry();
-  testConnectorRegistry.add(besuConnector);
-
-  //cctxviz options
-  const cctxvizOptions: IPluginCcTxVisualizationOptions = {
-    instanceId: randomUUID(),
-    logLevel: logLevel,
-    eventProvider: "amqp://localhost",
-    channelOptions: channelOptions,
-    connectorRegistry: testConnectorRegistry,
-  };
-
-  const testServer = new RabbitMQTestServer(options);
-  const tearDown = async () => {
-    // Connections to the RabbitMQ server need to be closed
-    await cctxViz.closeConnection();
-    await besuConnector.closeConnection();
-    await testServer.stop();
-    await pruneDockerAllIfGithubAction({ logLevel });
-  };
-
-  test.onFinish(tearDown);
-
-  await testServer.start();
-  t.ok(testServer);
-
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  // BESU transactions
-  await besuConnector.transact({
+  await connector.transact({
     web3SigningCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
       type: Web3SigningCredentialType.PrivateKeyHex,
+    },
+    consistencyStrategy: {
+      blockConfirmations: 0,
+      receiptType: ReceiptType.NodeTxPoolAck,
     },
     transactionConfig: {
       from: firstHighNetWorthAccount,
@@ -191,131 +158,133 @@ test(testCase, async (t: Test) => {
       value: 10e9,
       gas: 1000000,
     },
-    consistencyStrategy: {
-      blockConfirmations: 0,
-      receiptType: ReceiptType.NodeTxPoolAck,
-      timeoutMs: 60000,
-    },
   });
-
-  const blocks = await besuApiClient.watchBlocksV1();
-
-  const aBlockHeader = await new Promise<Web3BlockHeader>((resolve, reject) => {
-    let done = false;
-    const timerId = setTimeout(() => {
-      if (!done) {
-        reject("Waiting for block header notification to arrive timed out");
-      }
-    }, 10000);
-    const subscription = blocks.subscribe((res: WatchBlocksV1Progress) => {
-      subscription.unsubscribe();
-      done = true;
-      clearTimeout(timerId);
-      resolve(res.blockHeader);
-    });
-  });
-  t.ok(aBlockHeader, "Web3BlockHeader truthy OK");
 
   const balance = await web3.eth.getBalance(testEthAccount.address);
-  t.ok(balance, "Retrieved balance of test account OK");
-  t.equals(parseInt(balance, 10), 10e9, "Balance of test account is OK");
+  expect(balance).toBeDefined();
 
-  //deploy
-  const deployOut = await besuConnector.deployContract({
-    keychainId: keychainPluginBesu.getKeychainId(),
-    contractName: HelloWorldContractJson.contractName,
-    contractAbi: HelloWorldContractJson.abi,
+  const deployOut = await connector.deployContract({
+    keychainId: keychainPlugin.getKeychainId(),
+    contractName: LockAssetContractJson.contractName,
+    contractAbi: LockAssetContractJson.abi,
     constructorArgs: [],
     web3SigningCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
       type: Web3SigningCredentialType.PrivateKeyHex,
     },
-    bytecode: HelloWorldContractJson.bytecode,
+    bytecode: LockAssetContractJson.bytecode,
     gas: 1000000,
   });
-  t.ok(deployOut, "deployContract() output is truthy OK");
-  t.ok(
-    deployOut.transactionReceipt,
-    "deployContract() output.transactionReceipt is truthy OK",
-  );
-  t.ok(
-    deployOut.transactionReceipt.contractAddress,
-    "deployContract() output.transactionReceipt.contractAddress is truthy OK",
-  );
+  expect(deployOut).toBeDefined();
+  expect(deployOut.transactionReceipt).toBeDefined();
 
-  const contractAddress: string = deployOut.transactionReceipt
-    .contractAddress as string;
-  t.ok(typeof contractAddress === "string", "contractAddress typeof string OK");
-
-  const { callOutput: helloMsg } = await besuConnector.invokeContract({
-    keychainId: keychainPluginBesu.getKeychainId(),
-    contractName: HelloWorldContractJson.contractName,
-    contractAbi: HelloWorldContractJson.abi,
-    contractAddress,
-    invocationType: EthContractInvocationType.Call,
-    methodName: "sayHello",
-    params: [],
+  const { success: createRes } = await connector.invokeContract({
+    contractName,
+    keychainId: keychainPlugin.getKeychainId(),
+    invocationType: EthContractInvocationType.Send,
+    methodName: "createAsset",
+    params: ["asset1", 5],
     signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
+      ethAccount: testEthAccount.address,
       secret: besuKeyPair.privateKey,
       type: Web3SigningCredentialType.PrivateKeyHex,
     },
-  });
-  t.ok(helloMsg, "sayHello() output is truthy");
-  t.true(typeof helloMsg === "string", "sayHello() output is type of string");
-
-  const response = await besuConnector.invokeContract({
-    contractName: HelloWorldContractJson.contractName,
-    contractAbi: HelloWorldContractJson.abi,
-    contractAddress,
-    invocationType: EthContractInvocationType.Send,
-    methodName: "deposit",
-    params: [],
     gas: 1000000,
+  });
+  expect(createRes).toBeDefined();
+  expect(createRes).toBe(true);
+  log.warn("create ok");
+  const { success: lockRes } = await connector.invokeContract({
+    contractName,
+    keychainId: keychainPlugin.getKeychainId(),
+    invocationType: EthContractInvocationType.Send,
+    methodName: "lockAsset",
+    params: ["asset1"],
     signingCredential: {
       ethAccount: testEthAccount.address,
-      secret: testEthAccount.privateKey,
+      secret: besuKeyPair.privateKey,
       type: Web3SigningCredentialType.PrivateKeyHex,
     },
-    value: 10,
-  });
-  t.ok(response, "deposit() payable invocation output is truthy OK");
-
-  const response2 = await besuConnector.invokeContract({
-    caseID: "BESU_CASE_ID",
-    contractName: HelloWorldContractJson.contractName,
-    contractAbi: HelloWorldContractJson.abi,
-    contractAddress,
-    invocationType: EthContractInvocationType.Send,
-    methodName: "deposit",
-    params: [],
     gas: 1000000,
+  });
+  log.warn("checking lock res");
+  expect(lockRes).toBeDefined();
+  expect(lockRes).toBeTrue();
+  const { success: unLockRes } = await connector.invokeContract({
+    contractName,
+    keychainId: keychainPlugin.getKeychainId(),
+    invocationType: EthContractInvocationType.Send,
+    methodName: "unLockAsset",
+    params: ["asset1"],
     signingCredential: {
       ethAccount: testEthAccount.address,
-      secret: testEthAccount.privateKey,
+      secret: besuKeyPair.privateKey,
       type: Web3SigningCredentialType.PrivateKeyHex,
     },
-    value: 10,
+    gas: 1000000,
   });
-  t.ok(response2, "deposit() payable invocation output is truthy OK");
+  expect(unLockRes).toBeDefined();
+  expect(unLockRes).toBeTrue();
+  const { success: lockRes2 } = await connector.invokeContract({
+    contractName,
+    keychainId: keychainPlugin.getKeychainId(),
+    invocationType: EthContractInvocationType.Send,
+    methodName: "lockAsset",
+    params: ["asset1"],
+    signingCredential: {
+      ethAccount: testEthAccount.address,
+      secret: besuKeyPair.privateKey,
+      type: Web3SigningCredentialType.PrivateKeyHex,
+    },
+    gas: 1000000,
+  });
+  expect(lockRes2).toBeDefined();
+  expect(lockRes2).toBeTrue();
+  log.warn("asset is locked again");
+  const { success: deleteRes } = await connector.invokeContract({
+    contractName,
+    keychainId: keychainPlugin.getKeychainId(),
+    invocationType: EthContractInvocationType.Send,
+    methodName: "deleteAsset",
+    params: ["asset1"],
+    signingCredential: {
+      ethAccount: testEthAccount.address,
+      secret: besuKeyPair.privateKey,
+      type: Web3SigningCredentialType.PrivateKeyHex,
+    },
+    gas: 1000000,
+  });
+  console.log(deleteRes);
+  expect(deleteRes).toBeDefined();
+  expect(deleteRes).toBeTrue();
 
   // Initialize our plugin
-  const cctxViz = new CcTxVisualization(cctxvizOptions);
-  t.ok(cctxViz);
-  t.comment("cctxviz plugin is ok");
+  expect(cctxViz).toBeDefined();
+  log.info("cctxviz plugin is ok");
 
-  // Poll messages
+  // Number of messages on queue: 1
+  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
+  expect(cctxViz.numberEventsLog).toBe(0);
+
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   await cctxViz.pollTxReceipts();
 
-  t.comment(
-    `Number of TxReceipts Received:${cctxViz.messages.length.toString()}`,
-  );
+  // Number of messages on queue: 0
+  expect(cctxViz.numberUnprocessedReceipts).toBe(1);
+  expect(cctxViz.numberEventsLog).toBe(0);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  // TODO problem rabbitmq does not close
-  t.end();
-});
 
-*/
+  // Number of messages on queue: 0
+  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
+  expect(cctxViz.numberEventsLog).toBe(1);
+});
+afterAll(async () => {
+  await cctxViz.closeConnection();
+  await testServer.stop();
+  await besuTestLedger.stop();
+  await besuTestLedger.destroy();
+  await Servers.shutdown(server);
+  await pruneDockerAllIfGithubAction({ logLevel });
+});

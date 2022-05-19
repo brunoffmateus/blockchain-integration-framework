@@ -648,6 +648,18 @@ export interface InvokeContractV1Request {
     caseID?: string;
     /**
      * 
+     * @type {number}
+     * @memberof InvokeContractV1Request
+     */
+    cost?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof InvokeContractV1Request
+     */
+    carbonFootprint?: string;
+    /**
+     * 
      * @type {string}
      * @memberof InvokeContractV1Request
      */

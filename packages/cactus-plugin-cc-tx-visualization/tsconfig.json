@@ -9,7 +9,8 @@
   },
   "include": [
     "./src",
-    "**/openapi.json"
+    "./src/test/solidity/*.json",
+    "**/openapi.json",
   ],
   "references": [
     {
