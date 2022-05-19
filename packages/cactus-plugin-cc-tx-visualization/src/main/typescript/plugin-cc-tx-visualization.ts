@@ -26,7 +26,7 @@ import {
   LoggerProvider,
   LogLevelDesc,
 } from "@hyperledger/cactus-common";
-import { calculateCarbonFootPrintBesu, calculateCarbonFootPrintFabric, calculateGasPriceBesu } from "./models/carbon-footprint";
+import { calculateGasPriceBesu, CarbonFootPrintConstants, gweiToDollar } from "./models/carbon-footprint";
 import { PrometheusExporter } from "./prometheus-exporter/prometheus-exporter";
 import { CrossChainEvent, CrossChainEventLog } from "./models/cross-chain-event";
 
@@ -36,7 +36,7 @@ export interface IWebAppOptions {
 }
 import * as Amqp from "amqp-ts";
 import { CrossChainModel, CrossChainModelType } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
-import { BesuV2TxReceipt, FabricV2TxReceipt } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
+import { BesuV2TxReceipt, FabricV2TxReceipt, millisecondsLatency } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
 
 export interface IChannelOptions {
   queueId: string,
@@ -261,14 +261,12 @@ export class CcTxVisualization
               parameters:besuReceipt.parameters,
               timestamp: besuReceipt.timestamp,
               identity: besuReceipt.from,
-              cost: calculateGasPriceBesu(besuReceipt.gasPrice, besuReceipt.gasUsed),
-              carbonFootprint: calculateCarbonFootPrintBesu(),
-              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
-
-
+              cost: gweiToDollar(calculateGasPriceBesu(besuReceipt.gasUsed as number)),
+              carbonFootprint: CarbonFootPrintConstants(LedgerType.Besu2X),
+              latency: millisecondsLatency(new Date(receipt.timestamp)),
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
-            this.log.info("Added Cross Chain event from BESU");
+            this.log.info("Added Cross Chain event from BESU"); 
             this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromBesu)}`);
             break;
           case LedgerType.Fabric2:
@@ -282,8 +280,8 @@ export class CcTxVisualization
               timestamp: fabricReceipt.timestamp,
               identity: fabricReceipt.signingCredentials.keychainRef,
               cost: receipt.cost || 0,
-              carbonFootprint: calculateCarbonFootPrintFabric(fabricReceipt.endorsingPeers),
-              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
+              carbonFootprint: CarbonFootPrintConstants(LedgerType.Fabric2),
+              latency: millisecondsLatency(new Date(receipt.timestamp)),
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");
@@ -300,8 +298,8 @@ export class CcTxVisualization
               timestamp: receipt.timestamp,
               identity: receipt.identity,
               cost: receipt.cost || 0,
-              carbonFootprint: 1,
-              latency: new Date(new Date().getTime() - new Date(receipt.timestamp).getTime()),
+              carbonFootprint: 0,
+              latency: millisecondsLatency(new Date(receipt.timestamp)),
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");
