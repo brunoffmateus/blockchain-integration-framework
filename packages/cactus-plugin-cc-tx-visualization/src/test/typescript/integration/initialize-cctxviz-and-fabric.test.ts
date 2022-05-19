@@ -392,14 +392,14 @@ test(testCase, async () => {
   await cctxViz.pollTxReceipts();
 
   // Number of messages on queue: 0
-  expect(cctxViz.numberUnprocessedReceipts).toBe(1);
+  expect(cctxViz.numberUnprocessedReceipts).toBeGreaterThanOrEqual(1);
   expect(cctxViz.numberEventsLog).toBe(0);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   // Number of messages on queue: 0
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
-  expect(cctxViz.numberEventsLog).toBe(1);
+  expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(1);
 
   await cctxViz.persistCrossChainLogCsv();
 });

@@ -1122,7 +1122,8 @@ export class PluginLedgerConnectorFabric
         req.params[0] = req.channelName;
         req.params[1] = transactionId;
         //req.params get are stored in the basicTxReceipt rwsetWriteData
-        const basicTxReceipt = await this.getTransactionReceiptByTxID(req);
+        if (transactionId)  {
+          const basicTxReceipt = await this.getTransactionReceiptByTxID(req);
         const extendedReceipt: FabricV2TxReceipt={
           caseID: req.caseID || "FABRIC_TBD",
           blockchainID: LedgerType.Fabric2,
@@ -1146,7 +1147,26 @@ export class PluginLedgerConnectorFabric
           };
         const txReceipt = new amqp.Message(extendedReceipt);
         this.amqpQueue?.send(txReceipt);
-        this.log.debug(`Sent transaction receipt to queue ${this.queueId}`);
+        this.log.debug(`Sent extended transaction receipt to queue ${this.queueId}`);
+        } else  {
+          const extendedReceipt: FabricV2TxReceipt={
+            caseID: req.caseID || "FABRIC_TBD",
+            blockchainID: LedgerType.Fabric2,
+            invocationType: req.invocationType,
+            methodName: req.methodName,
+            parameters: txParams,
+            timestamp: new Date(),
+            channelName: req.channelName,
+            contractName: req.contractName,
+            signingCredentials: req.signingCredential,
+            endorsingParties: req.endorsingParties,
+            endorsingPeers: req.endorsingPeers,
+            gatewayOptions: req.gatewayOptions,
+            };
+          const txReceipt = new amqp.Message(extendedReceipt);
+          this.amqpQueue?.send(txReceipt);
+          this.log.debug(`Sent simple transaction receipt to queue ${this.queueId}`);
+        }
       }
 
       const outUtf8 = out.toString("utf-8");
