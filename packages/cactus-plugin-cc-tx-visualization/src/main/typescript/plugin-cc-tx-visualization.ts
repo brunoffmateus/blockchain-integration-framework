@@ -37,6 +37,7 @@ export interface IWebAppOptions {
 import * as Amqp from "amqp-ts";
 import { CrossChainModel, CrossChainModelType } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
 import { BesuV2TxReceipt, FabricV2TxReceipt, millisecondsLatency } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
+import { randomUUID } from "crypto";
 
 export interface IChannelOptions {
   queueId: string,
@@ -255,6 +256,7 @@ export class CcTxVisualization
             const besuReceipt: BesuV2TxReceipt = receipt;
             const ccEventFromBesu:CrossChainEvent = {
               caseID: besuReceipt.caseID,
+              receiptID: besuReceipt.transactionHash,
               blockchainID:besuReceipt.blockchainID,
               invocationType: besuReceipt.invocationType,
               methodName:besuReceipt.methodName,
@@ -273,6 +275,7 @@ export class CcTxVisualization
             const fabricReceipt: FabricV2TxReceipt = receipt;
             const ccEventFromFabric:CrossChainEvent = {
               caseID: fabricReceipt.caseID,
+              receiptID: fabricReceipt.transactionID,
               blockchainID: fabricReceipt.blockchainID,
               invocationType: fabricReceipt.invocationType,
               methodName: fabricReceipt.methodName,
@@ -291,6 +294,7 @@ export class CcTxVisualization
           case "TEST":
             const ccEventTest:CrossChainEvent = {
               caseID: receipt.caseID,
+              receiptID: receipt.receiptID || randomUUID(),
               blockchainID: receipt.blockchainID,
               invocationType: receipt.invocationType,
               methodName: receipt.methodName,
@@ -298,8 +302,8 @@ export class CcTxVisualization
               timestamp: receipt.timestamp,
               identity: receipt.identity,
               cost: receipt.cost || 0,
-              carbonFootprint: 0,
-              latency: millisecondsLatency(new Date(receipt.timestamp)),
+              carbonFootprint: receipt.carbonFootprint || 0,
+              latency: receipt.latency || millisecondsLatency(new Date(receipt.timestamp)),
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");
@@ -324,7 +328,19 @@ export class CcTxVisualization
   // This is part of the cc model; have a set that maps case id to data structure; this data structure are the consolidated metrics for a cctx, stores each txid
   // run over cc log; if case id is unique create new entry, otherwise add tx to cctx, update metrics, update last update; this is an updatable model
   public async aggregateCcTx(): Promise<void> {
-    // 
+    const lastUpdated = this.crossChainLog.lastAggregationTime;
+    const newAggregationDate = new Date(); 
+    const logEntries = this.crossChainLog.logEntries;
+    // If entries are more recent than aggregation
+    const logsToAggregate = logEntries.filter(log => log.timestamp.getTime() > lastUpdated.getTime());
+    logsToAggregate.forEach(eventEntry => {
+      if (this.crossChainModel.getCCTxs()?.has(eventEntry.caseID))  {
+        // obtain existing metrics and aggregate with ones to reduce and store
+      } else {
+        // reduce metrics and store
+      }
+    });
+    this.crossChainLog.setLastAggregationDate(newAggregationDate);
     return;
   }
 
@@ -338,10 +354,6 @@ export class CcTxVisualization
     // 2 step: txReceiptToCrossChainEventLogEntry
     // 3 step update cc model (optionally) 
     // 4 step: calls for updateCrossChainMetrics
-  }
-
-  public async updateCrossChainMetrics(): Promise<void> {
-    return;
   }
 
   public async persistCrossChainLogCsv (): Promise<string> {

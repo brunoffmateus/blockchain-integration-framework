@@ -24,6 +24,7 @@ export interface IsVisualizable {
 // TODO define Tx Receipt for Fabric
 export interface FabricV2TxReceipt extends TransactionReceipt {
   channelName: string;
+  transactionID: string | undefined;
   contractName: string;
   endorsingPeers?: string[];
   endorsingParties?: string[];
