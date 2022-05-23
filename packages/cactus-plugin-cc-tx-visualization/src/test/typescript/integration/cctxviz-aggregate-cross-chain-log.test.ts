@@ -134,7 +134,7 @@ test(testCase, async (t: Test) => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  t.assert(cctxViz.numberEventsLog === 2);
+  t.assert(cctxViz.numberEventsLog === 4);
   // because the second message did not have time to be send to processing before receipts were transformed into cross chain events
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
 
@@ -142,6 +142,7 @@ test(testCase, async (t: Test) => {
 
   const logName = await cctxViz.persistCrossChainLogCsv();
 
+  await cctxViz.aggregateCcTx();
   await cctxViz.aggregateCcTx();
 
   console.log(logName);

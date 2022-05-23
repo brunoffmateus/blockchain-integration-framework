@@ -35,7 +35,7 @@ export interface IWebAppOptions {
   hostname: string;
 }
 import * as Amqp from "amqp-ts";
-import { CrossChainModel, CrossChainModelType } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
+import { CrossChainModel, CrossChainModelType, CrossChainTransactionSchema } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/crosschain-model";
 import { BesuV2TxReceipt, FabricV2TxReceipt, millisecondsLatency } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/models/transaction-receipt";
 import { randomUUID } from "crypto";
 
@@ -275,7 +275,7 @@ export class CcTxVisualization
             const fabricReceipt: FabricV2TxReceipt = receipt;
             const ccEventFromFabric:CrossChainEvent = {
               caseID: fabricReceipt.caseID,
-              receiptID: fabricReceipt.transactionID,
+              receiptID: fabricReceipt.transactionID || `FABRIC-CALL-${randomUUID()}`,
               blockchainID: fabricReceipt.blockchainID,
               invocationType: fabricReceipt.invocationType,
               methodName: fabricReceipt.methodName,
@@ -324,23 +324,73 @@ export class CcTxVisualization
 
   }
 
-  // Parses the cross chain event log and creates a cctx: (local transactions, rules (reference to model), metrics)
+  // Parses the cross chain event log and updates the cross chain model
   // This is part of the cc model; have a set that maps case id to data structure; this data structure are the consolidated metrics for a cctx, stores each txid
   // run over cc log; if case id is unique create new entry, otherwise add tx to cctx, update metrics, update last update; this is an updatable model
   public async aggregateCcTx(): Promise<void> {
-    const lastUpdated = this.crossChainLog.lastAggregationTime;
+    const startTime = new Date();
+    const lastAggregated = this.crossChainModel.lastAggregation;
     const newAggregationDate = new Date(); 
+    const ccTxSet = this.crossChainModel.getCCTxs();
     const logEntries = this.crossChainLog.logEntries;
     // If entries are more recent than aggregation
-    const logsToAggregate = logEntries.filter(log => log.timestamp.getTime() > lastUpdated.getTime());
+    let metrics: CrossChainTransactionSchema = {
+      ccTxID: "",
+      processedCrossChainEvents: [],
+      latency: 0,
+      carbonFootprint: 0,
+      cost: 0,
+      throughput: 0,
+      latestUpdate: newAggregationDate,
+    };
+    const logsToAggregate = logEntries.filter(log => new Date(log.timestamp).getTime() > new Date(lastAggregated).getTime());
+    if (logsToAggregate.length === 0) {
+      const finalTime = new Date();
+
+      this.log.debug(`AGGREGATE-CCTX-NO_NEW_LOGS:${finalTime.getTime()-startTime.getTime()}`);
+      return;}
     logsToAggregate.forEach(eventEntry => {
-      if (this.crossChainModel.getCCTxs()?.has(eventEntry.caseID))  {
-        // obtain existing metrics and aggregate with ones to reduce and store
+      const key = eventEntry.caseID;
+      const eventID = eventEntry.receiptID;
+      let latency = eventEntry.latency as number;
+      let carbonFootprint = eventEntry.carbonFootprint as number;
+      let cost = eventEntry.cost as number;
+      if (!latency) {latency = 0;}
+      if (!carbonFootprint) {carbonFootprint = 0;}
+      if (!cost) {cost = 0;}
+      if (ccTxSet?.has(key))  {
+        const existingCCTx = ccTxSet.get(key);
+        const previousEvents = existingCCTx?.processedCrossChainEvents || [];
+        const numberOfCurrentEvents = previousEvents.length + 1;
+        const previousLatency = existingCCTx?.latency || 0;
+        const previousCarbonFootprint = existingCCTx?.carbonFootprint || 0;
+        const previousCost = existingCCTx?.cost || 0;
+        const updatedMetrics = {
+          ccTxID: key,
+          processedCrossChainEvents: [...previousEvents , eventID],
+          latency:  (latency + previousLatency) / numberOfCurrentEvents,
+          carbonFootprint: (carbonFootprint + previousCarbonFootprint) / numberOfCurrentEvents,
+          cost: (cost + previousCost) / numberOfCurrentEvents,
+          throughput: latency != 0 ? (1 / ((latency + previousLatency) / numberOfCurrentEvents)).toFixed(3) as unknown as number  : 0,
+          latestUpdate: lastAggregated,
+          };
+        this.crossChainModel.setCCTxs(key,updatedMetrics);
       } else {
-        // reduce metrics and store
-      }
+        metrics = {
+          ccTxID: key,
+          processedCrossChainEvents: [eventID],
+          latency: latency,
+          carbonFootprint: carbonFootprint,
+          cost: cost,
+          throughput: (latency != 0 ? 1 / latency : 0).toFixed(3) as unknown as number,
+          latestUpdate: lastAggregated,
+          };
+          this.crossChainModel.setCCTxs(key,metrics);
+        }
     });
-    this.crossChainLog.setLastAggregationDate(newAggregationDate);
+    this.crossChainModel.setLastAggregationDate(newAggregationDate);
+    const finalTime = new Date();
+    this.log.debug(`AGGREGATE-CCTX-SUCCESS:${finalTime.getTime()-startTime.getTime()}`);
     return;
   }
 

@@ -1,6 +1,6 @@
 export type CrossChainEvent = {
   caseID: string;
-  receiptID: string | undefined;
+  receiptID: string;
   timestamp: Date;
   blockchainID: string;
   invocationType: string;
@@ -9,7 +9,7 @@ export type CrossChainEvent = {
   identity: string;
   cost?: number | string;
   carbonFootprint?: number | string;
-  latency?: number | Date;
+  latency?: number;
 };
 
 export interface ICrossChainEventLog {
@@ -20,7 +20,6 @@ export class CrossChainEventLog {
   private crossChainEvents: CrossChainEvent[] = [];
   private creationDate: Date;
   private lastUpdateDate: Date;
-  private lastAggregationDate: Date;
   public readonly logName: string;
   //TODO: add a pause boolean?
 
@@ -34,14 +33,6 @@ export class CrossChainEventLog {
     return this.crossChainEvents;
   }
 
-  get lastAggregationTime(): Date {
-    return this.lastAggregationDate;
-  }
-
-  public setLastAggregationDate(date: Date): void {
-    this.lastAggregationDate = date;
-  }
-
   public numberEvents(): number {
     return this.crossChainEvents.length;
   }
@@ -50,7 +41,7 @@ export class CrossChainEventLog {
   }
 
   public getLastUpdateDate(): Date {
-    return this.lastLogEntryDate;
+    return this.lastUpdateDate;
   }
 
   public purgeLogs(): void {
@@ -59,7 +50,7 @@ export class CrossChainEventLog {
 
   public addCrossChainEvent(event: CrossChainEvent): void {
     this.crossChainEvents.push(event);
-    this.lastLogEntryDate = new Date();
+    this.lastUpdateDate = new Date();
   }
 
   public getCrossChainLogAttributes(): string[] {

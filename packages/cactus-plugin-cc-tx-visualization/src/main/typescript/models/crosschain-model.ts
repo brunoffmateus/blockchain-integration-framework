@@ -7,6 +7,7 @@ export class CrossChainModel {
     | undefined;
   private models = new Map<CrossChainModelType, string>();
   private id: string;
+  private lastAggregationDate: Date;
 
   constructor() {
     this.id = uuidv4();
@@ -14,6 +15,14 @@ export class CrossChainModel {
       string,
       CrossChainTransactionSchema
     >();
+    this.lastAggregationDate = new Date();
+  }
+  get lastAggregation(): Date {
+    return this.lastAggregationDate;
+  }
+
+  public setLastAggregationDate(date: Date): void {
+    this.lastAggregationDate = date;
   }
 
   public saveModel(type: CrossChainModelType, model: string): void {
@@ -37,6 +46,13 @@ export class CrossChainModel {
       return this.crossChainTransactions;
     }
   }
+
+  public setCCTxs(
+    key: string,
+    mapDefintion: CrossChainTransactionSchema,
+  ): void {
+    this.crossChainTransactions?.set(key, mapDefintion);
+  }
 }
 
 export enum CrossChainModelType {
@@ -46,10 +62,12 @@ export enum CrossChainModelType {
 }
 
 export type CrossChainTransactionSchema = {
-  receiptID: string;
+  ccTxID: string;
+  // the receipt ids of each cross chain event
+  processedCrossChainEvents: string[];
   latency: number;
-  carbonFootprint: number;
-  cost: number;
+  carbonFootprint: number | undefined;
+  cost: number | undefined;
   throughput: number;
   latestUpdate: Date;
 };
