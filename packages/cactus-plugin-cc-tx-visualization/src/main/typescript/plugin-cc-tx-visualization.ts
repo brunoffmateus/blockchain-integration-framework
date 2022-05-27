@@ -72,16 +72,18 @@ export class CcTxVisualization
   private httpServer: Server | SecureServer | null = null;
   private crossChainLog: CrossChainEventLog;
   private crossChainModel: CrossChainModel;
-    private readonly eventProvider: string;
-    private amqpConnection: Amqp.Connection;
-    private amqpQueue: Amqp.Queue;
-    private amqpExchange: Amqp.Exchange;
-    public readonly className = "plugin-cc-tx-visualization";
-    private readonly queueId: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private txReceipts: any[];
-    private readonly persistMessages: boolean;
+  private readonly eventProvider: string;
+  private amqpConnection: Amqp.Connection;
+  private amqpQueue: Amqp.Queue;
+  private amqpExchange: Amqp.Exchange;
+  public readonly className = "plugin-cc-tx-visualization";
+  private readonly queueId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private txReceipts: any[];
+  private readonly persistMessages: boolean;
+
   constructor(public readonly options: IPluginCcTxVisualizationOptions) {
+    const startTime = new Date();
     const fnTag = `PluginCcTxVisualization#constructor()`;
     if (!options) {
       throw new Error(`${fnTag} options falsy.`);
@@ -112,6 +114,9 @@ export class CcTxVisualization
     this.amqpQueue = this.amqpConnection.declareQueue(this.queueId, {durable: this.persistMessages});
     this.amqpQueue.bind(this.amqpExchange);
   
+    const finalTime = new Date();
+    this.log.debug(`EVAL-SETUP-INIT:${finalTime.getTime()-startTime.getTime()}`);
+
   } 
   getOpenApiSpec(): unknown {
     throw new Error("Method not implemented.");
@@ -132,10 +137,13 @@ export class CcTxVisualization
   // todo connection closing is  problematic, tests are left hanging
   public async closeConnection(): Promise<void>  {
     this.log.debug("Closing Amqp connection");
-    await this.amqpQueue.stopConsumer();
-    await this.amqpQueue.close();
-    //await this.amqpConnection.close();
-    this.log.debug(" Amqp connection closed");
+    try {
+      this.amqpConnection.close();
+      this.log.debug(" Amqp connection closed");
+
+    } catch (error) {
+      this.log.error(error);
+    }
 
   }
 
@@ -244,6 +252,7 @@ export class CcTxVisualization
   // convert data into CrossChainEvent
   // returns a list of CrossChainEvent
   public async txReceiptToCrossChainEventLogEntry(): Promise<CrossChainEvent[]|void> {
+    const startTime = new Date();
     const fnTag = `${this.className}#pollTxReceipts()`;
     this.log.debug(fnTag);
     // We are processing receipts to update the CrossChainLog.
@@ -320,6 +329,8 @@ export class CcTxVisualization
       }); 
       // Clear receipt array
       this.txReceipts = [];
+      const finalTime = new Date();
+      this.log.debug(`EVAL-${this.className}-RECEIPT2EVENT:${finalTime.getTime()-startTime.getTime()}`);
     return;
     } catch (error) {
       this.log.error(error);
@@ -338,7 +349,7 @@ export class CcTxVisualization
     const logEntries = this.crossChainLog.logEntries;
     // If entries are more recent than aggregation
     let metrics: CrossChainTransactionSchema = {
-      ccTxID: "",
+      ccTxID: "", 
       processedCrossChainEvents: [],
       latency: 0,
       carbonFootprint: 0,
@@ -351,7 +362,7 @@ export class CcTxVisualization
     if (logsToAggregate.length === 0) {
       const finalTime = new Date();
 
-      this.log.debug(`${this.className}-AGGREGATE-CCTX-NO_NEW_LOGS:${finalTime.getTime()-startTime.getTime()}`);
+      this.log.debug(`EVAL-${this.className}-AGGREGATE-CCTX-NO_NEW_LOGS:${finalTime.getTime()-startTime.getTime()}`);
       return;}
     logsToAggregate.forEach(eventEntry => {
       const key = eventEntry.caseID;
@@ -418,9 +429,10 @@ export class CcTxVisualization
     // 4 step: calls for aggregateCCTxs
   }
 
-  public async persistCrossChainLogCsv (): Promise<string> {
+  public async persistCrossChainLogCsv (name?: string): Promise<string> {
+    const startTime = new Date();
     const columns = this.crossChainLog.getCrossChainLogAttributes();
-    const logName = `cctxviz_log_${new Date().getTime()}.csv`;
+    const logName = name? `${name}.csv` : `cctxviz_log_${new Date().getTime()}.csv`;
     const csvFolder = path.join(__dirname, "../" , "csv");
     const logPath = path.join(csvFolder , logName);
     
@@ -438,6 +450,8 @@ export class CcTxVisualization
       this.log.debug(data);
       fs.writeFileSync(logPath, data);
     });
+    const finalTime = new Date();
+    this.log.debug(`EVAL-${this.className}-PERSIST-LOG:${finalTime.getTime()-startTime.getTime()}`);
     return logName;
   }
 
