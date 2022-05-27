@@ -266,6 +266,7 @@ export class CcTxVisualization
               cost: gweiToDollar(calculateGasPriceBesu(besuReceipt.gasUsed as number)),
               carbonFootprint: CarbonFootPrintConstants(LedgerType.Besu2X),
               latency: millisecondsLatency(new Date(receipt.timestamp)),
+              revenue: receipt.revenue || 0,
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
             this.log.info("Added Cross Chain event from BESU"); 
@@ -285,6 +286,7 @@ export class CcTxVisualization
               cost: receipt.cost || 0,
               carbonFootprint: CarbonFootPrintConstants(LedgerType.Fabric2),
               latency: millisecondsLatency(new Date(receipt.timestamp)),
+              revenue: receipt.revenue || 0,
             };
             this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
             this.log.info("Added Cross Chain event from FABRIC");
@@ -304,6 +306,7 @@ export class CcTxVisualization
               cost: receipt.cost || 0,
               carbonFootprint: receipt.carbonFootprint || 0,
               latency: receipt.latency || millisecondsLatency(new Date(receipt.timestamp)),
+              revenue: receipt.revenue,
             };
             this.crossChainLog.addCrossChainEvent(ccEventTest);
             this.log.info("Added Cross Chain event TEST");
@@ -342,12 +345,13 @@ export class CcTxVisualization
       cost: 0,
       throughput: 0,
       latestUpdate: newAggregationDate,
+      revenue: 0,
     };
     const logsToAggregate = logEntries.filter(log => new Date(log.timestamp).getTime() > new Date(lastAggregated).getTime());
     if (logsToAggregate.length === 0) {
       const finalTime = new Date();
 
-      this.log.debug(`AGGREGATE-CCTX-NO_NEW_LOGS:${finalTime.getTime()-startTime.getTime()}`);
+      this.log.debug(`${this.className}-AGGREGATE-CCTX-NO_NEW_LOGS:${finalTime.getTime()-startTime.getTime()}`);
       return;}
     logsToAggregate.forEach(eventEntry => {
       const key = eventEntry.caseID;
@@ -355,6 +359,8 @@ export class CcTxVisualization
       let latency = eventEntry.latency as number;
       let carbonFootprint = eventEntry.carbonFootprint as number;
       let cost = eventEntry.cost as number;
+      const revenue = eventEntry.revenue as number;
+
       if (!latency) {latency = 0;}
       if (!carbonFootprint) {carbonFootprint = 0;}
       if (!cost) {cost = 0;}
@@ -365,14 +371,19 @@ export class CcTxVisualization
         const previousLatency = existingCCTx?.latency || 0;
         const previousCarbonFootprint = existingCCTx?.carbonFootprint || 0;
         const previousCost = existingCCTx?.cost || 0;
+        const currentCost = (cost + previousCost) / numberOfCurrentEvents;
+        const previousRevenue = existingCCTx?.revenue || 0;
+        const currentRevenue = (revenue + previousRevenue) / numberOfCurrentEvents;
+
         const updatedMetrics = {
           ccTxID: key,
           processedCrossChainEvents: [...previousEvents , eventID],
           latency:  (latency + previousLatency) / numberOfCurrentEvents,
           carbonFootprint: (carbonFootprint + previousCarbonFootprint) / numberOfCurrentEvents,
-          cost: (cost + previousCost) / numberOfCurrentEvents,
-          throughput: latency != 0 ? (1 / ((latency + previousLatency) / numberOfCurrentEvents)).toFixed(3) as unknown as number  : 0,
+          cost: currentCost,
+          throughput: Number(latency != 0 ? (1 / ((latency + previousLatency) / numberOfCurrentEvents)).toFixed(3) as unknown as number  : 0),
           latestUpdate: lastAggregated,
+          revenue: currentRevenue, 
           };
         this.crossChainModel.setCCTxs(key,updatedMetrics);
       } else {
@@ -382,15 +393,16 @@ export class CcTxVisualization
           latency: latency,
           carbonFootprint: carbonFootprint,
           cost: cost,
-          throughput: (latency != 0 ? 1 / latency : 0).toFixed(3) as unknown as number,
+          throughput: Number((latency != 0 ? 1 / latency : 0).toFixed(3) as unknown as number),
           latestUpdate: lastAggregated,
+          revenue: revenue,
           };
           this.crossChainModel.setCCTxs(key,metrics);
         }
     });
     this.crossChainModel.setLastAggregationDate(newAggregationDate);
     const finalTime = new Date();
-    this.log.debug(`AGGREGATE-CCTX-SUCCESS:${finalTime.getTime()-startTime.getTime()}`);
+    this.log.debug(`${this.className}-AGGREGATE-CCTX-SUCCESS:${finalTime.getTime()-startTime.getTime()}`);
     return;
   }
 
@@ -403,7 +415,7 @@ export class CcTxVisualization
     // 1 step: in a loop, poll for tx receipts
     // 2 step: txReceiptToCrossChainEventLogEntry
     // 3 step update cc model (optionally) 
-    // 4 step: calls for updateCrossChainMetrics
+    // 4 step: calls for aggregateCCTxs
   }
 
   public async persistCrossChainLogCsv (): Promise<string> {

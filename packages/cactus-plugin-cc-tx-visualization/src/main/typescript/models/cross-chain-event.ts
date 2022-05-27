@@ -10,6 +10,7 @@ export type CrossChainEvent = {
   cost?: number | string;
   carbonFootprint?: number | string;
   latency?: number;
+  revenue?: number;
 };
 
 export interface ICrossChainEventLog {
@@ -66,6 +67,7 @@ export class CrossChainEventLog {
       "cost",
       "carbonFootprint",
       "latency",
+      "revenue",
     ];
   }
 }

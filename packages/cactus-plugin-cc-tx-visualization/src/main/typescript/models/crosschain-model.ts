@@ -70,4 +70,5 @@ export type CrossChainTransactionSchema = {
   cost: number | undefined;
   throughput: number;
   latestUpdate: Date;
+  revenue: number;
 };

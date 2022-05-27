@@ -11,7 +11,7 @@ import { randomUUID } from "crypto";
 import * as amqp from "amqp-ts";
 //import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
 
-const testCase = "persist logs";
+const testCase = "aggregate cctx";
 const logLevel: LogLevelDesc = "TRACE";
 const queueName = "cc-tx-log-entry-test";
 
@@ -82,6 +82,7 @@ test(testCase, async (t: Test) => {
   const testMessage = new amqp.Message({
     caseID: "case1",
     cost: 5,
+    revenue: 0,
     carbonFootprint: 5,
     timestamp: new Date(),
     blockchainID: "TEST",
@@ -95,6 +96,7 @@ test(testCase, async (t: Test) => {
   const testMessage2 = new amqp.Message({
     caseID: "case1",
     cost: 15,
+    revenue: 0,
     carbonFootprint: 15,
     timestamp: new Date(),
     blockchainID: "TEST",
@@ -108,6 +110,7 @@ test(testCase, async (t: Test) => {
   const testMessageCase2 = new amqp.Message({
     caseID: "case2",
     cost: -1,
+    revenue: 3,
     carbonFootprint: -1,
     timestamp: new Date(),
     blockchainID: "TEST",
@@ -121,6 +124,7 @@ test(testCase, async (t: Test) => {
   const testMessage2Case2 = new amqp.Message({
     caseID: "case2",
     cost: 2,
+    revenue: 3,
     carbonFootprint: 2,
     timestamp: new Date(),
     blockchainID: "TEST",
@@ -143,6 +147,8 @@ test(testCase, async (t: Test) => {
   const logName = await cctxViz.persistCrossChainLogCsv();
 
   await cctxViz.aggregateCcTx();
+
+  // Should not update anything
   await cctxViz.aggregateCcTx();
 
   console.log(logName);
