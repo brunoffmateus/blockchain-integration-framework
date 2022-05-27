@@ -91,13 +91,16 @@ test(testCase, async (t: Test) => {
   queue.send(testMessage);
 
   const testMessage2 = new amqp.Message({
-    caseID: "caseID-TEST 2",
+    caseID: "case1",
+    cost: 5,
+    revenue: 0,
+    carbonFootprint: 5,
     timestamp: new Date(),
     blockchainID: "TEST",
     invocationType: "call",
     methodName: "methodName",
     parameters: ["0", "2"],
-    identity: "person 2",
+    identity: "person 1",
   });
   queue.send(testMessage2);
 

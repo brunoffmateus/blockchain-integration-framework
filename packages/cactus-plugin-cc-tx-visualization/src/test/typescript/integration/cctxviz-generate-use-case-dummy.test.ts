@@ -1,5 +1,5 @@
 import test, { Test } from "tape-promise/tape";
-import { LogLevelDesc } from "@hyperledger/cactus-common";
+import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
 import { pruneDockerAllIfGithubAction } from "@hyperledger/cactus-test-tooling";
 import { IPluginCcTxVisualizationOptions } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript";
@@ -16,6 +16,10 @@ const testCase = "persist logs";
 const logLevel: LogLevelDesc = "TRACE";
 const queueName = "cc-tx-log-entry-test";
 
+const log = LoggerProvider.getOrCreate({
+  level: logLevel,
+  label: "cctxviz-dummy-demo",
+});
 test("BEFORE " + testCase, async (t: Test) => {
   const pruning = pruneDockerAllIfGithubAction({ logLevel });
   await t.doesNotReject(pruning, "Pruning didn't throw OK");
@@ -62,13 +66,17 @@ test(testCase, async (t: Test) => {
   };
 
   test.onFinish(tearDown);
-
+  const startTime = new Date();
   await testServer.start(true);
   t.ok(testServer);
 
   // Simulates a Cactus Ledger Connector plugin
   const connection = new amqp.Connection();
   const queue = connection.declareQueue(queueName, { durable: false });
+  const finalTime = new Date();
+  log.debug(
+    `EVAL-SETUP-EVENT-COLLECTOR:${finalTime.getTime() - startTime.getTime()}`,
+  );
 
   // Initialize our plugin
   const cctxViz = new CcTxVisualization(cctxvizOptions);
@@ -84,99 +92,77 @@ test(testCase, async (t: Test) => {
   const currentTime = new Date();
 
   // caseID 1; registar emissions; Fabric blockchain, test message; parameters: asset 1, 100 units
-  const testMessageCase1Msg1 = new amqp.Message({
+  const testMessage1 = new amqp.Message({
     caseID: "1",
     timestamp: currentTime,
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "registerEmission",
+    methodName: "initialize asset",
+    // Asset 1, 100 units
     parameters: ["1,100"],
-    identity: "company_A",
+    identity: "A",
   });
-  queue.send(testMessageCase1Msg1);
+  queue.send(testMessage1);
 
-  // caseID 2; registar emissions; Fabric blockchain, test message; parameters: asset 2, 100 units
-  const testMessageCase2Msg1 = new amqp.Message({
-    caseID: "2",
-    timestamp: currentTime,
-    blockchainID: "TEST",
-    invocationType: "send",
-    methodName: "registerEmission",
-    parameters: ["2,100"],
-    identity: "company_B",
-  });
-  queue.send(testMessageCase2Msg1);
-
-  const testMessageCase1Msg2 = new amqp.Message({
+  const testMessage2 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime.getTime() + 100000000),
+    timestamp: new Date(currentTime.getTime() + 2),
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "registerEmission",
-    parameters: ["2,100"],
-    identity: "company_A",
+    methodName: "lock asset",
+    // Asset 1, 100 units
+    parameters: ["1,100"],
+    identity: "A",
   });
-  queue.send(testMessageCase1Msg2);
+  queue.send(testMessage2);
 
-  // several days after, get emissions from company A, by auditor
-  const testMessageCase1Msg3 = new amqp.Message({
+  const testMessage3 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime.getTime() + 1000000000),
+    timestamp: new Date(currentTime.getTime() + 3),
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "getEmissions",
-    parameters: ["company_A"],
-    identity: "auditor",
+    methodName: "mint asset",
+    // Asset 1, 100 units
+    parameters: ["1,100"],
+    identity: "A",
   });
-  queue.send(testMessageCase1Msg3);
+  queue.send(testMessage3);
 
-  // soon enough, mint token on Ethereum (test)
-  const testMessageCase1Msg4 = new amqp.Message({
+  const testMessage4 = new amqp.Message({
     caseID: "1",
-    timestamp: new Date(currentTime.getTime() + 1100000000),
+    timestamp: new Date(currentTime.getTime() + 4),
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "mintEmissionToken",
-    parameters: ["uuidTokenEmissions"],
-    identity: "protocol_administrator",
+    methodName: "transfer asset",
+    // Asset 1, 100 units
+    parameters: ["A"],
+    identity: "A",
   });
-  queue.send(testMessageCase1Msg4);
+  queue.send(testMessage4);
 
-  //Company B performs its operations a bit later than company A
-  const testMessageCase2Msg2 = new amqp.Message({
-    caseID: "2",
-    timestamp: new Date(currentTime.getTime() + 110000000),
+  const testMessage5 = new amqp.Message({
+    caseID: "1",
+    timestamp: new Date(currentTime.getTime() + 5),
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "registerEmission",
-    parameters: ["2,100"],
-    identity: "company_B",
+    methodName: "transfer asset",
+    // Asset 1, 100 units
+    parameters: [""],
+    identity: "A",
   });
-  queue.send(testMessageCase2Msg2);
+  queue.send(testMessage5);
 
-  // several days after, get emissions from company A, by auditor
-  const testMessageCase2Msg3 = new amqp.Message({
-    caseID: "2",
-    timestamp: new Date(currentTime.getTime() + 1100000000),
+  const testMessage6 = new amqp.Message({
+    caseID: "1",
+    timestamp: new Date(currentTime.getTime() + 6),
     blockchainID: "TEST",
     invocationType: "send",
-    methodName: "getEmissions",
-    parameters: ["company_B"],
-    identity: "auditor",
+    methodName: "burn asset",
+    // Asset 1, 100 units
+    parameters: [""],
+    identity: "A",
   });
-  queue.send(testMessageCase2Msg3);
-
-  // soon enough, mint token on Ethereum (test)
-  const testMessageCase2Msg4 = new amqp.Message({
-    caseID: "2",
-    timestamp: new Date(currentTime.getTime() + 1200000000),
-    blockchainID: "TEST",
-    invocationType: "send",
-    methodName: "mintEmissionToken",
-    parameters: ["uuidTokenEmissions"],
-    identity: "protocol_administrator",
-  });
-  queue.send(testMessageCase2Msg4);
+  queue.send(testMessage6);
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
   await cctxViz.txReceiptToCrossChainEventLogEntry();
@@ -187,7 +173,8 @@ test(testCase, async (t: Test) => {
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  const logName = await cctxViz.persistCrossChainLogCsv();
+  const logName = await cctxViz.persistCrossChainLogCsv("dummy-use-case");
+  await cctxViz.aggregateCcTx();
   const map =
     "{'registerEmission': (node:registerEmission connections:{registerEmission:[0.6666666666666666], getEmissions:[0.6666666666666666]}), 'getEmissions': (node:getEmissions connections:{mintEmissionToken:[0.6666666666666666]}), 'mintEmissionToken': (node:mintEmissionToken connections:{})}";
   // Persist heuristic map that is generated from the script that takes this input
