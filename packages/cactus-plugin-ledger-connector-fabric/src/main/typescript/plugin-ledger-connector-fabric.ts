@@ -1008,6 +1008,7 @@ export class PluginLedgerConnectorFabric
 
     //start tx
     const fnTag = `${this.className}#transact()`;
+    const startTimeFabricReceipt = new Date();
 
     const {
       channelName,
@@ -1113,9 +1114,12 @@ export class PluginLedgerConnectorFabric
           throw new Error(`${fnTag} unknown ${message}`);
         }
       }
-      
+      const endTimeFabricReceipt = new Date();
+      this.log.debug(`EVAL-${this.className}-ISSUE-TRANSACTION:${endTimeFabricReceipt.getTime()-startTimeFabricReceipt.getTime()}`);
+
       // if we don't want to collect reads, than add condition  && transactionId !== ""
       if (this.collectTransactionReceipts)  {
+        const startTimeFabricReceipt = new Date();
         const txParams = req.params;
         //getTransactionReceiptByTxID requires 2 params in req.params => channelName and txID
         req.params = [];
@@ -1169,6 +1173,9 @@ export class PluginLedgerConnectorFabric
           this.amqpQueue?.send(txReceipt);
           this.log.debug(`Sent simple transaction receipt to queue ${this.queueId}`);
         }
+        const endTimeFabricReceipt = new Date();
+        this.log.debug(`EVAL-${this.className}-GENERATE-AND-CAPTURE-RECEIPT:${endTimeFabricReceipt.getTime()-startTimeFabricReceipt.getTime()}`);
+
       }
 
       const outUtf8 = out.toString("utf-8");

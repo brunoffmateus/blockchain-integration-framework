@@ -388,6 +388,7 @@ export class PluginLedgerConnectorBesu
     req: InvokeContractV1Request,
   ): Promise<InvokeContractV1Response> {
     const fnTag = `${this.className}#invokeContract()`;
+    const startTimeToTransaction = new Date();
     const contractName = req.contractName;
     let contractInstance: Contract;
 
@@ -566,8 +567,15 @@ export class PluginLedgerConnectorBesu
       const out = await this.transact(txReq);
       const success = out.transactionReceipt.status;
       const data = { success, out };
-      //TODO
+      const endTimeToTransaction = new Date();
+      this.log.debug(
+        `EVAL-${this.className}-ISSUE-TRANSACTION:${
+          endTimeToTransaction.getTime() - startTimeToTransaction.getTime()
+        }`,
+      );
+
       if (this.collectTransactionReceipts) {
+        const startTimeBesuReceipt = new Date();
         const extendedReceipt: BesuV2TxReceipt = {
           caseID: req.caseID || "BESU_TBD",
           blockchainID: LedgerType.Besu2X,
@@ -592,7 +600,13 @@ export class PluginLedgerConnectorBesu
         };
         const txReceipt = new amqp.Message(extendedReceipt);
         this.amqpQueue?.send(txReceipt);
+        const endTimeBesuReceipt = new Date();
         this.log.debug(`Sent transaction receipt to queue ${this.queueId}`);
+        this.log.debug(
+          `EVAL-${this.className}-GENERATE-AND-CAPTURE-RECEIPT:${
+            endTimeBesuReceipt.getTime() - startTimeBesuReceipt.getTime()
+          }`,
+        );
       }
       return data;
     } else {

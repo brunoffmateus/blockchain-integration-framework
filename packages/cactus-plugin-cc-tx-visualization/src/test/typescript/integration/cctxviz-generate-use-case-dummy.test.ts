@@ -28,6 +28,7 @@ test("BEFORE " + testCase, async (t: Test) => {
 
 test(testCase, async (t: Test) => {
   //initialize rabbitmq
+  const setupInfraTime = new Date();
   const options = {
     publishAllPorts: true,
     port: 5672,
@@ -70,17 +71,16 @@ test(testCase, async (t: Test) => {
   };
 
   test.onFinish(tearDown);
-  const startTime = new Date();
   await testServer.start(true);
   t.ok(testServer);
 
   // Simulates a Cactus Ledger Connector plugin
   const connection = new amqp.Connection();
   const queue = connection.declareQueue(queueName, { durable: false });
-  const finalTime = new Date();
+  const setupInfraTimeEnd = new Date();
   log.debug(
-    `EVAL-testFile-SETUP-EVENT-COLLECTOR:${
-      finalTime.getTime() - startTime.getTime()
+    `EVAL-testFile-SETUP-INFRA:${
+      setupInfraTimeEnd.getTime() - setupInfraTime.getTime()
     }`,
   );
 
