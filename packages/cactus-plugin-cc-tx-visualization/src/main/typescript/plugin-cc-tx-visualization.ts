@@ -115,7 +115,7 @@ export class CcTxVisualization
     this.amqpQueue.bind(this.amqpExchange);
   
     const finalTime = new Date();
-    this.log.debug(`EVAL-SETUP-INIT:${finalTime.getTime()-startTime.getTime()}`);
+    this.log.debug(`EVAL-SETUP-CONSTRUCTOR:${finalTime.getTime()-startTime.getTime()}`);
 
   } 
   getOpenApiSpec(): unknown {

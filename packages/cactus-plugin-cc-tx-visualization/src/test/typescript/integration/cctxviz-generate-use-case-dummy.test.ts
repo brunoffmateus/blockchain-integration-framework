@@ -57,10 +57,14 @@ test(testCase, async (t: Test) => {
 
     await testServer.stop();
     // todo problem connection closing is hanging here and l56
-    await connection.close();
+    // await connection.close();
     await cctxViz.shutdown();
     await cctxViz.closeConnection();
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
+    log.debug("executing exit");
+    process.exit(0);
 
+    log.debug("exit done");
     //await testServer.destroy();
     //await pruneDockerAllIfGithubAction({ logLevel });
   };
@@ -75,14 +79,26 @@ test(testCase, async (t: Test) => {
   const queue = connection.declareQueue(queueName, { durable: false });
   const finalTime = new Date();
   log.debug(
-    `EVAL-SETUP-EVENT-COLLECTOR:${finalTime.getTime() - startTime.getTime()}`,
+    `EVAL-testFile-SETUP-EVENT-COLLECTOR:${
+      finalTime.getTime() - startTime.getTime()
+    }`,
   );
 
   // Initialize our plugin
   const cctxViz = new CcTxVisualization(cctxvizOptions);
   t.ok(cctxViz);
   t.comment("cctxviz plugin is ok");
+  t.comment("cctxviz plugin is ok");
+  const timeStartPollReceipts = new Date();
   await cctxViz.pollTxReceipts();
+  const endTimePollReceipts = new Date();
+  t.comment(
+    `EVAL-testFile-POLL:${
+      endTimePollReceipts.getTime() - timeStartPollReceipts.getTime()
+    }`,
+  );
+  t.comment("cctxviz plugin is ok");
+
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog === 0);
 
@@ -90,6 +106,7 @@ test(testCase, async (t: Test) => {
   // consider 2 emission consortia (two different case ids);
 
   const currentTime = new Date();
+  const timeStartSendMessages = new Date();
 
   // caseID 1; registar emissions; Fabric blockchain, test message; parameters: asset 1, 100 units
   const testMessage1 = new amqp.Message({
@@ -163,11 +180,17 @@ test(testCase, async (t: Test) => {
     identity: "A",
   });
   queue.send(testMessage6);
+  const endTimeSendMessages = new Date();
+  t.comment(
+    `EVAL-testFile-SEND-MESSAGES:${
+      endTimeSendMessages.getTime() - timeStartSendMessages.getTime()
+    }`,
+  );
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  t.assert(cctxViz.numberEventsLog === 8);
+  t.assert(cctxViz.numberEventsLog === 6);
   // because the second message did not have time to be send to processing before receipts were transformed into cross chain events
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
 

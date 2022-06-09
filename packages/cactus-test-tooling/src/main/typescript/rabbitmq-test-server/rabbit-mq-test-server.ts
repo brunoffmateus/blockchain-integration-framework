@@ -75,6 +75,7 @@ export class RabbitMQTestServer {
     return `${this.imageName}:${this.imageTag}`;
   }
   public async start(omitPull = false): Promise<Container> {
+    const startTime = new Date();
     const docker = new Docker();
     if (this.containerId.isPresent()) {
       this.log.warn(`Container ID provided. Will not start new one.`);
@@ -158,6 +159,12 @@ export class RabbitMQTestServer {
           this.log.debug(`Starting to wait for healthcheck... `);
           await this.waitForHealthCheck();
           this.log.debug(`Healthcheck passed OK`);
+          const finalTime = new Date();
+          this.log.debug(
+            `EVAL-SETUP-INIT-RABBIT-MQ-SERVER:${
+              finalTime.getTime() - startTime.getTime()
+            }`,
+          );
           resolve(container);
         } catch (ex) {
           this.log.error(ex);
