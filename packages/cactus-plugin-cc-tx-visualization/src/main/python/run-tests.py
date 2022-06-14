@@ -6,6 +6,7 @@ import os
 # Input1: name of test file inside packages/cactus-plugin-cc-tx-visualization/src/test/typescript/integration
 # Input2: number of test runs
 # Output: test files corresponding to number of runs on packages/cactus-plugin-cc-tx-visualization/src/main/test-results  
+# Example: python3 run-tests.py cctxviz-generate-use-case-dummy 30
 
 def main():
     start = time.time()

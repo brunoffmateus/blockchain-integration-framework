@@ -3,9 +3,15 @@ import time
 import sys
 import os
 
-# Input1: name of test CSV file that generates the model
+# input1: name of a python file with the same name that calculates the a cross-chain model
+# Input2: name of test CSV file that generates the model in the file above
 # Input2: number of test runs
 # Output: output files corresponding to number of runs on packages/cactus-plugin-cc-tx-visualization/src/main/test-results  
+# Example: python3 run-generate-cross-chain-model-dummy.py generate-ccmodel-dummy example-dummy-use-case.csv 30
+
+### TODO transform cctxviz model generation book into a py file or learn how to call it
+### parameters name of csv to generate model; perhaps algoritm name; 
+### prints execution time to file, similar to other script
 
 def main():
     start = time.time()
@@ -26,21 +32,20 @@ def main():
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    testName = args[0]
-    numberTests = args[1]
+    modelPlaybook = args[0]
+    targetCsvFile = args[1]
+    numberTests = args[2]
     cumulativeTimeStart = time.time()
-    TEST_EXTENSION = ".test.ts"
     OUTPUT_DIR = "packages/cactus-plugin-cc-tx-visualization/src/main/test-results/"
-    TEST_DIR = "packages/cactus-plugin-cc-tx-visualization/src/test/typescript/integration/"
+    TEST_DIR = "packages/cactus-plugin-cc-tx-visualization/src/main/python/"
     # directory is given as input to subprocess
-    VS_CODE_PARTIAL_SCRIPT = "npx tap --ts --timeout=600 "
-    TARGET =  VS_CODE_PARTIAL_SCRIPT + TEST_DIR + testName + TEST_EXTENSION
-    FULL_COMMAND = TARGET
+    TARGET =   "python3 "  + TEST_DIR + modelPlaybook + ".py "
+    FULL_COMMAND = TARGET + targetCsvFile;
     print("Running: ", FULL_COMMAND)
 
     runs = int(numberTests)
     while runs > 0:
-        SAVE_STRING =  os.path.join("../", "test-results/") + testName + "-" + str(runs) + ".out"
+        SAVE_STRING =  os.path.join("../", "test-results/") + modelPlaybook + "-" + str(runs) + ".out"
         print("Saving out in:", SAVE_STRING)
         print("Iteration %\n ", runs)
         main()
@@ -49,6 +54,6 @@ if __name__ == "__main__":
     print("\n==========")
     print("\nTotal number of tests done:",numberTests )
     print("\n==========")
-    print("\nType of tests done:",testName )
+    print("\nType of tests done:",modelPlaybook )
     print("\n==========")
     print("\nTotal Running time: {:01f}\n".format(cumulativeTimeEnd-cumulativeTimeStart))
