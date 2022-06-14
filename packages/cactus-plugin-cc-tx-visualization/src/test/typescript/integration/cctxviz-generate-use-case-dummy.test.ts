@@ -77,15 +77,15 @@ test(testCase, async (t: Test) => {
   // Simulates a Cactus Ledger Connector plugin
   const connection = new amqp.Connection();
   const queue = connection.declareQueue(queueName, { durable: false });
+
+  // Initialize our plugin
+  const cctxViz = new CcTxVisualization(cctxvizOptions);
   const setupInfraTimeEnd = new Date();
   log.debug(
     `EVAL-testFile-SETUP-INFRA:${
       setupInfraTimeEnd.getTime() - setupInfraTime.getTime()
     }`,
   );
-
-  // Initialize our plugin
-  const cctxViz = new CcTxVisualization(cctxvizOptions);
   t.ok(cctxViz);
   t.comment("cctxviz plugin is ok");
   t.comment("cctxviz plugin is ok");
@@ -197,7 +197,16 @@ test(testCase, async (t: Test) => {
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   const logName = await cctxViz.persistCrossChainLogCsv("dummy-use-case");
+
+  const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();
+  const endTimeAggregate = new Date();
+  t.comment(
+    `EVAL-testFile-AGGREGATE-CCTX:${
+      endTimeAggregate.getTime() - startTimeAggregate.getTime()
+    }`,
+  );
+
   const map =
     "{'registerEmission': (node:registerEmission connections:{registerEmission:[0.6666666666666666], getEmissions:[0.6666666666666666]}), 'getEmissions': (node:getEmissions connections:{mintEmissionToken:[0.6666666666666666]}), 'mintEmissionToken': (node:mintEmissionToken connections:{})}";
   // Persist heuristic map that is generated from the script that takes this input

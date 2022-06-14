@@ -7,8 +7,8 @@ import os
 # Input2: name of test CSV file that generates the model in the file above
 # Input2: number of test runs
 # Output: output files corresponding to number of runs on packages/cactus-plugin-cc-tx-visualization/src/main/test-results  
-# Example: python3 run-generate-cross-chain-model-dummy.py generate-ccmodel-dummy example-dummy-use-case.csv 30
-
+# Example:python3 run-generate-cross-chain-model-dummy.py generate-ccmodel-dummy example-dummy-use-case.csv 30
+ 
 ### TODO transform cctxviz model generation book into a py file or learn how to call it
 ### parameters name of csv to generate model; perhaps algoritm name; 
 ### prints execution time to file, similar to other script
