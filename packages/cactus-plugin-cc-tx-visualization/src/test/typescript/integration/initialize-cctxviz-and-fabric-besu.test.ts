@@ -539,4 +539,8 @@ afterAll(async () => {
   await besuTestLedger.stop();
   await besuTestLedger.destroy();
   await pruneDockerAllIfGithubAction({ logLevel });
+  await testServer.stop();
+  // await new Promise((resolve) => setTimeout(resolve, 5000));
+  log.debug("executing exit");
+  process.exit(0);
 });
