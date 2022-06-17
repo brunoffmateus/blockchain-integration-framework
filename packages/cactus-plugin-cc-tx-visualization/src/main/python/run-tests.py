@@ -7,6 +7,7 @@ import os
 # Input2: number of test runs
 # Output: test files corresponding to number of runs on packages/cactus-plugin-cc-tx-visualization/src/main/test-results  
 # Example: python3 run-tests.py cctxviz-generate-use-case-dummy 30
+# Example: python3 run-tests.py cctxviz-generate-use-case-dummy-60-events 100 && python3 run-tests.py cctxviz-generate-use-case-dummy-600-events 100 && python3 run-tests.py cctxviz-generate-use-case-dummy-6000-events 100 
 
 def main():
     start = time.time()
@@ -28,7 +29,9 @@ def main():
 if __name__ == "__main__":
     args = sys.argv[1:]
     testName = args[0]
-    numberTests = args[1]
+    saveFileName = args[1]
+    numberTests = args[2]
+
     cumulativeTimeStart = time.time()
     TEST_EXTENSION = ".test.ts"
     OUTPUT_DIR = "packages/cactus-plugin-cc-tx-visualization/src/main/test-results/"
@@ -41,7 +44,7 @@ if __name__ == "__main__":
 
     runs = int(numberTests)
     while runs > 0:
-        SAVE_STRING =  os.path.join("../", "test-results/") + testName + "-" + str(runs) + ".out"
+        SAVE_STRING =  os.path.join("../", "test-results/") + saveFileName + "-" + str(runs) + ".out"
         print("Saving out in:", SAVE_STRING)
         print("Iteration %\n ", runs)
         main()

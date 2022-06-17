@@ -196,7 +196,9 @@ test(testCase, async (t: Test) => {
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  const logName = await cctxViz.persistCrossChainLogCsv("dummy-use-case");
+  const logName = await cctxViz.persistCrossChainLogCsv(
+    "dummy-use-case-6-events",
+  );
 
   const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();
