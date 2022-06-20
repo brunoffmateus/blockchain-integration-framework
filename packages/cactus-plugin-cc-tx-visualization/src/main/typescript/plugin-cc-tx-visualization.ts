@@ -244,6 +244,14 @@ export class CcTxVisualization
     }, { noAck: false });
   }
 
+  // Precion minimum is 4ms by convention
+  public async hasProcessedXMessages(numberMessages: number, precision: number): Promise<void>  {
+    while (this.txReceipts.length < numberMessages) {
+      await new Promise((resolve) => setTimeout(resolve, precision));
+    }
+    return;
+
+  }
   // Pipeline: pollTxReceipts (gets RabbitMQ messages)
   //           txReceiptToCrossChainEventLogEntry (messages -> Tx Receipts -> cross chain event log)
   //           aggregateCCTx (cc event log into cc tx log )          

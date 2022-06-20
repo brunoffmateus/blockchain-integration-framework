@@ -10,9 +10,8 @@ import {
 import { randomUUID } from "crypto";
 import * as amqp from "amqp-ts";
 import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
-//import { LedgerType } from "@hyperledger/cactus-core-api/src/main/typescript/public-api";
 
-const testCase = "persist logs";
+const testCase = "dummy-baseline-6000-events";
 const logLevel: LogLevelDesc = "TRACE";
 const queueName = "cc-tx-log-entry-test";
 
@@ -54,20 +53,11 @@ test(testCase, async (t: Test) => {
   const testServer = new RabbitMQTestServer(options);
   const tearDown = async () => {
     t.comment("shutdown starts");
-    // Connections to the RabbitMQ server need to be closed
-
     await testServer.stop();
-    // todo problem connection closing is hanging here and l56
-    // await connection.close();
     await cctxViz.shutdown();
     await cctxViz.closeConnection();
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
-    log.debug("executing exit");
+    log.debug("running process exit");
     process.exit(0);
-
-    log.debug("exit done");
-    //await testServer.destroy();
-    //await pruneDockerAllIfGithubAction({ logLevel });
   };
 
   test.onFinish(tearDown);
@@ -88,22 +78,9 @@ test(testCase, async (t: Test) => {
   );
   t.ok(cctxViz);
   t.comment("cctxviz plugin is ok");
-  t.comment("cctxviz plugin is ok");
-  const timeStartPollReceipts = new Date();
-  await cctxViz.pollTxReceipts();
-  const endTimePollReceipts = new Date();
-  t.comment(
-    `EVAL-testFile-POLL:${
-      endTimePollReceipts.getTime() - timeStartPollReceipts.getTime()
-    }`,
-  );
-  t.comment("cctxviz plugin is ok");
 
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog === 0);
-
-  // dummy use case based on Fig. 3 paper "[1] “Do You Need a Distributed Ledger Technology Interoperability Solution?,” Feb. 2022, doi: 10.36227/.18786527.v1"
-  // consider 2 emission consortia (two different case ids);
 
   const currentTime = new Date();
   const timeStartSendMessages = new Date();
@@ -183,6 +160,7 @@ test(testCase, async (t: Test) => {
       identity: "A",
     });
     queue.send(testMessage6);
+
     caseNumber--;
   }
   const endTimeSendMessages = new Date();
@@ -192,14 +170,22 @@ test(testCase, async (t: Test) => {
     }`,
   );
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const timeStartPollReceipts = new Date();
+  await cctxViz.pollTxReceipts();
+  await cctxViz.hasProcessedXMessages(6000, 4);
+
+  const endTimePollReceipts = new Date();
+  const totalTimePoll =
+    endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
+  t.comment(`EVAL-testFile-POLL:${totalTimePoll}`);
+
+  t.assert(cctxViz.numberEventsLog === 0);
+  t.assert(cctxViz.numberUnprocessedReceipts === 6000);
+
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   t.assert(cctxViz.numberEventsLog === 6000);
-  // because the second message did not have time to be send to processing before receipts were transformed into cross chain events
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
-
-  await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   const logName = await cctxViz.persistCrossChainLogCsv(
     "dummy-use-case-6000-events",
