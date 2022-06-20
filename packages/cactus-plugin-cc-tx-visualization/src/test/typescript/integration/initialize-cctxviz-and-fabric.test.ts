@@ -401,7 +401,7 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(1);
 
-  await cctxViz.persistCrossChainLogCsv();
+  await cctxViz.persistCrossChainLogCsv("fabric");
 });
 afterAll(async () => {
   await cctxViz.closeConnection();
@@ -410,4 +410,5 @@ afterAll(async () => {
   await ledger.destroy();
   await Servers.shutdown(server);
   await pruneDockerAllIfGithubAction({ logLevel });
+  process.exit(0);
 });

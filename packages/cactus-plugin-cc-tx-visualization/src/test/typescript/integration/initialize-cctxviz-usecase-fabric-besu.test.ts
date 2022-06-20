@@ -62,8 +62,9 @@ const log = LoggerProvider.getOrCreate({
   level: logLevel,
   label: "cctxviz-fabtest",
 });
-const fixturesPath =
-  "../../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures";
+//const fixturesPath =
+("../../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures");
+const alternativeFixturesPath = "../fixtures";
 
 let cctxViz: CcTxVisualization;
 let options: IRabbitMQTestServerOptions;
@@ -78,7 +79,9 @@ expressAppBesu.use(bodyParser.json({ limit: "250mb" }));
 const expressApp = express();
 expressApp.use(bodyParser.json({ limit: "250mb" }));
 const server = http.createServer(expressApp);
-beforeAll(async () => {
+
+test(testCase, async () => {
+  const setupInfraTime = new Date();
   pruneDockerAllIfGithubAction({ logLevel })
     .then(() => {
       log.info("Pruning throw OK");
@@ -124,9 +127,7 @@ beforeAll(async () => {
 
   besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
-});
 
-test(testCase, async () => {
   expect(testServer).toBeDefined();
   const channelId = "mychannel";
   const channelName = channelId;
@@ -236,7 +237,11 @@ test(testCase, async () => {
 
   // Setup: contract directory
   const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
-  const contractDir = path.join(__dirname, fixturesPath, contractRelPath);
+  const contractDir = path.join(
+    __dirname,
+    alternativeFixturesPath,
+    contractRelPath,
+  );
   const sourceFiles: FileBase64[] = [];
   // Setup: push files
   {
@@ -305,7 +310,6 @@ test(testCase, async () => {
       filename,
     });
   }
-
   // Setup: Deploy smart contract
   const res = await apiClient.deployContractV1({
     channelId,
@@ -403,24 +407,6 @@ test(testCase, async () => {
     pluginRegistry: new PluginRegistry({ plugins: [keychainPluginBesu] }),
   });
 
-  await connector.transact({
-    web3SigningCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialType.PrivateKeyHex,
-    },
-    consistencyStrategy: {
-      blockConfirmations: 0,
-      receiptType: ReceiptType.NodeTxPoolAck,
-    },
-    transactionConfig: {
-      from: firstHighNetWorthAccount,
-      to: testEthAccount.address,
-      value: 10e9,
-      gas: 1000000,
-    },
-  });
-
   const balance = await web3.eth.getBalance(testEthAccount.address);
   expect(balance).toBeDefined();
 
@@ -440,6 +426,32 @@ test(testCase, async () => {
   expect(deployOut).toBeDefined();
   expect(deployOut.transactionReceipt).toBeDefined();
 
+  const setupInfraTimeEnd = new Date();
+  log.debug(
+    `EVAL-testFile-SETUP-INFRA:${
+      setupInfraTimeEnd.getTime() - setupInfraTime.getTime()
+    }`,
+  );
+
+  const timeStartSendMessages = new Date();
+
+  await connector.transact({
+    web3SigningCredential: {
+      ethAccount: firstHighNetWorthAccount,
+      secret: besuKeyPair.privateKey,
+      type: Web3SigningCredentialType.PrivateKeyHex,
+    },
+    consistencyStrategy: {
+      blockConfirmations: 0,
+      receiptType: ReceiptType.NodeTxPoolAck,
+    },
+    transactionConfig: {
+      from: firstHighNetWorthAccount,
+      to: testEthAccount.address,
+      value: 10e9,
+      gas: 1000000,
+    },
+  });
   const { success: createRes } = await connector.invokeContract({
     caseID: "FABRIC_BESU",
     contractName: contractNameBesu,
@@ -475,16 +487,15 @@ test(testCase, async () => {
   expect(lockRes).toBeDefined();
   expect(lockRes).toBeTrue();
 
-  const assetId = uuidv4();
-  const assetOwner = uuidv4();
+  const assetId = "asset1";
+  const assetOwner = "owner1";
 
-  // Setup: transact
   const createResFabric = await apiClient.runTransactionV1({
     caseID: "FABRIC_BESU",
     contractName,
     channelName,
     params: [assetId, "Green", "19", assetOwner, "9999"],
-    methodName: "CreateAsset",
+    methodName: "MintAsset",
     invocationType: FabricContractInvocationType.Send,
     signingCredential: {
       keychainId,
@@ -494,6 +505,7 @@ test(testCase, async () => {
   expect(createResFabric).toBeDefined();
 
   // READS are not considered transactions, but are relevant to our use case
+  /*
   const getRes = await apiClient.runTransactionV1({
     caseID: "FABRIC_BESU",
     contractName,
@@ -507,17 +519,68 @@ test(testCase, async () => {
     },
   });
   expect(getRes).toBeDefined();
+  */
+
+  // Setup: transact
+  const transferAssetRes = await apiClient.runTransactionV1({
+    caseID: "FABRIC_BESU",
+    contractName,
+    channelName,
+    params: [assetId, "owner2"],
+    methodName: "TransferAsset",
+    invocationType: FabricContractInvocationType.Send,
+    signingCredential: {
+      keychainId,
+      keychainRef: keychainEntryKey,
+    },
+  });
+  expect(transferAssetRes).toBeDefined();
+  // Setup: transact
+  const transferAssetBackRes = await apiClient.runTransactionV1({
+    caseID: "FABRIC_BESU",
+    contractName,
+    channelName,
+    params: [assetId, "owner1"],
+    methodName: "TransferAsset",
+    invocationType: FabricContractInvocationType.Send,
+    signingCredential: {
+      keychainId,
+      keychainRef: keychainEntryKey,
+    },
+  });
+  expect(transferAssetBackRes).toBeDefined();
+  // Setup: transact
+  const burnAssetRes = await apiClient.runTransactionV1({
+    caseID: "FABRIC_BESU",
+    contractName,
+    channelName,
+    params: [assetId],
+    methodName: "BurnAsset",
+    invocationType: FabricContractInvocationType.Send,
+    signingCredential: {
+      keychainId,
+      keychainRef: keychainEntryKey,
+    },
+  });
+  expect(burnAssetRes).toBeDefined();
 
   // Initialize our plugin
   expect(cctxViz).toBeDefined();
   log.info("cctxviz plugin is ok");
-
-  // Number of messages on queue: 1
-  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
-  expect(cctxViz.numberEventsLog).toBe(0);
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const endTimeSendMessages = new Date();
+  log.debug(
+    `EVAL-testFile-SEND-MESSAGES:${
+      endTimeSendMessages.getTime() - timeStartSendMessages.getTime()
+    }`,
+  );
+  const timeStartPollReceipts = new Date();
   await cctxViz.pollTxReceipts();
+  await cctxViz.hasProcessedXMessages(6, 4);
+
+  const endTimePollReceipts = new Date();
+  const totalTimePoll =
+    endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
+  log.debug(`EVAL-testFile-POLL:${totalTimePoll}`);
 
   // Number of messages on queue: 0
   expect(cctxViz.numberUnprocessedReceipts).toBeGreaterThanOrEqual(1);
@@ -529,7 +592,16 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBe(0);
   expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(1);
 
-  await cctxViz.persistCrossChainLogCsv();
+  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric");
+
+  const startTimeAggregate = new Date();
+  await cctxViz.aggregateCcTx();
+  const endTimeAggregate = new Date();
+  log.debug(
+    `EVAL-testFile-AGGREGATE-CCTX:${
+      endTimeAggregate.getTime() - startTimeAggregate.getTime()
+    }`,
+  );
 });
 afterAll(async () => {
   await cctxViz.closeConnection();
@@ -539,8 +611,6 @@ afterAll(async () => {
   await besuTestLedger.stop();
   await besuTestLedger.destroy();
   await pruneDockerAllIfGithubAction({ logLevel });
-  await testServer.stop();
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
   log.debug("executing exit");
   process.exit(0);
 });

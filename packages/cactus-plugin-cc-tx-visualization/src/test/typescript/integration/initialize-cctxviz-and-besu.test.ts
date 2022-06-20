@@ -10,11 +10,7 @@ import {
 
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 
-import {
-  LoggerProvider,
-  LogLevelDesc,
-  Servers,
-} from "@hyperledger/cactus-common";
+import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   BesuTestLedger,
   Containers,
@@ -35,7 +31,6 @@ import Web3 from "web3";
 
 import express from "express";
 import bodyParser from "body-parser";
-import http from "http";
 
 const testCase = "Instantiate plugin with besu, send 2 transactions";
 const logLevel: LogLevelDesc = "TRACE";
@@ -57,7 +52,7 @@ let cctxvizOptions: IPluginCcTxVisualizationOptions;
 let besuTestLedger: BesuTestLedger;
 const expressApp = express();
 expressApp.use(bodyParser.json({ limit: "250mb" }));
-const server = http.createServer(expressApp);
+//const server = http.createServer(expressApp);
 
 beforeAll(async () => {
   pruneDockerAllIfGithubAction({ logLevel })
@@ -281,13 +276,14 @@ test(testCase, async () => {
   expect(cctxViz.numberUnprocessedReceipts).toBeLessThanOrEqual(1);
   expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(4);
 
-  await cctxViz.persistCrossChainLogCsv();
+  await cctxViz.persistCrossChainLogCsv("besu");
 });
 afterAll(async () => {
   await cctxViz.closeConnection();
   await testServer.stop();
   await besuTestLedger.stop();
   await besuTestLedger.destroy();
-  await Servers.shutdown(server);
   await pruneDockerAllIfGithubAction({ logLevel });
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  process.exit(0);
 });
