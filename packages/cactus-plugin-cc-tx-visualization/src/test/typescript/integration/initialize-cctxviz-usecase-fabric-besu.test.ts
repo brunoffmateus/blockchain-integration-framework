@@ -90,6 +90,7 @@ test(testCase, async () => {
       await Containers.logDiagnostics({ logLevel });
       fail("Pruning didn't throw OK");
     });
+
   options = {
     publishAllPorts: true,
     port: 5672,
