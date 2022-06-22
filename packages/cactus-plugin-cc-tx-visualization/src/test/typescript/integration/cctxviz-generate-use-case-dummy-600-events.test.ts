@@ -1,4 +1,3 @@
-import test, { Test } from "tape-promise/tape";
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
 import { pruneDockerAllIfGithubAction } from "@hyperledger/cactus-test-tooling";
@@ -177,6 +176,7 @@ test(testCase, async (t: Test) => {
   const endTimePollReceipts = new Date();
   const totalTimePoll =
     endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
+  endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
   t.comment(`EVAL-testFile-POLL:${totalTimePoll}`);
 
   t.assert(cctxViz.numberEventsLog === 0);

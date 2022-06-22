@@ -1,6 +1,5 @@
-import "jest-extended";
+import test, { Test } from "tape-promise/tape";
 import {
-  Checks,
   IListenOptions,
   LoggerProvider,
   LogLevelDesc,
@@ -52,7 +51,7 @@ import {
   Web3SigningCredentialType,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
-const testCase = "Instantiate plugin with fabric, send 2 transactions";
+const testCase = "Instantiate plugin with fabric, send 60 transactions";
 const logLevel: LogLevelDesc = "TRACE";
 
 // By default that's the Fabric connector queue
@@ -80,7 +79,7 @@ const expressApp = express();
 expressApp.use(bodyParser.json({ limit: "250mb" }));
 const server = http.createServer(expressApp);
 
-test(testCase, async () => {
+test(testCase, async (t: Test) => {
   const setupInfraTime = new Date();
   pruneDockerAllIfGithubAction({ logLevel })
     .then(() => {
@@ -128,8 +127,20 @@ test(testCase, async () => {
 
   besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
+  const tearDown = async () => {
+    await cctxViz.closeConnection();
+    await testServer.stop();
+    await ledger.stop();
+    await ledger.destroy();
+    await besuTestLedger.stop();
+    await besuTestLedger.destroy();
+    await pruneDockerAllIfGithubAction({ logLevel });
+    log.debug("executing exit");
+    process.exit(0);
+  };
 
-  expect(testServer).toBeDefined();
+  test.onFinish(tearDown);
+  t.ok(testServer);
   const channelId = "mychannel";
   const channelName = channelId;
 
@@ -328,42 +339,10 @@ test(testCase, async () => {
     connTimeout: 60,
   });
 
-  const { packageIds, lifecycle, success } = res.data;
-  expect(success).toBe(true);
-  expect(res.status).toBe(200);
-  const {
-    approveForMyOrgList,
-    installList,
-    queryInstalledList,
-    commit,
-    packaging,
-    queryCommitted,
-  } = lifecycle;
+  const { success } = res.data;
+  t.assert(success);
+  t.assert(res.status === 200);
 
-  Checks.truthy(packageIds, `packageIds truthy OK`);
-  Checks.truthy(
-    Array.isArray(packageIds),
-    `Array.isArray(packageIds) truthy OK`,
-  );
-  Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
-  Checks.truthy(
-    Array.isArray(approveForMyOrgList),
-    `Array.isArray(approveForMyOrgList) truthy OK`,
-  );
-  Checks.truthy(installList, `installList truthy OK`);
-  Checks.truthy(
-    Array.isArray(installList),
-    `Array.isArray(installList) truthy OK`,
-  );
-  Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
-  Checks.truthy(
-    Array.isArray(queryInstalledList),
-    `Array.isArray(queryInstalledList) truthy OK`,
-  );
-  Checks.truthy(commit, `commit truthy OK`);
-  Checks.truthy(packaging, `packaging truthy OK`);
-  Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
-  await new Promise((resolve) => setTimeout(resolve, 10000));
   const contractNameBesu = "LockAsset";
 
   const rpcApiHttpHost = await besuTestLedger.getRpcApiHttpHost();
@@ -409,7 +388,7 @@ test(testCase, async () => {
   });
 
   const balance = await web3.eth.getBalance(testEthAccount.address);
-  expect(balance).toBeDefined();
+  t.ok(balance);
 
   const deployOut = await connector.deployContract({
     keychainId: keychainPluginBesu.getKeychainId(),
@@ -424,8 +403,8 @@ test(testCase, async () => {
     bytecode: LockAssetContractJson.bytecode,
     gas: 1000000,
   });
-  expect(deployOut).toBeDefined();
-  expect(deployOut.transactionReceipt).toBeDefined();
+  t.ok(deployOut);
+  t.ok(deployOut.transactionReceipt);
 
   const setupInfraTimeEnd = new Date();
   log.debug(
@@ -453,60 +432,62 @@ test(testCase, async () => {
       gas: 1000000,
     },
   });
-  const { success: createRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
-    contractName: contractNameBesu,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset1", 5],
-    signingCredential: {
-      ethAccount: testEthAccount.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialType.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(createRes).toBeDefined();
-  expect(createRes).toBe(true);
-  log.warn("create ok");
-  const { success: lockRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
-    contractName: contractNameBesu,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationType.Send,
-    methodName: "lockAsset",
-    params: ["asset1"],
-    signingCredential: {
-      ethAccount: testEthAccount.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialType.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  log.warn("checking lock res");
-  expect(lockRes).toBeDefined();
-  expect(lockRes).toBeTrue();
 
-  const assetId = "asset1";
+  let caseNumber = 10;
   const assetOwner = "owner1";
 
-  const createResFabric = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
-    contractName,
-    channelName,
-    params: [assetId, "Green", "19", assetOwner, "9999"],
-    methodName: "MintAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: {
-      keychainId,
-      keychainRef: keychainEntryKey,
-    },
-  });
-  expect(createResFabric).toBeDefined();
+  t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
+  while (caseNumber > 0) {
+    const { success: createRes } = await connector.invokeContract({
+      caseID: "FABRIC_BESU",
+      contractName: contractNameBesu,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationType.Send,
+      methodName: "createAsset",
+      params: [`asset${caseNumber}`, 5],
+      signingCredential: {
+        ethAccount: testEthAccount.address,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialType.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    t.ok(createRes);
+    t.assert(createRes === true);
+    log.warn("create ok");
+    const { success: lockRes } = await connector.invokeContract({
+      caseID: "FABRIC_BESU",
+      contractName: contractNameBesu,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationType.Send,
+      methodName: "lockAsset",
+      params: [`asset${caseNumber}`],
+      signingCredential: {
+        ethAccount: testEthAccount.address,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialType.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    log.warn("checking lock res");
+    t.ok(lockRes);
 
-  // READS are not considered transactions, but are relevant to our use case
-  /*
+    const createResFabric = await apiClient.runTransactionV1({
+      caseID: "FABRIC_BESU",
+      contractName,
+      channelName,
+      params: [`asset${caseNumber}`, "Green", "19", assetOwner, "9999"],
+      methodName: "MintAsset",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId,
+        keychainRef: keychainEntryKey,
+      },
+    });
+    t.ok(createResFabric);
+
+    // READS are not considered transactions, but are relevant to our use case
+    /*
   const getRes = await apiClient.runTransactionV1({
     caseID: "FABRIC_BESU",
     contractName,
@@ -522,51 +503,54 @@ test(testCase, async () => {
   expect(getRes).toBeDefined();
   */
 
-  // Setup: transact
-  const transferAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
-    contractName,
-    channelName,
-    params: [assetId, "owner2"],
-    methodName: "TransferAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: {
-      keychainId,
-      keychainRef: keychainEntryKey,
-    },
-  });
-  expect(transferAssetRes).toBeDefined();
-  // Setup: transact
-  const transferAssetBackRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
-    contractName,
-    channelName,
-    params: [assetId, "owner1"],
-    methodName: "TransferAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: {
-      keychainId,
-      keychainRef: keychainEntryKey,
-    },
-  });
-  expect(transferAssetBackRes).toBeDefined();
-  // Setup: transact
-  const burnAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
-    contractName,
-    channelName,
-    params: [assetId],
-    methodName: "BurnAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: {
-      keychainId,
-      keychainRef: keychainEntryKey,
-    },
-  });
-  expect(burnAssetRes).toBeDefined();
+    // Setup: transact
+    const transferAssetRes = await apiClient.runTransactionV1({
+      caseID: "FABRIC_BESU",
+      contractName,
+      channelName,
+      params: [`asset${caseNumber}`, "owner2"],
+      methodName: "TransferAsset",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId,
+        keychainRef: keychainEntryKey,
+      },
+    });
+    t.ok(transferAssetRes);
+    // Setup: transact
+    const transferAssetBackRes = await apiClient.runTransactionV1({
+      caseID: "FABRIC_BESU",
+      contractName,
+      channelName,
+      params: [`asset${caseNumber}`, "owner1"],
+      methodName: "TransferAsset",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId,
+        keychainRef: keychainEntryKey,
+      },
+    });
+    t.ok(transferAssetBackRes);
+    // Setup: transact
+    const burnAssetRes = await apiClient.runTransactionV1({
+      caseID: "FABRIC_BESU",
+      contractName,
+      channelName,
+      params: [`asset${caseNumber}`],
+      methodName: "BurnAsset",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId,
+        keychainRef: keychainEntryKey,
+      },
+    });
+    t.ok(burnAssetRes);
+
+    caseNumber--;
+  }
 
   // Initialize our plugin
-  expect(cctxViz).toBeDefined();
+  t.ok(cctxViz);
   log.info("cctxviz plugin is ok");
   const endTimeSendMessages = new Date();
   log.debug(
@@ -576,7 +560,7 @@ test(testCase, async () => {
   );
   const timeStartPollReceipts = new Date();
   await cctxViz.pollTxReceipts();
-  await cctxViz.hasProcessedXMessages(6, 4);
+  await cctxViz.hasProcessedXMessages(60, 4);
 
   const endTimePollReceipts = new Date();
   const totalTimePoll =
@@ -584,16 +568,16 @@ test(testCase, async () => {
   log.debug(`EVAL-testFile-POLL:${totalTimePoll}`);
 
   // Number of messages on queue: 0
-  expect(cctxViz.numberUnprocessedReceipts).toBeGreaterThanOrEqual(1);
-  expect(cctxViz.numberEventsLog).toBe(0);
+  t.assert(cctxViz.numberUnprocessedReceipts > 1);
+  t.assert(cctxViz.numberEventsLog === 0);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
   // Number of messages on queue: 0
-  expect(cctxViz.numberUnprocessedReceipts).toBe(0);
-  expect(cctxViz.numberEventsLog).toBeGreaterThanOrEqual(1);
+  t.assert(cctxViz.numberUnprocessedReceipts === 0);
+  t.assert(cctxViz.numberEventsLog > 1);
 
-  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric");
+  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-60-events");
 
   const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();
@@ -603,15 +587,4 @@ test(testCase, async () => {
       endTimeAggregate.getTime() - startTimeAggregate.getTime()
     }`,
   );
-});
-afterAll(async () => {
-  await cctxViz.closeConnection();
-  await testServer.stop();
-  await ledger.stop();
-  await ledger.destroy();
-  await besuTestLedger.stop();
-  await besuTestLedger.destroy();
-  await pruneDockerAllIfGithubAction({ logLevel });
-  log.debug("executing exit");
-  process.exit(0);
 });
