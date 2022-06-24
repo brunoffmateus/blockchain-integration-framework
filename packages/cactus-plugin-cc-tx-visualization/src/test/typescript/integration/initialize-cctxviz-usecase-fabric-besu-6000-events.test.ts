@@ -51,7 +51,7 @@ import {
   Web3SigningCredentialType,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
-const testCase = "Instantiate plugin with fabric, send 600 transactions";
+const testCase = "Instantiate plugin with fabric, send 6000 transactions";
 const logLevel: LogLevelDesc = "TRACE";
 
 // By default that's the Fabric connector queue
@@ -89,17 +89,7 @@ test(testCase, async (t: Test) => {
       await Containers.logDiagnostics({ logLevel });
       fail("Pruning didn't throw OK");
     });
-  const tearDown = async () => {
-    await cctxViz.closeConnection();
-    await testServer.stop();
-    await ledger.stop();
-    await ledger.destroy();
-    await besuTestLedger.stop();
-    await besuTestLedger.destroy();
-    await pruneDockerAllIfGithubAction({ logLevel });
-    log.debug("executing exit");
-    process.exit(0);
-  };
+
   options = {
     publishAllPorts: true,
     port: 5672,
@@ -137,6 +127,17 @@ test(testCase, async (t: Test) => {
 
   besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
+  const tearDown = async () => {
+    await cctxViz.closeConnection();
+    await testServer.stop();
+    await ledger.stop();
+    await ledger.destroy();
+    await besuTestLedger.stop();
+    await besuTestLedger.destroy();
+    await pruneDockerAllIfGithubAction({ logLevel });
+    log.debug("executing exit");
+    process.exit(0);
+  };
 
   test.onFinish(tearDown);
   t.ok(testServer);
@@ -432,7 +433,7 @@ test(testCase, async (t: Test) => {
     },
   });
 
-  let caseNumber = 100;
+  let caseNumber = 1000;
   const assetOwner = "owner1";
 
   t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
@@ -559,7 +560,7 @@ test(testCase, async (t: Test) => {
   );
   const timeStartPollReceipts = new Date();
   await cctxViz.pollTxReceipts();
-  await cctxViz.hasProcessedXMessages(600, 4);
+  await cctxViz.hasProcessedXMessages(6000, 4);
 
   const endTimePollReceipts = new Date();
   const totalTimePoll =
@@ -576,7 +577,7 @@ test(testCase, async (t: Test) => {
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog > 1);
 
-  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-600-events");
+  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-6000-events");
 
   const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();

@@ -41,13 +41,13 @@ if __name__ == "__main__":
     TEST_DIR = "packages/cactus-plugin-cc-tx-visualization/src/test/typescript/integration/"
     # directory is given as input to subprocess
     if runner == "TAP":
-        VS_CODE_PARTIAL_SCRIPT = "npx tap --ts --timeout=600 " 
+        VS_CODE_PARTIAL_SCRIPT = "npx tap --ts --no-timeout " 
     elif runner == "JEST":
         VS_CODE_PARTIAL_SCRIPT = "yarn jest -t "
                 #VS_CODE_PARTIAL_SCRIPT = "sudo /usr/bin/env 'NODE_OPTIONS=--require /home/rafaelapb/.vscode-server-insiders/bin/6f7c824a826ff0ccaf4de05d6fe0aac3be7bc136/extensions/ms-vscode.js-debug/src/bootloader.bundle.js --inspect-publish-uid=http' 'VSCODE_INSPECTOR_OPTIONS={\"inspectorIpc\":\"/tmp/node-cdp.1581-35.sock\",\"deferredMode\":false,\"waitForDebugger\":\"\",\"execPath\":\"/home/rafaelapb/.nvm/versions/node/v16.14.0/bin/node\",\"onlyEntrypoint\":false,\"autoAttachMode\":\"always\",\"mandatePortTracking\":true,\"fileCallback\":\"/tmp/node-debug-callback-d54e139f04bc4e75\"}' /home/rafaelapb/.nvm/versions/node/v16.14.0/bin/node /home/rbelchior/blockchain-integration-framework/node_modules/.bin/jest " 
     #default    
     else: 
-        VS_CODE_PARTIAL_SCRIPT = "npx tap --ts --timeout=600 "
+        VS_CODE_PARTIAL_SCRIPT = "npx tap --ts --no-timeout "
     TARGET =  VS_CODE_PARTIAL_SCRIPT + TEST_DIR + testName + TEST_EXTENSION
     FULL_COMMAND = TARGET
     print("Running: ", FULL_COMMAND)
