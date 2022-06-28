@@ -439,7 +439,7 @@ test(testCase, async (t: Test) => {
   t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
   while (caseNumber > 0) {
     const { success: createRes } = await connector.invokeContract({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName: contractNameBesu,
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationType.Send,
@@ -456,7 +456,7 @@ test(testCase, async (t: Test) => {
     t.assert(createRes === true);
     log.warn("create ok");
     const { success: lockRes } = await connector.invokeContract({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName: contractNameBesu,
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationType.Send,
@@ -473,7 +473,7 @@ test(testCase, async (t: Test) => {
     t.ok(lockRes);
 
     const createResFabric = await apiClient.runTransactionV1({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName,
       channelName,
       params: [`asset${caseNumber}`, "Green", "19", assetOwner, "9999"],
@@ -505,7 +505,7 @@ test(testCase, async (t: Test) => {
 
     // Setup: transact
     const transferAssetRes = await apiClient.runTransactionV1({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName,
       channelName,
       params: [`asset${caseNumber}`, "owner2"],
@@ -519,7 +519,7 @@ test(testCase, async (t: Test) => {
     t.ok(transferAssetRes);
     // Setup: transact
     const transferAssetBackRes = await apiClient.runTransactionV1({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName,
       channelName,
       params: [`asset${caseNumber}`, "owner1"],
@@ -533,7 +533,7 @@ test(testCase, async (t: Test) => {
     t.ok(transferAssetBackRes);
     // Setup: transact
     const burnAssetRes = await apiClient.runTransactionV1({
-      caseID: "FABRIC_BESU",
+      caseID: String(caseNumber),
       contractName,
       channelName,
       params: [`asset${caseNumber}`],
