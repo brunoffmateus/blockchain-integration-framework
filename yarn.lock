@@ -8922,6 +8922,11 @@ class-is@^1.1.0:
   resolved "https://registry.yarnpkg.com/class-is/-/class-is-1.1.0.tgz#9d3c0fba0440d211d843cec3dedfa48055005825"
   integrity sha512-rhjH9AG1fvabIDoGRVH587413LPjTZgmDF9fOFCbFJQV4yuocX1mHxxvXI4g3cGwbVY9wAYIoKlg1N79frJKQw==
 
+class-transformer@^0.3.1:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/class-transformer/-/class-transformer-0.3.2.tgz#779ef5f124784324b40f8e927c774bd96cdecd4b"
+  integrity sha512-9QY6QXBH/+Gt1C3HBmJCrgY6+EFpIa6aLjfDnlXFx0zQl/HjrCE7qoaI0srNrxpMIfsobCpgUdDG5JYtJOpVsw==
+
 class-utils@^0.3.5:
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/class-utils/-/class-utils-0.3.6.tgz#f93369ae8b9a7ce02fd41faad0ca83033190c463"
@@ -12807,6 +12812,18 @@ fabric-common@2.3.0-snapshot.63:
   optionalDependencies:
     pkcs11js "^1.0.6"
 
+fabric-contract-api@2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/fabric-contract-api/-/fabric-contract-api-2.2.3.tgz#7fcf8121b9722e6e9db457bf2c35f31afff1d019"
+  integrity sha512-LMwLnnqMXS+XQvnCSu0MQ2OSfvDlWYV2jscr5eT6UpVIXtNZLwSoX/2fGRUe7HJyIeH83KtTsg0AKTcDiwCtGg==
+  dependencies:
+    class-transformer "^0.3.1"
+    fabric-shim-api "2.2.3"
+    fast-safe-stringify "^2.0.7"
+    get-params "^0.1.2"
+    reflect-metadata "^0.1.13"
+    winston "^3.3.2"
+
 fabric-network@1.4.19:
   version "1.4.19"
   resolved "https://registry.yarnpkg.com/fabric-network/-/fabric-network-1.4.19.tgz#893f36d8a3b8a58687ee50459ce6d0aa24982c35"
@@ -12855,6 +12872,11 @@ fabric-protos@2.3.0-snapshot.63:
     "@grpc/grpc-js" "^1.3.4"
     "@grpc/proto-loader" "^0.6.2"
     protobufjs "^6.11.2"
+
+fabric-shim-api@2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/fabric-shim-api/-/fabric-shim-api-2.2.3.tgz#dc27b69b0d8de4666f7abd664a9f6b1ae2f3f661"
+  integrity sha512-wpgj/lrB9Ux06+jBRj2xnXFa7lz6iI5J8r1amhbxMnVw4HvkF2HaiNTRfnisJm+IIf3ocoNoiLS5i6nRHUKFYw==
 
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
@@ -12908,7 +12930,7 @@ fast-levenshtein@^2.0.6, fast-levenshtein@~2.0.6:
   resolved "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
 
-fast-safe-stringify@2.1.1:
+fast-safe-stringify@2.1.1, fast-safe-stringify@^2.0.7:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/fast-safe-stringify/-/fast-safe-stringify-2.1.1.tgz#c406a83b6e70d9e35ce3b30a81141df30aeba884"
   integrity sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==
@@ -13470,6 +13492,11 @@ get-package-type@^0.1.0:
   version "0.1.0"
   resolved "https://registry.npmjs.org/get-package-type/-/get-package-type-0.1.0.tgz"
   integrity sha512-pjzuKtY64GYfWizNAJ0fr9VqttZkNiK2iS430LtIHzjBEr6bX8Am2zm4sW4Ro5wjWW5cAlRL1qAMTcXbjNAO2Q==
+
+get-params@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/get-params/-/get-params-0.1.2.tgz#bae0dfaba588a0c60d7834c0d8dc2ff60eeef2fe"
+  integrity sha512-41eOxtlGgHQRbFyA8KTH+w+32Em3cRdfBud7j67ulzmIfmaHX9doq47s0fa4P5o9H64BZX9nrYI6sJvk46Op+Q==
 
 get-pkg-repo@^4.0.0:
   version "4.2.1"
@@ -22822,7 +22849,7 @@ redeyed@~2.1.0:
   dependencies:
     esprima "~4.0.0"
 
-reflect-metadata@0.1.13, reflect-metadata@^0.1.2:
+reflect-metadata@0.1.13, reflect-metadata@^0.1.13, reflect-metadata@^0.1.2:
   version "0.1.13"
   resolved "https://registry.npmjs.org/reflect-metadata/-/reflect-metadata-0.1.13.tgz"
   integrity sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==
@@ -27597,6 +27624,22 @@ winston@^2.2.0, winston@^2.4.0, winston@^2.4.5:
     eyes "0.1.x"
     isstream "0.1.x"
     stack-trace "0.0.x"
+
+winston@^3.3.2:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/winston/-/winston-3.8.1.tgz#76f15b3478cde170b780234e0c4cf805c5a7fb57"
+  integrity sha512-r+6YAiCR4uI3N8eQNOg8k3P3PqwAm20cLKlzVD9E66Ch39+LZC+VH1UKf9JemQj2B3QoUHfKD7Poewn0Pr3Y1w==
+  dependencies:
+    "@dabh/diagnostics" "^2.0.2"
+    async "^3.2.3"
+    is-stream "^2.0.0"
+    logform "^2.4.0"
+    one-time "^1.0.0"
+    readable-stream "^3.4.0"
+    safe-stable-stringify "^2.3.1"
+    stack-trace "0.0.x"
+    triple-beam "^1.3.0"
+    winston-transport "^4.5.0"
 
 winston@^3.3.3:
   version "3.6.0"
