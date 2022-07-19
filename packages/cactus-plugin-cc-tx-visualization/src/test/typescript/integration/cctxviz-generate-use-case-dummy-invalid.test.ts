@@ -9,7 +9,6 @@ import {
 } from "@hyperledger/cactus-plugin-cc-tx-visualization/src/main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
 import * as amqp from "amqp-ts";
-import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
 
 const testCase = "dummy-baseline-invalid";
 const logLevel: LogLevelDesc = "TRACE";
@@ -83,9 +82,8 @@ test(testCase, async (t: Test) => {
   t.assert(cctxViz.numberEventsLog === 0);
 
   const currentTime = new Date();
-  const timeStartSendMessages = new Date();
   let caseNumber = 1;
-  let caseID = "INVALID_FABRIC_BESU";
+  const caseID = "INVALID_FABRIC_BESU";
 
   t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
   while (caseNumber > 0) {
@@ -110,11 +108,10 @@ test(testCase, async (t: Test) => {
       invocationType: "send",
       methodName: "MintAsset",
       // Asset 1, 100 units
-      parameters: ["asset1","Green","19","owner1","9999"],
+      parameters: ["asset1", "Green", "19", "owner1", "9999"],
       identity: "A",
     });
     queue.send(testMessage3);
-
 
     const testMessage2 = new amqp.Message({
       caseID: caseID + "_" + caseNumber,
@@ -128,7 +125,6 @@ test(testCase, async (t: Test) => {
     });
     queue.send(testMessage2);
 
-
     const testMessage4 = new amqp.Message({
       caseID: caseID + "_" + caseNumber,
       timestamp: new Date(currentTime.getTime() + 4),
@@ -136,7 +132,7 @@ test(testCase, async (t: Test) => {
       invocationType: "send",
       methodName: "transferAsset",
       // Asset 1, 100 units
-      parameters: ["asset1", "onwer2"],
+      parameters: ["asset1", "owner2"],
       identity: "A",
     });
     queue.send(testMessage4);
@@ -148,7 +144,7 @@ test(testCase, async (t: Test) => {
       invocationType: "send",
       methodName: "transferAsset",
       // Asset 1, 100 units
-      parameters: ["asset1", "onwer1"],
+      parameters: ["asset1", "owner1"],
       identity: "A",
     });
     queue.send(testMessage5);
