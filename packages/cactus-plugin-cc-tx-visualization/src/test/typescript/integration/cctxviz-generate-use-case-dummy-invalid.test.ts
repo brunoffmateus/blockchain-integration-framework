@@ -106,7 +106,7 @@ test(testCase, async (t: Test) => {
       timestamp: new Date(currentTime.getTime() + 2),
       blockchainID: "TEST",
       invocationType: "send",
-      methodName: "MintAsset",
+      methodName: "mintAsset",
       // Asset 1, 100 units
       parameters: ["asset1", "Green", "19", "owner1", "9999"],
       identity: "A",
@@ -154,7 +154,7 @@ test(testCase, async (t: Test) => {
       timestamp: new Date(currentTime.getTime() + 6),
       blockchainID: "TEST",
       invocationType: "send",
-      methodName: "burnAsset",
+      methodName: "BurnAsset",
       // Asset 1, 100 units
       parameters: ["asset1"],
       identity: "A",
