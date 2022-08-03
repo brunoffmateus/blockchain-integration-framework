@@ -12,6 +12,7 @@
     "./src/test/solidity/*.json",
     "**/openapi.json",
   ],
+  "exclude": ["./src/test/typescript/fixtures/**"],
   "references": [
     {
       "path": "../cactus-common/tsconfig.json"

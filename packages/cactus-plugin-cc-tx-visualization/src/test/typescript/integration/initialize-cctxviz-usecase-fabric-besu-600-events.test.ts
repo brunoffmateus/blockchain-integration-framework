@@ -247,7 +247,7 @@ test(testCase, async (t: Test) => {
   const contractName = "basic-asset-transfer-2";
 
   // Setup: contract directory
-  const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
+  const contractRelPath = "basic-asset-transfer/chaincode-typescript";
   const contractDir = path.join(
     __dirname,
     alternativeFixturesPath,

@@ -248,7 +248,7 @@ test(testCase, async (t: Test) => {
   const contractName = "basic-asset-transfer-2";
 
   // Setup: contract directory
-  const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
+  const contractRelPath = "basic-asset-transfer/chaincode-typescript";
   const contractDir = path.join(
     __dirname,
     alternativeFixturesPath,
@@ -570,14 +570,15 @@ test(testCase, async (t: Test) => {
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog > 1);
 
-  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-6-events");
-
   const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();
   const endTimeAggregate = new Date();
+
   log.debug(
     `EVAL-testFile-AGGREGATE-CCTX:${
       endTimeAggregate.getTime() - startTimeAggregate.getTime()
     }`,
   );
+
+  await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-6-events");
 });
