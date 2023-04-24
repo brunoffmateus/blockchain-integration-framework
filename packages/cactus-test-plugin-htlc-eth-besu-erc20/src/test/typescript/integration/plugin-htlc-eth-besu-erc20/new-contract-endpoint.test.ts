@@ -130,7 +130,7 @@ describe(testCase, () => {
 
   test(testCase, async () => {
     keychainPlugin.set(
-      HashTimeLockJSON.contractName,
+      "Hashed Time Lock Contract v0.1",
       JSON.stringify(HashTimeLockJSON),
     );
 
@@ -231,7 +231,7 @@ describe(testCase, () => {
 
   test("Test new invalid contract with 0 inputAmount token for HTLC", async () => {
     keychainPlugin.set(
-      HashTimeLockJSON.contractName,
+      "Hashed Time Lock Contract v0.1",
       JSON.stringify(HashTimeLockJSON),
     );
 

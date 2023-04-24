@@ -21,6 +21,14 @@ your local machine for development and testing purposes.
 
 ### Installing
 
+Install Foundry: https://book.getfoundry.sh/getting-started/installation
+
+Initialize git submodules: `git submodule update --init --recursive`
+
+If it does not work, add each manually:
+`git submodule add --force  https://github.com/OpenZeppelin/openzeppelin-contracts vendor/oz`
+`git submodule add --force  https://github.com/foundry-rs/forge-std vendor/forge-std`
+
 Steps to compile the project:
 
 In a `Cactus` root directory execute:
@@ -34,6 +42,13 @@ The tests can be found in @hyperledger/cactus-test-htlc-eth-besu. To run this, i
 ```sh
 npm run test:plugin-htlc-besu
 ```
+
+To run the solidity tests (within the root directory of this package):
+`forge test --match-contract PrivateHashTimeLockTest`
+
+To run a specific function:
+`forge test --match-contract PrivateHashTimeLockTest --match-test testDeployment`
+
 
 ## Contributing
 

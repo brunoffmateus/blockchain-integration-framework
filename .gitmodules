@@ -1,0 +1,6 @@
+[submodule "packages/cactus-plugin-htlc-eth-besu/vendor/oz"]
+	path = packages/cactus-plugin-htlc-eth-besu/vendor/oz
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "packages/cactus-plugin-htlc-eth-besu/vendor/forge-std"]
+	path = packages/cactus-plugin-htlc-eth-besu/vendor/forge-std
+	url = https://github.com/foundry-rs/forge-std

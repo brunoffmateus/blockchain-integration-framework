@@ -95,7 +95,7 @@ test(testCase, async (t: Test) => {
     JSON.stringify(DemoHelperJSON),
   );
   keychainPlugin.set(
-    HashTimeLockJSON.contractName,
+    "Hashed Time Lock Contract v0.1",
     JSON.stringify(HashTimeLockJSON),
   );
 

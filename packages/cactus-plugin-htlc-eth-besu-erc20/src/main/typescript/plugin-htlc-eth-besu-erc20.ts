@@ -157,7 +157,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
 
     const hashedTimeLockResponse = await connector.deployContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       contractAbi: HashTimeLockJSON.abi,
       bytecode: HashTimeLockJSON.bytecode,
       web3SigningCredential: initializeRequest.web3SigningCredential,
@@ -187,7 +187,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
 
     const result = await connector.invokeContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       keychainId: newContractRequest.keychainId,
       signingCredential: newContractRequest.web3SigningCredential,
       contractAddress: newContractRequest.contractAddress,
@@ -208,7 +208,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
 
     const result = await connector.invokeContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       keychainId: refundRequest.keychainId,
       signingCredential: refundRequest.web3SigningCredential,
       invocationType: EthContractInvocationType.Send,
@@ -228,7 +228,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
     const params = [withdrawRequest.id, withdrawRequest.secret];
     const result = await connector.invokeContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       keychainId: withdrawRequest.keychainId,
       signingCredential: withdrawRequest.web3SigningCredential,
       invocationType: EthContractInvocationType.Send,
@@ -248,7 +248,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
 
     const result = await connector.invokeContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       signingCredential: req.web3SigningCredential,
       invocationType: EthContractInvocationType.Call,
       methodName: "getSingleStatus",
@@ -266,7 +266,7 @@ export class PluginHtlcEthBesuErc20
     ) as PluginLedgerConnectorBesu;
 
     const result = await connector.invokeContract({
-      contractName: HashTimeLockJSON.contractName,
+      contractName: "Hashed Time Lock Contract v0.1",
       signingCredential: req.web3SigningCredential,
       invocationType: EthContractInvocationType.Call,
       methodName: "getStatus",

@@ -90,7 +90,7 @@ test(testCase, async (t: Test) => {
     JSON.stringify(DemoHelperJSON),
   );
   keychainPlugin.set(
-    HashTimeLockJSON.contractName,
+    "Hashed Time Lock Contract v0.1",
     JSON.stringify(HashTimeLockJSON),
   );
   const factory = new PluginFactoryLedgerConnector({
@@ -312,7 +312,7 @@ test("Test get invalid id status", async (t: Test) => {
     JSON.stringify(DemoHelperJSON),
   );
   keychainPlugin.set(
-    HashTimeLockJSON.contractName,
+    "Hashed Time Lock Contract v0.1",
     JSON.stringify(HashTimeLockJSON),
   );
   const factory = new PluginFactoryLedgerConnector({

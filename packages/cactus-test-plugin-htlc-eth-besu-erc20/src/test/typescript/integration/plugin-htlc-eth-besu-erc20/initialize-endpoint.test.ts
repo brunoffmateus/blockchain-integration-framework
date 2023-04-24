@@ -97,7 +97,7 @@ describe(testCase, () => {
       // test account that we'll reference while sending requests with the
       // signing credential pointing to this keychain entry.
       backend: new Map([
-        [HashTimeLockJSON.contractName, JSON.stringify(HashTimeLockJSON)],
+        ["Hashed Time Lock Contract v0.1", JSON.stringify(HashTimeLockJSON)],
       ]),
       logLevel,
     });
@@ -158,7 +158,7 @@ describe(testCase, () => {
       // test account that we'll reference while sending requests with the
       // signing credential pointing to this keychain entry.
       backend: new Map([
-        [HashTimeLockJSON.contractName, JSON.stringify(HashTimeLockJSON)],
+        ["Hashed Time Lock Contract v0.1", JSON.stringify(HashTimeLockJSON)],
       ]),
       logLevel,
     });
