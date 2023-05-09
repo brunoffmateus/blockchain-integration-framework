@@ -272,7 +272,26 @@ contract PrivateHashTimeLockTest is Test {
 
             // Store the result
             let value := mload(0xc0)
+            
+            /* 
+            call: This is an assembly level function used to call an external contract function. It takes 7 arguments.
 
+            gas: The amount of gas to use for the call. not(0) represents the maximum possible gas (since bitwise NOT of 0 gives a maximum value).
+
+            to: The address of the contract to call. 0x05 might be the address here, but typically it's a 20-byte address.
+
+            value: The amount of wei to send with the call. 0 is the value here, so it's a call without transferring any Ether.
+
+            inOffset: The start of the memory area where the call data is located. pointer is the start of the data in memory.
+
+            inSize: The size of the call data in bytes. 0xc0 is the size here.
+
+            outOffset: The start of the memory area where the output data will be written. value is the start of the output data in memory.
+
+            outSize: The size of the output area in bytes. 0x20 is the size here.
+
+            iszero: Checks if the call was successful. call returns 0 on failure and 1 on success, so iszero(call(...)) will return true if the call failed and false if it succeeded.
+            */
             // Call the precompiled contract 0x05 = bigModExp
             if iszero(call(not(0), 0x05, 0, pointer, 0xc0, value, 0x20)) {
                 revert(0, 0)
