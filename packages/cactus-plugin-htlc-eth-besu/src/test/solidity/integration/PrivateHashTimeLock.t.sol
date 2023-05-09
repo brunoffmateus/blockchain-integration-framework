@@ -32,7 +32,7 @@ contract PrivateHashTimeLockTest is Test {
         new PrivateHashTimeLock();
     }
 
-    function test_initializeHTLC() public {
+    function test_InitializeHTLC() public {
         // 5 eth
         uint256 inputAmountEth = 5;
         uint256 outputAmount = 5000000000000000000;
@@ -84,7 +84,7 @@ contract PrivateHashTimeLockTest is Test {
         assert(HtlcManager.getSingleStatus(id) == 1);
     }
 
-    function test_process_secret() public {
+    function test_ProcessSecret() public {
         // 5 eth
         uint256 inputAmountEth = 5;
         uint256 outputAmount = 5000000000000000000;
@@ -134,23 +134,116 @@ contract PrivateHashTimeLockTest is Test {
         HtlcManager.withdraw(id, secret);
     }
 
-    function test_mod_exp() public {
+    function test_ModExp() public {
         uint256 base = 11;
         uint256 exponent = 3;
         uint256 modulus = 109;
-        uint256 result = calculateHashSecret(base, exponent, modulus);
+        uint256 result = aux_calculateHashSecret(base, exponent, modulus);
         emit log_uint(result);
         assert(result == 23);
 
         bytes32 modulus_bytes = bytes32(modulus);
         bytes32 base_bytes = bytes32(base);
         bytes32 exponent_bytes = bytes32(exponent);
-        uint256 result2 = calculateHashSecret(uint256(base_bytes), uint256(exponent_bytes), uint256(modulus_bytes));
+        uint256 result2 = aux_calculateHashSecret(uint256(base_bytes), uint256(exponent_bytes), uint256(modulus_bytes));
         emit log_uint(result2);
         assert(result2 == 23);
     }
 
-    function calculateHashSecret(uint256 base, uint256 exponent, uint256 modulus)
+    function test_ModExpPrecompile() public {
+        uint256 base = 11;
+        uint256 exponent = 3;
+        uint256 modulus = 109;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 23);
+
+        bytes32 modulus_bytes = bytes32(modulus);
+        bytes32 base_bytes = bytes32(base);
+        bytes32 exponent_bytes = bytes32(exponent);
+        uint256 result2 = modExp(uint256(base_bytes), uint256(exponent_bytes), uint256(modulus_bytes));
+        emit log_uint(result2);
+        assert(result2 == 23);
+    }
+
+    function test_ModExpBigMod() public {
+        uint256 base = 11;
+        uint256 exponent = 43;
+        // looks like the highest modulus supported is 2^8 - 1
+        uint256 modulus = 128;
+        uint256 result = aux_calculateHashSecret(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 83);
+    }
+
+
+    function test_ModExpPrecompileBigMod() public {
+        uint256 base = 11;
+        uint256 exponent = 43;
+        uint256 modulus = 128;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 83);
+    }
+
+    function test_ModExpBiggerMod() public {
+        uint256 base = 11;
+        uint256 exponent = 43;
+        uint256 modulus = 2 ** 255;
+        uint256 result = aux_calculateHashSecret(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 602400691612421918536387328824478011400331731);
+    }
+
+    function test_ModExpPrecompileBiggerMod() public {
+        uint256 base = 11;
+        uint256 exponent = 43;
+        uint256 modulus = 2 ** 255;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 602400691612421918536387328824478011400331731);
+    }
+
+    function test_ModExpBigBase() public {
+        // 2^256 - 1
+        uint256 base = 2 ** 127;
+        uint256 exponent = 2;
+        uint256 modulus = 100;
+        uint256 result = aux_calculateHashSecret(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 84);
+    }
+
+    function test_ModExpPrecompileBigBase() public {
+        // 2^256 - 1
+        uint256 base = 2 ** 127;
+        uint256 exponent = 2;
+        uint256 modulus = 100;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 84);
+    }
+
+    function test_ModExpBigExp() public {
+        // 2^256 - 1
+        uint256 base = 4;
+        uint256 exponent = 2 ** 127;
+        uint256 modulus = 100;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 36);
+    }
+    function test_ModExpPrecompileBigExp() public {
+        // 2^256 - 1
+        uint256 base = 4;
+        uint256 exponent = 2 ** 127;
+        uint256 modulus = 100;
+        uint256 result = modExp(base, exponent, modulus);
+        emit log_uint(result);
+        assert(result == 36);
+    }
+
+    function aux_calculateHashSecret(uint256 base, uint256 exponent, uint256 modulus)
         internal
         view
         returns (uint256 result)
@@ -160,5 +253,32 @@ contract PrivateHashTimeLockTest is Test {
         require(exponent > 0, "exponent_1 cannot be 0");
 
         return (base ** exponent) % modulus;
+    }
+
+    function modExp(uint256 _b, uint256 _e, uint256 _m) public returns (uint256 result) {
+        assembly {
+            // Free memory pointer
+            let pointer := mload(0x40)
+
+            // Define length of base, exponent and modulus. 0x20 == 32 bytes
+            mstore(pointer, 0x20)
+            mstore(add(pointer, 0x20), 0x20)
+            mstore(add(pointer, 0x40), 0x20)
+
+            // Define variables base, exponent and modulus
+            mstore(add(pointer, 0x60), _b)
+            mstore(add(pointer, 0x80), _e)
+            mstore(add(pointer, 0xa0), _m)
+
+            // Store the result
+            let value := mload(0xc0)
+
+            // Call the precompiled contract 0x05 = bigModExp
+            if iszero(call(not(0), 0x05, 0, pointer, 0xc0, value, 0x20)) {
+                revert(0, 0)
+            }
+
+            result := mload(value)
+        }
     }
 }
