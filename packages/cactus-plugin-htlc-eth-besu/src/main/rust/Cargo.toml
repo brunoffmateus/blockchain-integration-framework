@@ -1,0 +1,32 @@
+[package]
+name = "adaptor-signature-escrowed-timelock-helper"
+version = "0.1.0"
+description = ""
+edition = "2021"
+homepage = "https://github.com/hyperledger/cacti"
+repository = "https://github.com/hyperledger/cacti"
+readme = "README.md"
+authors = ["Rafael Belchior"]
+categories = ["development-tools", "cryptography", "blockchain"]
+keywords = ["development-tools", "cryptography", "adaptor-signature", "htlc"]
+license = "Apache"
+
+[dev-dependencies]
+iai = "0.1"
+criterion = {version = "0.4.0", features = ["html_reports"]}
+
+[dependencies]
+tokio = { version = "1.24.1", features = ["full"] }
+ethers = "0.6"
+rand = "0.8.5"
+log = "0.4.17"
+dotenv = "0.15.0"
+secp256k1 = "0.20.2"
+hex = "0.4.3"
+anyhow = "1.0.71"
+thiserror = "1.0.40"
+simple_logger = "4.1.0"
+
+[profile.release]
+panic = 'abort'
+
