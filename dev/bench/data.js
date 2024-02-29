@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706866296088,
+  "lastUpdate": 1709197201991,
   "repoUrl": "https://github.com/RafaelAPB/blockchain-integration-framework",
   "entries": {
     "Benchmark": [
@@ -36,6 +36,44 @@ window.BENCHMARK_DATA = {
             "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
             "value": 381,
             "range": "±1.24%",
+            "unit": "ops/sec",
+            "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "ffaeffb243e64916dd7c01c3eef8cc2d1e6df9d1",
+          "message": "build(connector-polkadot): bump axios to v1.6.0\n\nBumps [axios](https://github.com/axios/axios) from 0.22.0 to 1.6.0.\n- [Release notes](https://github.com/axios/axios/releases)\n- [Changelog](https://github.com/axios/axios/blob/v1.6.0/CHANGELOG.md)\n- [Commits](https://github.com/axios/axios/compare/v0.22.0...v1.6.0)\n\n---\nupdated-dependencies:\n- dependency-name: axios\n  dependency-type: direct:development\n...\n\nCo-authored-by: Peter Somogyvari <peter.somogyvari@accenture.com>\n\nSigned-off-by: dependabot[bot] <support@github.com>\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-02-28T13:06:04-08:00",
+          "tree_id": "3beba0d4de5b77b97250021c63c205416679b08f",
+          "url": "https://github.com/RafaelAPB/blockchain-integration-framework/commit/ffaeffb243e64916dd7c01c3eef8cc2d1e6df9d1"
+        },
+        "date": 1709197199901,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 622,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "179 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 386,
+            "range": "±1.48%",
             "unit": "ops/sec",
             "extra": "182 samples"
           }
