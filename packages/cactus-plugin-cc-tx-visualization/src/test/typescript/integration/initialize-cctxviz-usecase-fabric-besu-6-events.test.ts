@@ -8,24 +8,23 @@ import {
 import {
   BesuTestLedger,
   Containers,
+  FABRIC_25_LTS_AIO_FABRIC_VERSION,
+  FABRIC_25_LTS_AIO_IMAGE_VERSION,
+  FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
+  FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
   FabricTestLedgerV1,
   pruneDockerAllIfGithubAction,
 } from "@hyperledger/cactus-test-tooling";
-import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
 import { IPluginCcTxVisualizationOptions } from "../../../main/typescript";
-import {
-  CcTxVisualization,
-  IChannelOptions,
-} from "../../../main/typescript/plugin-cc-tx-visualization";
+import { CcTxVisualization } from "../../../main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
-import { IRabbitMQTestServerOptions } from "@hyperledger/cactus-test-tooling/dist/lib/main/typescript/rabbitmq-test-server/rabbit-mq-test-server";
 import { v4 as uuidv4 } from "uuid";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { DiscoveryOptions } from "fabric-network";
 import { Configuration } from "@hyperledger/cactus-core-api";
 import fs from "fs-extra";
-import LockAssetContractJson from "../../solidity/LockAsset.json";
+import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.json";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 
 import {
@@ -54,21 +53,12 @@ import {
 const testCase = "Instantiate plugin with fabric, send 2 transactions";
 const logLevel: LogLevelDesc = "TRACE";
 
-// By default that's the Fabric connector queue
-const queueName = "cc-tx-viz-queue";
-
 const log = LoggerProvider.getOrCreate({
   level: logLevel,
   label: "cctxviz-fabtest",
 });
-//const fixturesPath =
-("../../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures");
-const alternativeFixturesPath = "../fixtures";
 
 let cctxViz: CcTxVisualization;
-let options: IRabbitMQTestServerOptions;
-let channelOptions: IChannelOptions;
-let testServer: RabbitMQTestServer;
 let cctxvizOptions: IPluginCcTxVisualizationOptions;
 let ledger: FabricTestLedgerV1;
 let besuTestLedger: BesuTestLedger;
@@ -90,37 +80,12 @@ test(testCase, async (t: Test) => {
       fail("Pruning didn't throw OK");
     });
 
-  options = {
-    publishAllPorts: true,
-    port: 5672,
-    logLevel: logLevel,
-    imageName: "rabbitmq",
-    imageTag: "3.9-management",
-    emitContainerLogs: true,
-    envVars: new Map([["AnyNecessaryEnvVar", "Can be set here"]]),
-  };
-  channelOptions = {
-    queueId: queueName,
-    dltTechnology: null,
-    persistMessages: false,
-  };
-
-  cctxvizOptions = {
-    instanceId: randomUUID(),
-    logLevel: logLevel,
-    eventProvider: "amqp://localhost",
-    channelOptions: channelOptions,
-  };
-  testServer = new RabbitMQTestServer(options);
-
-  await testServer.start();
-  cctxViz = new CcTxVisualization(cctxvizOptions);
-
   ledger = new FabricTestLedgerV1({
     emitContainerLogs: true,
     publishAllPorts: true,
+    imageVersion: FABRIC_25_LTS_AIO_IMAGE_VERSION,
     imageName: "ghcr.io/hyperledger/cactus-fabric2-all-in-one",
-    envVars: new Map([["FABRIC_VERSION", "2.2.0"]]),
+    envVars: new Map([["FABRIC_VERSION", FABRIC_25_LTS_AIO_FABRIC_VERSION]]),
     logLevel,
   });
   await ledger.start();
@@ -128,8 +93,6 @@ test(testCase, async (t: Test) => {
   besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
   const tearDown = async () => {
-    await cctxViz.closeConnection();
-    await testServer.stop();
     await ledger.stop();
     await ledger.destroy();
     await besuTestLedger.stop();
@@ -140,7 +103,6 @@ test(testCase, async (t: Test) => {
   };
 
   test.onFinish(tearDown);
-  t.ok(testServer);
   const channelId = "mychannel";
   const channelName = channelId;
 
@@ -172,51 +134,13 @@ test(testCase, async (t: Test) => {
     asLocalhost: true,
   };
 
-  // This is the directory structure of the Fabirc 2.x CLI container (fabric-tools image)
-  // const orgCfgDir = "/fabric-samples/test-network/organizations/";
-  const orgCfgDir =
-    "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/";
-
-  // these below mirror how the fabric-samples sets up the configuration
-  const org1Env = {
-    CORE_LOGGING_LEVEL: "debug",
-    FABRIC_LOGGING_SPEC: "debug",
-    CORE_PEER_LOCALMSPID: "Org1MSP",
-
-    ORDERER_CA: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
-
-    FABRIC_CFG_PATH: "/etc/hyperledger/fabric",
-    CORE_PEER_TLS_ENABLED: "true",
-    CORE_PEER_TLS_ROOTCERT_FILE: `${orgCfgDir}peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt`,
-    CORE_PEER_MSPCONFIGPATH: `${orgCfgDir}peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp`,
-    CORE_PEER_ADDRESS: "peer0.org1.example.com:7051",
-    ORDERER_TLS_ROOTCERT_FILE: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
-  };
-
-  // these below mirror how the fabric-samples sets up the configuration
-  const org2Env = {
-    CORE_LOGGING_LEVEL: "debug",
-    FABRIC_LOGGING_SPEC: "debug",
-    CORE_PEER_LOCALMSPID: "Org2MSP",
-
-    FABRIC_CFG_PATH: "/etc/hyperledger/fabric",
-    CORE_PEER_TLS_ENABLED: "true",
-    ORDERER_CA: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
-
-    CORE_PEER_ADDRESS: "peer0.org2.example.com:9051",
-    CORE_PEER_MSPCONFIGPATH: `${orgCfgDir}peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp`,
-    CORE_PEER_TLS_ROOTCERT_FILE: `${orgCfgDir}peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt`,
-    ORDERER_TLS_ROOTCERT_FILE: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
-  };
-
   const pluginOptions: IPluginLedgerConnectorFabricOptions = {
-    collectTransactionReceipts: true,
     instanceId: uuidv4(),
     dockerBinary: "/usr/local/bin/docker",
     peerBinary: "/fabric-samples/bin/peer",
     goBinary: "/usr/local/go/bin/go",
     pluginRegistry,
-    cliContainerEnv: org1Env,
+    cliContainerEnv: FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
     sshConfig,
     logLevel,
     connectionProfile,
@@ -244,29 +168,25 @@ test(testCase, async (t: Test) => {
 
   const apiClient = new FabricApi(config);
 
+  // packages/cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures/go/basic-asset-transfer/chaincode-typescript/package.json
+
+  // /home/peter/a/cacti-upstream/packages/cactus-plugin-cc-tx-visualization/src/test/typescript/fixtures/go/basic-asset-transfer/chaincode-typescript/tsconfig.json
+
+  // const contractRelPath =
+  //   "../../../../../cactus-plugin-ledger-connector-fabric/src/test/typescript/fixtures/go/basic-asset-transfer/chaincode-typescript";
+  // const contractDir = path.join(__dirname, contractRelPath);
+
+  // packages/cactus-plugin-cc-tx-visualization/src/test/typescript/fabric-contracts/lock-asset/chaincode-typescript/tsconfig.json
+  const contractRelPath = "../fabric-contracts/lock-asset/chaincode-typescript";
+  const contractDir = path.join(__dirname, contractRelPath);
+
   // Setup: contract name
   const contractName = "basic-asset-transfer-2";
 
   // Setup: contract directory
-  const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
-  const contractDir = path.join(
-    __dirname,
-    alternativeFixturesPath,
-    contractRelPath,
-  );
+  // const contractRelPath = "go/basic-asset-transfer/chaincode-typescript";
+
   const sourceFiles: FileBase64[] = [];
-  // Setup: push files
-  {
-    const filename = "./tslint.json";
-    const relativePath = "./";
-    const filePath = path.join(contractDir, relativePath, filename);
-    const buffer = await fs.readFile(filePath);
-    sourceFiles.push({
-      body: buffer.toString("base64"),
-      filepath: relativePath,
-      filename,
-    });
-  }
   {
     const filename = "./tsconfig.json";
     const relativePath = "./";
@@ -322,15 +242,19 @@ test(testCase, async (t: Test) => {
       filename,
     });
   }
+
   // Setup: Deploy smart contract
   const res = await apiClient.deployContractV1({
     channelId,
     ccVersion: "1.0.0",
-    // constructorArgs: { Args: ["john", "99"] },
     sourceFiles,
     ccName: contractName,
-    targetOrganizations: [org1Env, org2Env],
-    caFile: `${orgCfgDir}ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem`,
+    targetOrganizations: [
+      FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
+      FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
+    ],
+    caFile:
+      FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
     ccLabel: "basic-asset-transfer-2",
     ccLang: ChainCodeProgrammingLanguage.Typescript,
     ccSequence: 1,
@@ -380,7 +304,6 @@ test(testCase, async (t: Test) => {
     pluginImportType: PluginImportType.Local,
   });
   const connector: PluginLedgerConnectorBesu = await factory.create({
-    collectTransactionReceipts: true,
     rpcApiHttpHost,
     rpcApiWsHost,
     instanceId: uuidv4(),
@@ -388,7 +311,7 @@ test(testCase, async (t: Test) => {
   });
 
   const balance = await web3.eth.getBalance(testEthAccount.address);
-  t.ok(balance);
+  t.ok(balance); // returns On (Javascript zero in BigInt)
 
   const deployOut = await connector.deployContract({
     keychainId: keychainPluginBesu.getKeychainId(),
@@ -413,8 +336,25 @@ test(testCase, async (t: Test) => {
     }`,
   );
 
-  const timeStartSendMessages = new Date();
+  cctxvizOptions = {
+    instanceId: randomUUID(),
+    logLevel: logLevel,
+    besuTxObservable: connector.getTxSubjectObservable(),
+    fabricTxObservable: plugin.getTxSubjectObservable(),
+  };
 
+  // Initialize CcTxVisualization plugin
+  cctxViz = new CcTxVisualization(cctxvizOptions);
+  cctxViz.setCaseId("FABRIC_BESU");
+  t.ok(cctxViz);
+  log.info("cctxviz plugin is ok");
+
+  t.comment("start monitor transactions");
+  const timeStartPollReceipts = new Date();
+  cctxViz.monitorTransactions();
+
+  t.comment("start transactions");
+  const startTransactions = new Date();
   await connector.transact({
     web3SigningCredential: {
       ethAccount: firstHighNetWorthAccount,
@@ -432,8 +372,7 @@ test(testCase, async (t: Test) => {
       gas: 1000000,
     },
   });
-  const { success: createRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
+  const { success: createResBesu } = await connector.invokeContract({
     contractName: contractNameBesu,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationType.Send,
@@ -446,11 +385,10 @@ test(testCase, async (t: Test) => {
     },
     gas: 1000000,
   });
-  t.ok(createRes);
-  t.assert(createRes === true);
+  t.ok(createResBesu);
+  t.assert(createResBesu === true);
   log.warn("create ok");
-  const { success: lockRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
+  const { success: lockResBesu } = await connector.invokeContract({
     contractName: contractNameBesu,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationType.Send,
@@ -464,16 +402,14 @@ test(testCase, async (t: Test) => {
     gas: 1000000,
   });
   log.warn("checking lock res");
-  t.ok(lockRes);
+  t.ok(lockResBesu);
   const assetId = "asset1";
-  const assetOwner = "owner1";
 
   const createResFabric = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
     contractName,
     channelName,
-    params: [assetId, "Green", "19", assetOwner, "9999"],
-    methodName: "MintAsset",
+    params: [assetId, "19", "fabricUser"],
+    methodName: "CreateAsset",
     invocationType: FabricContractInvocationType.Send,
     signingCredential: {
       keychainId,
@@ -483,25 +419,20 @@ test(testCase, async (t: Test) => {
   t.ok(createResFabric);
 
   // READS are not considered transactions, but are relevant to our use case
-  /*
-  const getRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
-    contractName,
-    channelName,
-    params: [assetId],
-    methodName: "ReadAsset",
-    invocationType: FabricContractInvocationType.Call,
-    signingCredential: {
-      keychainId,
-      keychainRef: keychainEntryKey,
-    },
-  });
-  expect(getRes).toBeDefined();
-  */
+  // const readResFabric = await apiClient.runTransactionV1({
+  //   contractName,
+  //   channelName,
+  //   params: [assetId],
+  //   methodName: "ReadAsset",
+  //   invocationType: FabricContractInvocationType.Send,
+  //   signingCredential: {
+  //     keychainId,
+  //     keychainRef: keychainEntryKey,
+  //   },
+  // });
+  // t.ok(readResFabric);
 
-  // Setup: transact
-  const transferAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
+  const transferResFabric = await apiClient.runTransactionV1({
     contractName,
     channelName,
     params: [assetId, "owner2"],
@@ -512,10 +443,9 @@ test(testCase, async (t: Test) => {
       keychainRef: keychainEntryKey,
     },
   });
-  t.ok(transferAssetRes);
-  // Setup: transact
-  const transferAssetBackRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
+  t.ok(transferResFabric);
+
+  const transferResBackFabric = await apiClient.runTransactionV1({
     contractName,
     channelName,
     params: [assetId, "owner1"],
@@ -526,51 +456,56 @@ test(testCase, async (t: Test) => {
       keychainRef: keychainEntryKey,
     },
   });
-  t.ok(transferAssetBackRes);
-  // Setup: transact
-  const burnAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
+  t.ok(transferResBackFabric);
+
+  const deleteResFabric = await apiClient.runTransactionV1({
     contractName,
     channelName,
     params: [assetId],
-    methodName: "BurnAsset",
+    methodName: "DeleteAsset",
     invocationType: FabricContractInvocationType.Send,
     signingCredential: {
       keychainId,
       keychainRef: keychainEntryKey,
     },
   });
-  t.ok(burnAssetRes);
+  t.ok(deleteResFabric);
 
-  // Initialize our plugin
-  t.ok(cctxViz);
-  log.info("cctxviz plugin is ok");
-  const endTimeSendMessages = new Date();
+  t.comment("transactions done");
+  const endTransactions = new Date();
   log.debug(
     `EVAL-testFile-SEND-MESSAGES:${
-      endTimeSendMessages.getTime() - timeStartSendMessages.getTime()
+      endTransactions.getTime() - startTransactions.getTime()
     }`,
   );
-  const timeStartPollReceipts = new Date();
-  await cctxViz.pollTxReceipts();
-  await cctxViz.hasProcessedXMessages(6, 4);
 
   const endTimePollReceipts = new Date();
-  const totalTimePoll =
-    endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
-  log.debug(`EVAL-testFile-POLL:${totalTimePoll}`);
+  log.debug(
+    `EVAL-testFile-POLL:${
+      endTimePollReceipts.getTime() - timeStartPollReceipts.getTime()
+    }`,
+  );
 
-  // Number of messages on queue: 0
-  t.assert(cctxViz.numberUnprocessedReceipts > 1);
+  t.assert(cctxViz.numberUnprocessedReceipts === 6);
   t.assert(cctxViz.numberEventsLog === 0);
 
+  t.comment("create events from receipts");
+  const startTimeReceiptsToCrossChainEvents = new Date();
   await cctxViz.txReceiptToCrossChainEventLogEntry();
+  const endTimeReceiptsToCrossChainEvents = new Date();
+  log.debug(
+    `EVAL-testFile-CREATE-CCEVENTS-FROM-RECEIPTS:${
+      endTimeReceiptsToCrossChainEvents.getTime() -
+      startTimeReceiptsToCrossChainEvents.getTime()
+    }`,
+  );
 
-  // Number of messages on queue: 0
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
-  t.assert(cctxViz.numberEventsLog > 1);
+  t.assert(cctxViz.numberEventsLog === 6);
 
+  t.comment("create cross chain log");
   await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-6-events");
+  await cctxViz.persistCrossChainLogJson("use-case-besu-fabric-6-events");
 
   const startTimeAggregate = new Date();
   await cctxViz.aggregateCcTx();

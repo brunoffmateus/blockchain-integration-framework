@@ -9,7 +9,10 @@
   },
   "include": [
     "./src",
-    "./src/test/solidity/*.json",
+    "./src/test/solidity/lock-asset-contract/*.json",
+  ],
+  "exclude":[
+    "./src/test/typescript/fabric-contracts/lock-asset/chaincode-typescript/**/*.ts"
   ],
   "references": [
     {

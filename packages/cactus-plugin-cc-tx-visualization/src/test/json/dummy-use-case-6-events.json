@@ -1,0 +1,102 @@
+[
+  {
+    "caseID": "1",
+    "receiptID": "txID1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "InitializeAsset",
+    "parameters": [
+      "asset1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:10:59.588Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 69,
+    "revenue": 0
+  },
+  {
+    "caseID": "1",
+    "receiptID": "txID2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "LockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:10:59.590Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 72,
+    "revenue": 0
+  },
+  {
+    "caseID": "1",
+    "receiptID": "txID3",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "CreateAsset",
+    "parameters": [
+      "1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:10:59.591Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 73,
+    "revenue": 0
+  },
+  {
+    "caseID": "1",
+    "receiptID": "txID4",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount"
+    ],
+    "timestamp": "2024-04-15T09:10:59.592Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 73,
+    "revenue": 0
+  },
+  {
+    "caseID": "1",
+    "receiptID": "txID5",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount2"
+    ],
+    "timestamp": "2024-04-15T09:10:59.593Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 73,
+    "revenue": 0
+  },
+  {
+    "caseID": "1",
+    "receiptID": "txID6",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "DeleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:10:59.594Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 73,
+    "revenue": 0
+  }
+]

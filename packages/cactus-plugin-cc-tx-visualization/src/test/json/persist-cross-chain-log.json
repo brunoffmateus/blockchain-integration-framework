@@ -1,0 +1,36 @@
+[
+  {
+    "caseID": "caseID-TEST 1",
+    "receiptID": "txID1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.CALL",
+    "methodName": "methodName",
+    "parameters": [
+      "0",
+      "2"
+    ],
+    "timestamp": "2024-04-15T09:08:15.030Z",
+    "identity": "person 1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 14,
+    "revenue": 0
+  },
+  {
+    "caseID": "case1",
+    "receiptID": "txID2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.CALL",
+    "methodName": "methodName",
+    "parameters": [
+      "0",
+      "2"
+    ],
+    "timestamp": "2024-04-15T09:08:15.040Z",
+    "identity": "person 1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 5,
+    "revenue": 0
+  }
+]
