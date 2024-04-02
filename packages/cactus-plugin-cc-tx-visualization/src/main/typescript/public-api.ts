@@ -4,7 +4,6 @@ export {
   IWebAppOptions,
 } from "./plugin-cc-tx-visualization";
 
-export { IsVisualizable } from "./models/transaction-receipt";
 export { PluginFactoryWebService } from "./plugin-factory-cc-tx-visualization";
 
 import { IPluginFactoryOptions } from "@hyperledger/cactus-core-api";

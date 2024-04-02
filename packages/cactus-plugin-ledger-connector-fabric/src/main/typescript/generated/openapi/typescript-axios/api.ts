@@ -1035,24 +1035,6 @@ export interface RunTransactionRequest {
      * @type {number}
      * @memberof RunTransactionRequest
      */
-    cost?: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof RunTransactionRequest
-     */
-    carbonFootprint?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof RunTransactionRequest
-     */
-    caseID?: string;
-    /**
-     * 
-     * @type {object}
-     * @memberof RunTransactionRequest
-     */
     'transientData'?: object | null;
     /**
      * 

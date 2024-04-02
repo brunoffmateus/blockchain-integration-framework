@@ -11,7 +11,7 @@ import {
 import { ReplaySubject } from "rxjs";
 import { RunTransactionV1Exchange } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
-const testCase = "persist logs";
+const testCase = "simulate basic transaction without connectors";
 const logLevel: LogLevelDesc = "TRACE";
 
 test("BEFORE " + testCase, async (t: Test) => {
@@ -38,16 +38,20 @@ test(testCase, async (t: Test) => {
   };
   test.onFinish(tearDown);
 
-  // Initialize our plugin
+  // Initialize cctxViz
+  t.comment("initialize cctxViz");
   const cctxViz = new CcTxVisualization(cctxvizOptions);
+  cctxViz.setCaseId("basic-TEST");
   t.ok(cctxViz);
   t.comment("cctxviz plugin is ok");
 
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog === 0);
+
+  t.comment("start monitoring transactions");
   cctxViz.monitorTransactions();
 
-  cctxViz.setCaseId("caseID-TEST 1");
+  // Simulates one fabric transaction
   const txSim1: RunTxReqWithTxId = {
     request: {
       signingCredential: {
@@ -56,7 +60,7 @@ test(testCase, async (t: Test) => {
       },
       channelName: "channelName",
       contractName: "contractName",
-      invocationType: FabricContractInvocationType.Call,
+      invocationType: FabricContractInvocationType.Send,
       methodName: "methodName",
       params: ["0", "2"],
     },
@@ -66,46 +70,15 @@ test(testCase, async (t: Test) => {
   fabricReplaySubject.next(txSim1);
   console.log(txSim1);
 
-  cctxViz.setCaseId("case1");
-  const txSim2: RunTxReqWithTxId = {
-    request: {
-      signingCredential: {
-        keychainId: "keychainId",
-        keychainRef: "person 1",
-      },
-      channelName: "channelName",
-      contractName: "contractName",
-      invocationType: FabricContractInvocationType.Call,
-      methodName: "methodName",
-      params: ["0", "2"],
-    },
-    transactionId: "txID2",
-    timestamp: new Date(),
-  };
-  fabricReplaySubject.next(txSim2);
-  console.log(txSim2);
-
   t.comment("transactions done");
 
   t.assert(cctxViz.numberEventsLog === 0);
-  t.assert(cctxViz.numberUnprocessedReceipts === 2);
+  t.assert(cctxViz.numberUnprocessedReceipts === 1);
 
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  t.assert(cctxViz.numberEventsLog === 2);
+  t.assert(cctxViz.numberEventsLog === 1);
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
-
-  const logNameCsv = await cctxViz.persistCrossChainLogCsv(
-    "persist-cross-chain-log",
-  );
-  console.log(logNameCsv);
-  t.ok(logNameCsv);
-
-  const logNameJson = await cctxViz.persistCrossChainLogJson(
-    "persist-cross-chain-log",
-  );
-  console.log(logNameJson);
-  t.ok(logNameJson);
 
   t.end();
 });

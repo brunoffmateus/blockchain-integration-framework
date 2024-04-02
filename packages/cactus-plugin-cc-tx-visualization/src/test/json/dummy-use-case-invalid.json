@@ -1,0 +1,202 @@
+[
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID1_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "InitializeAsset",
+    "parameters": [
+      "asset1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:09:47.142Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 52,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID3_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "CreateAsset",
+    "parameters": [
+      "asset1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:09:47.144Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 53,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID2_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "LockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:09:47.145Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 54,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID4_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount"
+    ],
+    "timestamp": "2024-04-15T09:09:47.146Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 54,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID5_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount2"
+    ],
+    "timestamp": "2024-04-15T09:09:47.147Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 55,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_1",
+    "receiptID": "txID6_1",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "DeleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:09:47.148Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 57,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID1_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "InitializeAsset",
+    "parameters": [
+      "asset1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:09:47.142Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 65,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID3_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "CreateAsset",
+    "parameters": [
+      "asset1",
+      "100"
+    ],
+    "timestamp": "2024-04-15T09:09:47.144Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 65,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID2_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "LockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:09:47.145Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 65,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID4_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount"
+    ],
+    "timestamp": "2024-04-15T09:09:47.146Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 67,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID5_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "asset1",
+      "targetAccount2"
+    ],
+    "timestamp": "2024-04-15T09:09:47.147Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 68,
+    "revenue": 0
+  },
+  {
+    "caseID": "INVALID_FABRIC_BESU_2",
+    "receiptID": "txID6_2",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "DeleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-04-15T09:09:47.148Z",
+    "identity": "A",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 69,
+    "revenue": 0
+  }
+]

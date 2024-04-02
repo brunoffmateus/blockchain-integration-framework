@@ -1,7 +1,7 @@
 export type CrossChainEvent = {
   caseID: string;
   receiptID: string;
-  timestamp: Date;
+  timestamp: string;
   blockchainID: string;
   invocationType: string;
   methodName: string;
