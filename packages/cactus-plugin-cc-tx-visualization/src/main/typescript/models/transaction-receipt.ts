@@ -1,11 +1,11 @@
 import { LedgerType } from "@hyperledger/cactus-core-api";
-import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu/src/main/typescript/public-api";
+import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import {
   FabricSigningCredential,
   GatewayOptions,
   TransactReceiptBlockMetaData,
   TransactReceiptTransactionCreator,
-} from "@hyperledger/cactus-plugin-ledger-connector-fabric/src/main/typescript/generated/openapi/typescript-axios/api";
+} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
 export interface TransactionReceipt {
   caseID: string;
@@ -21,16 +21,17 @@ export interface IsVisualizable {
   collectTransactionReceipts: boolean;
 }
 
-// TODO define Tx Receipt for Fabric
 export interface FabricV2TxReceipt extends TransactionReceipt {
-  channelName: string;
-  transactionID: string | undefined;
-  contractName: string;
+  // used - used making the cross chain event
+  channelName: string; //used
+  transactionID: string | undefined; //used
+  contractName: string; //used
   endorsingPeers?: string[];
   endorsingParties?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transientData?: any | null;
   gatewayOptions?: GatewayOptions;
-  signingCredentials: FabricSigningCredential;
+  signingCredentials: FabricSigningCredential; //used
   blockNumber?: string;
   transactionCreator?: TransactReceiptTransactionCreator;
   blockMetaData?: TransactReceiptBlockMetaData;
@@ -38,9 +39,18 @@ export interface FabricV2TxReceipt extends TransactionReceipt {
   chainCodeVersion?: string;
   responseStatus?: string;
 }
+
+export interface FabricV2TxReceiptRxJS extends TransactionReceipt {
+  channelName: string;
+  transactionID: string | undefined;
+  contractName: string;
+  signingCredentials: FabricSigningCredential;
+}
+
 export interface BesuV2TxReceipt extends TransactionReceipt {
+  // used - used making the cross chain event
   status: boolean;
-  transactionHash: string;
+  transactionHash: string; //used
   transactionIndex: number;
   blockNumber: number;
   blockHash: string;
@@ -50,9 +60,9 @@ export interface BesuV2TxReceipt extends TransactionReceipt {
   value?: number | string;
   gas?: number | string;
   gasPrice?: number | string;
-  gasUsed?: number | string;
+  gasUsed?: number | string; //used
   cumulativeGasUsed?: number | string;
-  from: string;
+  from: string; // used
   to: string;
   signingCredentials?: Web3SigningCredential;
   keychainID?: string;
@@ -60,9 +70,16 @@ export interface BesuV2TxReceipt extends TransactionReceipt {
   timeoutMs?: number | string;
 }
 
+export interface BesuV2TxReceiptRxJS extends TransactionReceipt {
+  transactionHash: string;
+  gasUsed?: number | string;
+  from: string;
+}
+
 export function toSeconds(date: number): number {
   return Math.floor(date / 1000);
 }
+
 export function millisecondsLatency(date: Date): number {
   return new Date().getTime() - date.getTime();
 }

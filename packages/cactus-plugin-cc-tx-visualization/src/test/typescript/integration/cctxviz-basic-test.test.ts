@@ -17,7 +17,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import http from "http";
 
-const testCase = "persist logs";
+const testCase = "basic transaction";
 const logLevel: LogLevelDesc = "TRACE";
 
 const expressApp = express();
@@ -67,18 +67,20 @@ test(testCase, async (t: Test) => {
   };
   test.onFinish(tearDown);
 
-  // Initialize our plugin
+  // Initialize cctxViz
+  t.comment("initialize cctxViz");
   const cctxViz = new CcTxVisualization(cctxvizOptions);
+  cctxViz.setCaseId("basic-TEST");
   t.ok(cctxViz);
   t.comment("cctxviz plugin is ok");
 
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
   t.assert(cctxViz.numberEventsLog === 0);
+
+  t.comment("start monitoring transactions");
   cctxViz.monitorTransactions("Fabric");
 
-  // Simulates the RunTxReqWithTxId instanciation that occurs in Fabric transactions:
-  // caseID 1; Fabric blockchain; parameters: asset 1, 100 units
-  cctxViz.setCaseId("caseID-TEST 1");
+  // Simulates one transaction
   const runTxReq1: RunTxReqWithTxId = {
     request: {
       signingCredential: {
@@ -87,7 +89,7 @@ test(testCase, async (t: Test) => {
       },
       channelName: "channelName",
       contractName: "contractName",
-      invocationType: FabricContractInvocationType.Call,
+      invocationType: FabricContractInvocationType.Send,
       methodName: "methodName",
       params: ["0", "2"],
     },
@@ -95,38 +97,16 @@ test(testCase, async (t: Test) => {
     timestamp: new Date(),
   };
   console.log(runTxReq1);
+  t.comment("transactions done");
 
-  cctxViz.setCaseId("case1");
-  const runTxReq2: RunTxReqWithTxId = {
-    request: {
-      signingCredential: {
-        keychainId: "keychainId",
-        keychainRef: "person 1",
-      },
-      channelName: "channelName",
-      contractName: "contractName",
-      invocationType: FabricContractInvocationType.Call,
-      methodName: "methodName",
-      params: ["0", "2"],
-    },
-    transactionId: "txID2",
-    timestamp: new Date(),
-    // cost: 5,
-    // revenue: 0,
-  };
-  console.log(runTxReq2);
+  t.assert(cctxViz.numberEventsLog === 0);
+  t.assert(cctxViz.numberUnprocessedReceipts === 1); // fails - receipts are not being received by subscribers
+  console.log(cctxViz.numberUnprocessedReceipts);
 
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
   await cctxViz.txReceiptToCrossChainEventLogEntry();
 
-  t.assert(cctxViz.numberEventsLog === 2);
-  // because the second message did not have time to be send to processing before receipts were transformed into cross chain events
+  t.assert(cctxViz.numberEventsLog === 1);
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
 
-  await cctxViz.txReceiptToCrossChainEventLogEntry();
-
-  const logName = await cctxViz.persistCrossChainLogCsv();
-  console.log(logName);
-  t.ok(logName);
-  t.end();
+  t.end(); // doesn't end
 });

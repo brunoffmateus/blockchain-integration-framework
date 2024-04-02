@@ -1,23 +1,36 @@
 import test, { Test } from "tape-promise/tape";
-import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
-import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
+import {
+  IListenOptions,
+  LogLevelDesc,
+  LoggerProvider,
+  Servers,
+} from "@hyperledger/cactus-common";
 import { pruneDockerAllIfGithubAction } from "@hyperledger/cactus-test-tooling";
 import { IPluginCcTxVisualizationOptions } from "../../../main/typescript";
-import {
-  CcTxVisualization,
-  IChannelOptions,
-} from "../../../main/typescript/plugin-cc-tx-visualization";
+import { CcTxVisualization } from "../../../main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
-import * as amqp from "amqp-ts";
+import {
+  FabricContractInvocationType,
+  RunTxReqWithTxId,
+} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { AddressInfo } from "net";
+import bodyParser from "body-parser";
+import express from "express";
+import http from "http";
 
 const testCase = "dummy-baseline-invalid";
 const logLevel: LogLevelDesc = "TRACE";
-const queueName = "cc-tx-log-entry-test";
 
 const log = LoggerProvider.getOrCreate({
   level: logLevel,
   label: "cctxviz-dummy-demo",
 });
+
+const expressApp = express();
+expressApp.use(bodyParser.json({ limit: "250mb" }));
+const serverFabric = http.createServer(expressApp);
+const serverBesu = http.createServer(expressApp);
+
 test("BEFORE " + testCase, async (t: Test) => {
   const pruning = pruneDockerAllIfGithubAction({ logLevel });
   await t.doesNotReject(pruning, "Pruning didn't throw OK");
@@ -25,50 +38,47 @@ test("BEFORE " + testCase, async (t: Test) => {
 });
 
 test(testCase, async (t: Test) => {
-  //initialize rabbitmq
   const setupInfraTime = new Date();
-  const options = {
-    publishAllPorts: true,
-    port: 5672,
-    logLevel: logLevel,
-    imageName: "rabbitmq",
-    imageTag: "3.9-management",
-    emitContainerLogs: true,
-    envVars: new Map([["AnyNecessaryEnvVar", "Can be set here"]]),
+  const listenOptionsFabric: IListenOptions = {
+    hostname: "localhost",
+    port: 0,
+    server: serverFabric,
   };
-  const channelOptions: IChannelOptions = {
-    queueId: queueName,
-    dltTechnology: null,
-    persistMessages: false,
+  const listenOptionsBesu: IListenOptions = {
+    hostname: "localhost",
+    port: 0,
+    server: serverBesu,
   };
+  const addressInfoFabric = (await Servers.listen(
+    listenOptionsFabric,
+  )) as AddressInfo;
+  const { port: portFabric } = addressInfoFabric;
+  const addressInfoBesu = (await Servers.listen(
+    listenOptionsBesu,
+  )) as AddressInfo;
+  const { port: portBesu } = addressInfoBesu;
+  const apiUrlFabric = `http://localhost:${portFabric}`;
+  const apiUrlBesu = `http://localhost:${portBesu}`;
 
   const cctxvizOptions: IPluginCcTxVisualizationOptions = {
     instanceId: randomUUID(),
     logLevel: logLevel,
-    eventProvider: "amqp://localhost",
-    channelOptions: channelOptions,
+    basePathFabric: apiUrlFabric,
+    basePathBesu: apiUrlBesu,
   };
 
-  const testServer = new RabbitMQTestServer(options);
   const tearDown = async () => {
     t.comment("shutdown starts");
-    await testServer.stop();
     await cctxViz.shutdown();
-    await cctxViz.closeConnection();
     log.debug("running process exit");
     process.exit(0);
   };
-
   test.onFinish(tearDown);
-  await testServer.start(true);
-  t.ok(testServer);
-
-  // Simulates a Cactus Ledger Connector plugin
-  const connection = new amqp.Connection();
-  const queue = connection.declareQueue(queueName, { durable: false });
 
   // Initialize our plugin
   const cctxViz = new CcTxVisualization(cctxvizOptions);
+  cctxViz.setCaseId("INVALID_FABRIC_BESU");
+
   const setupInfraTimeEnd = new Date();
   log.debug(
     `EVAL-testFile-SETUP-INFRA:${
@@ -82,96 +92,151 @@ test(testCase, async (t: Test) => {
   t.assert(cctxViz.numberEventsLog === 0);
 
   const currentTime = new Date();
-  let caseNumber = 1;
-  const caseID = "INVALID_FABRIC_BESU";
 
-  t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
+  const timeStartPollReceipts = currentTime;
+  cctxViz.monitorTransactions("Fabric");
+  // await cctxViz.hasProcessedXMessages(6, 4);
+
+  let caseNumber = 1;
+  // t.comment(`Sending ${caseNumber * 6} messages across ${caseNumber} cases`);
+  t.comment(
+    `Sumulating ${caseNumber * 6} transactions across ${caseNumber} cases`,
+  );
+
+  const timeStartSimulateTxs = new Date();
+
+  // Simulates the RunTxReqWithTxId instanciation that occurs in Fabric transactions:
+  // caseID 1; register emissions; Fabric blockchain; parameters: asset 1, 100 units
   while (caseNumber > 0) {
-    // caseID 1; registar emissions; Fabric blockchain, test message; parameters: asset 1, 100 units
-    const testMessage1 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    cctxViz.setCaseId(cctxViz.getCaseId() + "_" + caseNumber);
+
+    const runTxReq1: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "createAsset",
+        // Asset 1, 100 units
+        params: ["asset1,5"],
+      },
+      transactionId: "txID1",
       timestamp: currentTime,
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "createAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1,5"],
-      identity: "A",
-    });
-    queue.send(testMessage1);
+    };
+    console.log(runTxReq1);
 
     // BAD ORDER MINT BEFORE LOCK
-    const testMessage3 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    const runTxReq3: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "mintAsset",
+        // Asset 1, 100 units
+        params: ["asset1", "Green", "19", "owner1", "9999"],
+      },
+      transactionId: "txID3",
       timestamp: new Date(currentTime.getTime() + 2),
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "mintAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1", "Green", "19", "owner1", "9999"],
-      identity: "A",
-    });
-    queue.send(testMessage3);
+    };
+    console.log(runTxReq3);
 
-    const testMessage2 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    const runTxReq2: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "lockAsset",
+        // Asset 1, 100 units
+        params: ["asset1"],
+      },
+      transactionId: "txID2",
       timestamp: new Date(currentTime.getTime() + 3),
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "lockAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1"],
-      identity: "A",
-    });
-    queue.send(testMessage2);
+    };
+    console.log(runTxReq2);
 
-    const testMessage4 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    const runTxReq4: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "transferAsset",
+        // Asset 1, 100 units
+        params: ["asset1", "owner2"],
+      },
+      transactionId: "txID4",
       timestamp: new Date(currentTime.getTime() + 4),
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "transferAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1", "owner2"],
-      identity: "A",
-    });
-    queue.send(testMessage4);
+    };
+    console.log(runTxReq4);
 
-    const testMessage5 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    const runTxReq5: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "transferAsset",
+        // Asset 1, 100 units
+        params: ["asset1", "owner1"],
+      },
+      transactionId: "txID5",
       timestamp: new Date(currentTime.getTime() + 5),
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "transferAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1", "owner1"],
-      identity: "A",
-    });
-    queue.send(testMessage5);
+    };
+    console.log(runTxReq5);
 
-    const testMessage6 = new amqp.Message({
-      caseID: caseID + "_" + caseNumber,
+    const runTxReq6: RunTxReqWithTxId = {
+      request: {
+        signingCredential: {
+          keychainId: "keychainId",
+          keychainRef: "A",
+        },
+        channelName: "channelName",
+        contractName: "contractName",
+        invocationType: FabricContractInvocationType.Send,
+        methodName: "BurnAsset",
+        // Asset 1, 100 units
+        params: ["asset1"],
+      },
+      transactionId: "txID6",
       timestamp: new Date(currentTime.getTime() + 6),
-      blockchainID: "TEST",
-      invocationType: "send",
-      methodName: "BurnAsset",
-      // Asset 1, 100 units
-      parameters: ["asset1"],
-      identity: "A",
-    });
-    queue.send(testMessage6);
+    };
+    console.log(runTxReq6);
 
     caseNumber--;
   }
 
-  const timeStartPollReceipts = new Date();
-  await cctxViz.pollTxReceipts();
-  await cctxViz.hasProcessedXMessages(6, 4);
+  const endTimeSimulateTxs = new Date();
+  t.comment(
+    `EVAL-testFile-SIMULATE-TRANSACTIONS:${
+      endTimeSimulateTxs.getTime() - timeStartSimulateTxs.getTime()
+    }`,
+  );
 
   const endTimePollReceipts = new Date();
   const totalTimePoll =
     endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
   t.comment(`EVAL-testFile-POLL:${totalTimePoll}`);
+
+  const postSimulationPollingDuration =
+    endTimePollReceipts.getTime() - endTimeSimulateTxs.getTime();
+  t.comment(`EVAL-testFile-POST-SIM-POLL:${postSimulationPollingDuration}`);
 
   t.assert(cctxViz.numberEventsLog === 0);
   t.assert(cctxViz.numberUnprocessedReceipts === 6);

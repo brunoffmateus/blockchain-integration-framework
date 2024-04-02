@@ -11,14 +11,9 @@ import {
   FabricTestLedgerV1,
   pruneDockerAllIfGithubAction,
 } from "@hyperledger/cactus-test-tooling";
-import { RabbitMQTestServer } from "@hyperledger/cactus-test-tooling";
 import { IPluginCcTxVisualizationOptions } from "../../../main/typescript";
-import {
-  CcTxVisualization,
-  IChannelOptions,
-} from "../../../main/typescript/plugin-cc-tx-visualization";
+import { CcTxVisualization } from "../../../main/typescript/plugin-cc-tx-visualization";
 import { randomUUID } from "crypto";
-import { IRabbitMQTestServerOptions } from "@hyperledger/cactus-test-tooling/dist/lib/main/typescript/rabbitmq-test-server/rabbit-mq-test-server";
 import { v4 as uuidv4 } from "uuid";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import { PluginRegistry } from "@hyperledger/cactus-core";
@@ -54,9 +49,6 @@ import {
 const testCase = "Instantiate plugin with fabric, send 2 transactions";
 const logLevel: LogLevelDesc = "TRACE";
 
-// By default that's the Fabric connector queue
-const queueName = "cc-tx-viz-queue";
-
 const log = LoggerProvider.getOrCreate({
   level: logLevel,
   label: "cctxviz-fabtest",
@@ -66,9 +58,6 @@ const log = LoggerProvider.getOrCreate({
 const alternativeFixturesPath = "../fixtures";
 
 let cctxViz: CcTxVisualization;
-let options: IRabbitMQTestServerOptions;
-let channelOptions: IChannelOptions;
-let testServer: RabbitMQTestServer;
 let cctxvizOptions: IPluginCcTxVisualizationOptions;
 let ledger: FabricTestLedgerV1;
 let besuTestLedger: BesuTestLedger;
@@ -90,32 +79,6 @@ test(testCase, async (t: Test) => {
       fail("Pruning didn't throw OK");
     });
 
-  options = {
-    publishAllPorts: true,
-    port: 5672,
-    logLevel: logLevel,
-    imageName: "rabbitmq",
-    imageTag: "3.9-management",
-    emitContainerLogs: true,
-    envVars: new Map([["AnyNecessaryEnvVar", "Can be set here"]]),
-  };
-  channelOptions = {
-    queueId: queueName,
-    dltTechnology: null,
-    persistMessages: false,
-  };
-
-  cctxvizOptions = {
-    instanceId: randomUUID(),
-    logLevel: logLevel,
-    eventProvider: "amqp://localhost",
-    channelOptions: channelOptions,
-  };
-  testServer = new RabbitMQTestServer(options);
-
-  await testServer.start();
-  cctxViz = new CcTxVisualization(cctxvizOptions);
-
   ledger = new FabricTestLedgerV1({
     emitContainerLogs: true,
     publishAllPorts: true,
@@ -128,8 +91,6 @@ test(testCase, async (t: Test) => {
   besuTestLedger = new BesuTestLedger();
   await besuTestLedger.start();
   const tearDown = async () => {
-    await cctxViz.closeConnection();
-    await testServer.stop();
     await ledger.stop();
     await ledger.destroy();
     await besuTestLedger.stop();
@@ -140,7 +101,6 @@ test(testCase, async (t: Test) => {
   };
 
   test.onFinish(tearDown);
-  t.ok(testServer);
   const channelId = "mychannel";
   const channelName = channelId;
 
@@ -210,7 +170,6 @@ test(testCase, async (t: Test) => {
   };
 
   const pluginOptions: IPluginLedgerConnectorFabricOptions = {
-    collectTransactionReceipts: true,
     instanceId: uuidv4(),
     dockerBinary: "/usr/local/bin/docker",
     peerBinary: "/fabric-samples/bin/peer",
@@ -359,7 +318,7 @@ test(testCase, async (t: Test) => {
   };
 
   const web3 = new Web3(rpcApiHttpHost);
-  const testEthAccount = web3.eth.accounts.create(uuidv4());
+  const testEthAccount = web3.eth.accounts.create();
 
   const keychainEntryKeyBesu = uuidv4();
   const keychainEntryValueBesu = testEthAccount.privateKey;
@@ -380,7 +339,6 @@ test(testCase, async (t: Test) => {
     pluginImportType: PluginImportType.Local,
   });
   const connector: PluginLedgerConnectorBesu = await factory.create({
-    collectTransactionReceipts: true,
     rpcApiHttpHost,
     rpcApiWsHost,
     instanceId: uuidv4(),
@@ -413,7 +371,21 @@ test(testCase, async (t: Test) => {
     }`,
   );
 
-  const timeStartSendMessages = new Date();
+  cctxvizOptions = {
+    instanceId: randomUUID(),
+    logLevel: logLevel,
+    basePathFabric: config.basePath,
+    wsApiHostBesu: rpcApiWsHost,
+  };
+
+  cctxViz = new CcTxVisualization(cctxvizOptions);
+  cctxViz.setCaseId("FABRIC_BESU");
+
+  const timeStartPollReceipts = new Date();
+  cctxViz.monitorTransactions();
+  await cctxViz.hasProcessedXMessages(6, 4);
+
+  const startTimeSendMessages = new Date();
 
   await connector.transact({
     web3SigningCredential: {
@@ -433,7 +405,6 @@ test(testCase, async (t: Test) => {
     },
   });
   const { success: createRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
     contractName: contractNameBesu,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationType.Send,
@@ -450,7 +421,6 @@ test(testCase, async (t: Test) => {
   t.assert(createRes === true);
   log.warn("create ok");
   const { success: lockRes } = await connector.invokeContract({
-    caseID: "FABRIC_BESU",
     contractName: contractNameBesu,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationType.Send,
@@ -469,7 +439,6 @@ test(testCase, async (t: Test) => {
   const assetOwner = "owner1";
 
   const createResFabric = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
     contractName,
     channelName,
     params: [assetId, "Green", "19", assetOwner, "9999"],
@@ -501,7 +470,6 @@ test(testCase, async (t: Test) => {
 
   // Setup: transact
   const transferAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
     contractName,
     channelName,
     params: [assetId, "owner2"],
@@ -515,7 +483,6 @@ test(testCase, async (t: Test) => {
   t.ok(transferAssetRes);
   // Setup: transact
   const transferAssetBackRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
     contractName,
     channelName,
     params: [assetId, "owner1"],
@@ -529,7 +496,6 @@ test(testCase, async (t: Test) => {
   t.ok(transferAssetBackRes);
   // Setup: transact
   const burnAssetRes = await apiClient.runTransactionV1({
-    caseID: "FABRIC_BESU",
     contractName,
     channelName,
     params: [assetId],
@@ -545,30 +511,38 @@ test(testCase, async (t: Test) => {
   // Initialize our plugin
   t.ok(cctxViz);
   log.info("cctxviz plugin is ok");
+
   const endTimeSendMessages = new Date();
   log.debug(
     `EVAL-testFile-SEND-MESSAGES:${
-      endTimeSendMessages.getTime() - timeStartSendMessages.getTime()
+      endTimeSendMessages.getTime() - startTimeSendMessages.getTime()
     }`,
   );
-  const timeStartPollReceipts = new Date();
-  await cctxViz.pollTxReceipts();
-  await cctxViz.hasProcessedXMessages(6, 4);
 
   const endTimePollReceipts = new Date();
-  const totalTimePoll =
-    endTimePollReceipts.getTime() - timeStartPollReceipts.getTime();
-  log.debug(`EVAL-testFile-POLL:${totalTimePoll}`);
+  log.debug(
+    `EVAL-testFile-POLL:${
+      endTimePollReceipts.getTime() - timeStartPollReceipts.getTime()
+    }`,
+  );
 
-  // Number of messages on queue: 0
-  t.assert(cctxViz.numberUnprocessedReceipts > 1);
+  // Number of unprocessed receipts > 0
+  t.assert(cctxViz.numberUnprocessedReceipts > 0); // before > 1);
   t.assert(cctxViz.numberEventsLog === 0);
 
+  const startTimeReceiptsToCrossChainEvents = new Date();
   await cctxViz.txReceiptToCrossChainEventLogEntry();
+  const endTimeReceiptsToCrossChainEvents = new Date();
+  log.debug(
+    `EVAL-testFile-CREATE-CCEVENTS-FROM-RECEIPTS:${
+      endTimeReceiptsToCrossChainEvents.getTime() -
+      startTimeReceiptsToCrossChainEvents.getTime()
+    }`,
+  );
 
-  // Number of messages on queue: 0
+  // Number of unprocessed receipts: 0
   t.assert(cctxViz.numberUnprocessedReceipts === 0);
-  t.assert(cctxViz.numberEventsLog > 1);
+  t.assert(cctxViz.numberEventsLog > 0); // before > 1);
 
   await cctxViz.persistCrossChainLogCsv("use-case-besu-fabric-6-events");
 

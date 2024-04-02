@@ -66,27 +66,30 @@
   },
   "homepage": "https://github.com/hyperledger/cactus#readme",
   "dependencies": {
-    "@hyperledger/cactus-common": "1.0.0",
-    "@hyperledger/cactus-core": "1.0.0",
-    "@hyperledger/cactus-core-api": "1.0.0",
-    "@hyperledger/cactus-plugin-ledger-connector-fabric": "1.0.0",
-    "@hyperledger/cactus-plugin-ledger-connector-besu": "1.0.0",
+    "@hyperledger/cactus-common": "2.0.0-alpha.2",
+    "@hyperledger/cactus-core": "2.0.0-alpha.2",
+    "@hyperledger/cactus-core-api": "2.0.0-alpha.2",
+    "@hyperledger/cactus-plugin-ledger-connector-besu": "2.0.0-alpha.2",
+    "@hyperledger/cactus-plugin-ledger-connector-fabric": "2.0.0-alpha.2",
+    "@types/csv-stringify": "^3.1.0",
     "amqp-ts": "1.8.0",
-    "axios": "0.21.1",
+    "axios": "0.21.4",
     "body-parser": "1.19.0",
     "csv-stringify": "6.0.5",
     "express": "4.17.1",
     "fabric-contract-api": "2.2.3",
     "jose": "1.28.1",
-    "json-stable-stringify": "1.0.1",
     "prom-client": "13.0.0",
+    "run-time-error-cjs": "1.4.0",
+    "socket.io-client-fixed-types": "4.5.4",
     "typescript-optional": "2.0.1",
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@hyperledger/cactus-test-tooling": "1.0.0",
+    "@hyperledger/cactus-plugin-keychain-memory": "2.0.0-alpha.2",
+    "@hyperledger/cactus-test-tooling": "2.0.0-alpha.2",
     "@types/express": "4.17.8",
-    "@types/json-stable-stringify": "1.0.32",
-    "@types/uuid": "8.3.0"
+    "@types/uuid": "8.3.0",
+    "fabric-network": "2.2.20"
   }
 }
