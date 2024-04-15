@@ -1,0 +1,2 @@
+caseID;receiptID;timestamp;blockchainID;invocationType;methodName;parameters;identity;cost;carbonFootprint;latency;revenue
+TEST;txID1;2024-04-15T14:58:59.524Z;FABRIC_2;FabricContractInvocationType.SEND;methodName;"[""0"",""2""]";person 1;0;0.00018;17;0

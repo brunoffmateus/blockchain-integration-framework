@@ -375,7 +375,7 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
       const details = this.txReceipts.map((receipt) => {
         return {
           caseID: receipt.caseID,
-          receiptID: receipt.receiptID,
+          receiptID: receipt.transactionID,
           blockchainID: receipt.blockchainID,
           timestamp: receipt.timestamp,
           invocationType: receipt.invocationType,
@@ -562,6 +562,84 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
       const errorMessage = `${fnTag} Failed to stringify log: ${error}`;
       throw new RuntimeError(errorMessage, error);
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private parseEventParams(value: string): any {
+    let jsonString = value.replace(/""/g, '"');
+    jsonString = jsonString.substring(1, jsonString.length - 1);
+    return JSON.parse(jsonString);
+  }
+
+  public loadCrossChainLogFromCsv(filePath: string): void {
+    const crossChainLog = new CrossChainEventLog({
+      name: path.basename(filePath),
+    });
+
+    try {
+      const data = fs.readFileSync(filePath, "utf8");
+      const rows = data.trim().split("\n").slice(1);
+      rows.forEach((row) => {
+        const values = row.split(";");
+        const event: CrossChainEvent = {
+          caseID: values[0],
+          receiptID: values[1],
+          timestamp: new Date(values[2]).toISOString(),
+          blockchainID: values[3],
+          invocationType: values[4],
+          methodName: values[5],
+          parameters: this.parseEventParams(values[6]),
+          identity: values[7],
+          cost: parseFloat(values[8]) || 0,
+          carbonFootprint: parseFloat(values[9]) || 0,
+          latency: parseInt(values[10]) || 0,
+          revenue: parseFloat(values[11]) || 0,
+        };
+        crossChainLog.addCrossChainEvent(event);
+      });
+      this.crossChainLog = crossChainLog;
+    } catch (error) {
+      throw new Error(
+        `Failed to load cross-chain event log from CSV file: ${error}`,
+      );
+    }
+  }
+
+  public loadCrossChainLogFromJson(filePath: string): void {
+    const crossChainLog = new CrossChainEventLog({
+      name: path.basename(filePath),
+    });
+
+    try {
+      const fileData = fs.readFileSync(filePath, "utf8");
+
+      const crossChainEventArray: CrossChainEvent[] = JSON.parse(fileData);
+
+      crossChainEventArray.forEach((event) => {
+        crossChainLog.addCrossChainEvent(event);
+      });
+      this.crossChainLog = crossChainLog;
+    } catch (error) {
+      throw new Error(
+        `Failed to load cross-chain event log from JSON file: ${error}`,
+      );
+    }
+  }
+
+  public async createCrossChainModelFromCsvFile(
+    filePath: string,
+  ): Promise<void> {
+    this.loadCrossChainLogFromCsv(filePath);
+    await this.aggregateCcTx();
+    return;
+  }
+
+  public async createCrossChainModelFromJsonFile(
+    filePath: string,
+  ): Promise<void> {
+    this.loadCrossChainLogFromJson(filePath);
+    await this.aggregateCcTx();
+    return;
   }
 
   // Receives a serialized model

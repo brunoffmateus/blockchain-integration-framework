@@ -1,0 +1,19 @@
+[
+  {
+    "caseID": "TEST",
+    "receiptID": "txID1",
+    "timestamp": "2024-04-15T14:58:59.524Z",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "methodName",
+    "parameters": [
+      "0",
+      "2"
+    ],
+    "identity": "person 1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 17,
+    "revenue": 0
+  }
+]
