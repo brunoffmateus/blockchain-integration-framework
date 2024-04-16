@@ -69,6 +69,7 @@ The plugin employs a structured pipeline to create a cross-chain model from moni
   - **cctxviz-generate-use-case-dummy-invalid.test.ts**: Tests a simulation of a series of transactions across multiple cases.
   - **initialize-cctxviz-usecase-fabric-besu-6-events.test.ts**: Tests the plugin's ability to effectively monitor, capture, and process transactional data emitted from the RxJS ReplaySubjects in the Fabric and Besu connectors.
   - **cctxviz-load-cross-chain-event.test.ts**: Tests the pluging's ability to successfully load a cross-chain event log from CSV and JSON files, and create a cross-chain model from the loaded information.
+  - **initialize-cctxviz-usecase-ccmodel-update.test.ts**: Tests the periodic update of the cross-chain model while transactions are being monitored.
 
 ## Usage
 Let us consider two conectors: one connected to Hyperledger Besu and one connected to Hyperledger Fabric. To monitor cross-chain transactions and create a cross-chain model we should follow the next steps.

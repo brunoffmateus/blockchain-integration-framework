@@ -37,6 +37,7 @@ export class CrossChainEventLog {
   public numberEvents(): number {
     return this.crossChainEvents.length;
   }
+
   public getCreationDate(): Date {
     return this.creationDate;
   }

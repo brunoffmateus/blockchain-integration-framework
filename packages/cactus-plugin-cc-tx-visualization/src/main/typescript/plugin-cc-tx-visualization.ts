@@ -77,6 +77,8 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
   private caseID: string;
   private besuTxObservable: Observable<RunTransactionV1Exchange>;
   private fabricTxObservable: Observable<RunTxReqWithTxId>;
+  private periodicUpdate: boolean;
+  private periodicUpdateFromFile: boolean;
 
   constructor(public readonly options: IPluginCcTxVisualizationOptions) {
     const startTime = new Date();
@@ -104,6 +106,9 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
     this.besuTxObservable = options.besuTxObservable;
     this.fabricTxObservable = options.fabricTxObservable;
 
+    this.periodicUpdate = false;
+    this.periodicUpdateFromFile = false;
+
     const finalTime = new Date();
     this.log.debug(
       `EVAL-${this.className}-SETUP-CONSTRUCTOR:${finalTime.getTime() - startTime.getTime()}`,
@@ -112,6 +117,10 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
 
   getOpenApiSpec(): unknown {
     throw new Error("Method not implemented.");
+  }
+
+  get ccModel(): CrossChainModel {
+    return this.crossChainModel;
   }
 
   get numberEventsLog(): number {
@@ -307,7 +316,7 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
 
     this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
     this.log.info("Added Cross Chain event from BESU");
-    this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromBesu)}`);
+    this.log.debug(`Cross-chain event: ${JSON.stringify(ccEventFromBesu)}`);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -329,7 +338,7 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
 
     this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
     this.log.info("Added Cross Chain event from FABRIC");
-    this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromFabric)}`);
+    this.log.debug(`Cross-chain event: ${JSON.stringify(ccEventFromFabric)}`);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -564,6 +573,82 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
     }
   }
 
+  public async stopPeriodicCCModelUpdate(filePath: string = ""): Promise<void> {
+    const fnTag = `${this.className}#stopPeriodicCCModelUpdate()`;
+    this.log.debug(fnTag);
+    // make the last update and stop
+    if (filePath != "") {
+      if (this.strEndsWith(filePath, ".csv")) {
+        this.log.debug(`${fnTag}-createCrossChainModelFromCsvFile()`);
+        await this.createCrossChainModelFromCsvFile(filePath);
+        this.log.debug(
+          `${this.className}loadCrossChainLogFromCsv(${filePath})`,
+        );
+      } else if (this.strEndsWith(filePath, ".json")) {
+        await this.createCrossChainModelFromCsvFile(filePath);
+        this.log.debug(
+          `${this.className}loadCrossChainLogFromJson(${filePath})`,
+        );
+      }
+      return;
+    }
+    await this.txReceiptToCrossChainEventLogEntry();
+    await this.aggregateCcTx();
+
+    this.periodicUpdate = false;
+    this.periodicUpdateFromFile = false;
+  }
+
+  public periodicCCModelUpdate(timeInterval: number): void {
+    const fnTag = `${this.className}#periodicCCModelUpdate()`;
+    this.log.debug(fnTag);
+
+    timeInterval = timeInterval < 1 ? 1 : timeInterval;
+
+    this.periodicUpdate = true;
+    const intervalId = setInterval(async () => {
+      if (this.periodicUpdate == true) {
+        await this.txReceiptToCrossChainEventLogEntry();
+        await this.aggregateCcTx();
+      } else {
+        clearInterval(intervalId);
+      }
+    }, timeInterval);
+  }
+
+  private strEndsWith(str: string, suffix: string): boolean {
+    return str.lastIndexOf(suffix) === str.length - suffix.length;
+  }
+
+  public periodicCCModelUpdateFromFile(
+    timeInterval: number,
+    filePath: string,
+  ): void {
+    const fnTag = `${this.className}#periodicCCModelUpdateFromFile()`;
+    this.log.debug(fnTag);
+
+    timeInterval = timeInterval < 1 ? 1 : timeInterval;
+
+    this.periodicUpdateFromFile = true;
+    const intervalId = setInterval(async () => {
+      if (this.periodicUpdateFromFile == true) {
+        if (this.strEndsWith(filePath, ".csv")) {
+          this.log.debug(`${fnTag}-createCrossChainModelFromCsvFile()`);
+          this.createCrossChainModelFromCsvFile(filePath);
+        } else if (this.strEndsWith(filePath, ".json")) {
+          this.log.debug(`${fnTag}-createCrossChainModelFromJsonFile()`);
+          this.createCrossChainModelFromJsonFile(filePath);
+        } else {
+          this.log.debug(
+            `${fnTag}-file type not supported, please provide a file with a .csv or .json extension`,
+          );
+        }
+      } else {
+        clearInterval(intervalId);
+      }
+    }, timeInterval);
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private parseEventParams(value: string): any {
     let jsonString = value.replace(/""/g, '"');
@@ -572,6 +657,9 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
   }
 
   public loadCrossChainLogFromCsv(filePath: string): void {
+    const fnTag = `${this.className}#loadCrossChainLogFromCsv()`;
+    this.log.debug(fnTag);
+
     const crossChainLog = new CrossChainEventLog({
       name: path.basename(filePath),
     });
@@ -606,6 +694,9 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
   }
 
   public loadCrossChainLogFromJson(filePath: string): void {
+    const fnTag = `${this.className}#loadCrossChainLogFromJson()`;
+    this.log.debug(fnTag);
+
     const crossChainLog = new CrossChainEventLog({
       name: path.basename(filePath),
     });
@@ -629,7 +720,11 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
   public async createCrossChainModelFromCsvFile(
     filePath: string,
   ): Promise<void> {
+    const fnTag = `${this.className}#createCrossChainModelFromCsvFile()`;
+    this.log.debug(fnTag);
+
     this.loadCrossChainLogFromCsv(filePath);
+    // this.txReceiptToCrossChainEventLogEntry();
     await this.aggregateCcTx();
     return;
   }
@@ -637,6 +732,10 @@ export class CcTxVisualization implements ICactusPlugin, IPluginWebService {
   public async createCrossChainModelFromJsonFile(
     filePath: string,
   ): Promise<void> {
+    const fnTag = `${this.className}#createCrossChainModelFromJsonFile()`;
+    this.log.debug(fnTag);
+
+    // this.txReceiptToCrossChainEventLogEntry();
     this.loadCrossChainLogFromJson(filePath);
     await this.aggregateCcTx();
     return;

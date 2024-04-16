@@ -47,11 +47,25 @@ export class CrossChainModel {
     }
   }
 
+  public getCCTxsNumber(): number {
+    return this.crossChainTransactions?.size || 0;
+  }
+
   public setCCTxs(
     key: string,
     mapDefintion: CrossChainTransactionSchema,
   ): void {
     this.crossChainTransactions?.set(key, mapDefintion);
+  }
+
+  public getProcessedCCEvents(): number {
+    let allProcessedCCEvents = 0;
+    const ccTxs =
+      this.getCCTxs() || new Map<string, CrossChainTransactionSchema>();
+    ccTxs.forEach((value: CrossChainTransactionSchema) => {
+      allProcessedCCEvents += value.processedCrossChainEvents.length;
+    });
+    return allProcessedCCEvents;
   }
 }
 
