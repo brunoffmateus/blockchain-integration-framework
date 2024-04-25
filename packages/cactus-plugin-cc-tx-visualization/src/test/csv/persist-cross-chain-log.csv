@@ -1,3 +1,0 @@
-caseID;receiptID;timestamp;blockchainID;invocationType;methodName;parameters;identity;cost;carbonFootprint;latency;revenue
-caseID-TEST 1;txID1;2024-04-15T09:08:15.030Z;FABRIC_2;FabricContractInvocationType.CALL;methodName;"[""0"",""2""]";person 1;0;0.00018;14;0
-case1;txID2;2024-04-15T09:08:15.040Z;FABRIC_2;FabricContractInvocationType.CALL;methodName;"[""0"",""2""]";person 1;0;0.00018;5;0

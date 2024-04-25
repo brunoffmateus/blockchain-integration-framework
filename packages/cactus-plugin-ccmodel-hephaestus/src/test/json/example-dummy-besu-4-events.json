@@ -1,0 +1,63 @@
+[
+  {
+    "caseID": "BESU_MONITORING",
+    "receiptID": "0xe8776235a79cea5a61fdae3afc0ffe93b578ae89d9eac61e07127cebb5d51e9f",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "02961094-417f-477e-9f11-51d96b9e198e",
+      10
+    ],
+    "timestamp": "2024-05-03T09:25:41.035Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 2743230,
+    "carbonFootprint": 0.00018,
+    "latency": 4504
+  },
+  {
+    "caseID": "BESU_MONITORING",
+    "receiptID": "0x659e41dff031a2e836719e165235b01fff09ede0d5cdfbbe8d791f3f84d8fedf",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "02961094-417f-477e-9f11-51d96b9e198e"
+    ],
+    "timestamp": "2024-05-03T09:25:41.732Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 916290,
+    "carbonFootprint": 0.00018,
+    "latency": 3808
+  },
+  {
+    "caseID": "BESU_MONITORING",
+    "receiptID": "0x7e7ab4c5177f32aba018e0ceef3af9518ea07ec47b9f6e194058b71d732cde91",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "isPresent",
+    "parameters": [
+      "02961094-417f-477e-9f11-51d96b9e198e"
+    ],
+    "timestamp": "2024-05-03T09:25:44.304Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 754710,
+    "carbonFootprint": 0.00018,
+    "latency": 1236
+  },
+  {
+    "caseID": "BESU_MONITORING",
+    "receiptID": "0x2973ffb2bb945654c086cdf60fd64a4b574594a77d61eecf0920d9c3deb5652c",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "02961094-417f-477e-9f11-51d96b9e198e"
+    ],
+    "timestamp": "2024-05-03T09:25:45.529Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 621150,
+    "carbonFootprint": 0.00018,
+    "latency": 12
+  }
+]

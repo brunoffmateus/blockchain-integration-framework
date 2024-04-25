@@ -1032,7 +1032,7 @@ export interface RunTransactionRequest {
     'endorsingOrgs'?: Array<string>;
     /**
      * 
-     * @type {number}
+     * @type {object}
      * @memberof RunTransactionRequest
      */
     'transientData'?: object | null;

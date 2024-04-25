@@ -150,7 +150,7 @@ assertFabricFunctionIsAvailable(loadFromConfig, "loadFromConfig");
 
 export interface RunTxReqWithTxId {
   request: RunTransactionRequest;
-  transactionId?: string;
+  transactionId: string;
   timestamp: Date;
 }
 
@@ -1221,7 +1221,7 @@ export class PluginLedgerConnectorFabric
       const startTimeFabricReceipt = new Date();
       const receiptData: RunTxReqWithTxId = {
         request: req,
-        transactionId: transactionId,
+        transactionId: transactionId == "" ? uuidv4() : transactionId,
         timestamp: new Date(),
       };
       this.log.debug(
