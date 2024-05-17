@@ -26,6 +26,10 @@ export class CrossChainModel {
     return this.modelType;
   }
 
+  public setType(modelType: CrossChainModelType): void {
+    this.modelType = modelType;
+  }
+
   public setLastAggregationDate(date: Date): void {
     this.lastAggregationDate = date;
   }
@@ -61,9 +65,8 @@ export class CrossChainModel {
 }
 
 export enum CrossChainModelType {
-  HeuristicMiner,
+  PetriNet,
   ProcessTree,
-  DirectFollowGraph,
 }
 
 export type CrossChainTransactionSchema = {

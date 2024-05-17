@@ -564,7 +564,6 @@ export class PluginLedgerConnectorBesu
       const data = { success, out };
 
       // create RunTransactionV1Exchange for transaction monitoring
-      const startTimeBesuReceipt = new Date();
       const receiptData: RunTransactionV1Exchange = {
         request: req,
         response: out,
@@ -573,12 +572,6 @@ export class PluginLedgerConnectorBesu
       this.log.debug(`RunTransactionV1Exchange created ${receiptData}`);
       this.txSubject.next(receiptData);
 
-      const endTimeBesuReceipt = new Date();
-      this.log.debug(
-        `EVAL-${this.className}-GENERATE-AND-CAPTURE-RECEIPT:${
-          endTimeBesuReceipt.getTime() - startTimeBesuReceipt.getTime()
-        }`,
-      );
       return data;
     } else {
       throw new Error(

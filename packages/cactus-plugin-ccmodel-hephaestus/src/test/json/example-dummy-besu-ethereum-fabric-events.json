@@ -1,52 +1,52 @@
 [
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "0x5bc2d2c19d40b5b977f15bbbd2bd5d22b029fbadc27af9d6897b154fa43a6399",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "0xd67b7c3b94744ac3f59ac27149ca8acb8c20b7a61464a8b98fa9af0766f13cc2",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "createAsset",
     "parameters": [
-      "675aacd4-09a0-4cad-8517-869a62899d01",
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61",
       10
     ],
-    "timestamp": "2024-05-08T10:39:51.089Z",
+    "timestamp": "2024-05-22T16:11:41.550Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 2743230,
+    "cost": 91441,
     "carbonFootprint": 0.00018,
-    "latency": 36160
+    "latency": 106068
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "0xafe801c4c6d58abed6c40d18891129196675392161c407b03f5f37f90ba7d42f",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "0x958bd110750ef8066cd3bd02f0317e9a98c168e7e156e6c06b0f533f50c29027",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "lockAsset",
     "parameters": [
-      "675aacd4-09a0-4cad-8517-869a62899d01"
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
     ],
-    "timestamp": "2024-05-08T10:39:52.063Z",
+    "timestamp": "2024-05-22T16:11:42.781Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 916290,
+    "cost": 30543,
     "carbonFootprint": 0.00018,
-    "latency": 35187
+    "latency": 104838
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "0x569c4a635620dc31ce5b655ad6c4e12936a802f2819794436c9f673f29b027e7",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "0x2d1b664d5a8373c607333c3a783c1305728aae85420b2bdbaa6a6a629d3b85f9",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "deleteAsset",
     "parameters": [
-      "675aacd4-09a0-4cad-8517-869a62899d01"
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
     ],
-    "timestamp": "2024-05-08T10:39:53.293Z",
+    "timestamp": "2024-05-22T16:11:43.439Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 621150,
+    "cost": 20705,
     "carbonFootprint": 0.00018,
-    "latency": 33957
+    "latency": 104180
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
     "receiptID": "0x1d37b5ea2741eb9b7ca8bf49ae3b563c0632ab3660953ef6298650a8248b313b",
     "blockchainID": "ETHEREUM",
     "invocationType": "SEND",
@@ -55,14 +55,14 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-08T10:39:59.507Z",
+    "timestamp": "2024-05-22T16:11:50.682Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 129786009655382,
     "carbonFootprint": 0,
-    "latency": 27744
+    "latency": 96937
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
     "receiptID": "0x9a28d1480e72257d585fb854bbeb840e08c12e37d9e0665888184aaad2892fa9",
     "blockchainID": "ETHEREUM",
     "invocationType": "SEND",
@@ -70,14 +70,14 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-08T10:40:04.941Z",
+    "timestamp": "2024-05-22T16:11:55.972Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 41156218131450,
     "carbonFootprint": 0,
-    "latency": 22310
+    "latency": 91648
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
     "receiptID": "0x4c5a867c54cd89dbe8c2fd2131401d9fa7a4e8def2ff3635fc3222df6d45057c",
     "blockchainID": "ETHEREUM",
     "invocationType": "SEND",
@@ -86,58 +86,340 @@
       "asset1",
       "owner1"
     ],
-    "timestamp": "2024-05-08T10:40:09.108Z",
+    "timestamp": "2024-05-22T16:12:00.186Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 40955165049120,
     "carbonFootprint": 0,
-    "latency": 18143
+    "latency": 87434
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "cc5f350ff57de2cae3e04860751e1a1d6b0df665b7324142fde4335e186a206d",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "39ed8e8ae13274c320809ed9562267217ed6c907f9b88b24f386028c55c80c2c",
     "blockchainID": "FABRIC_2",
     "invocationType": "FabricContractInvocationType.SEND",
     "methodName": "CreateAsset",
     "parameters": [
-      "2ee0adc1-4e86-4318-b71f-556806378520",
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
       "10",
       "owner1"
     ],
-    "timestamp": "2024-05-08T10:40:15.354Z",
+    "timestamp": "2024-05-22T16:12:06.492Z",
     "identity": "user1",
     "cost": 0,
     "carbonFootprint": 0.00018,
-    "latency": 11898
+    "latency": 81129
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "e4b29af4d62a6205c10e2859139558e5447e8d585e2aba6a5a17d877cd88a5fb",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "b18d01c6459394e3375e7753b0a69249c37b1d45846c1cbe4a30a876e9395777",
     "blockchainID": "FABRIC_2",
     "invocationType": "FabricContractInvocationType.SEND",
     "methodName": "TransferAsset",
     "parameters": [
-      "2ee0adc1-4e86-4318-b71f-556806378520",
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
       "owner2"
     ],
-    "timestamp": "2024-05-08T10:40:21.467Z",
+    "timestamp": "2024-05-22T16:12:12.304Z",
     "identity": "user1",
     "cost": 0,
     "carbonFootprint": 0.00018,
-    "latency": 5785
+    "latency": 75317
   },
   {
-    "caseID": "BESU_ETHEREUM_FABRIC_MONITORING",
-    "receiptID": "4c961c0703798ac4c820430bc6ab99ddf973ebf2530ef23496cecdc0c15202c7",
+    "caseID": "BESU_ETHEREUM_FABRIC_1",
+    "receiptID": "069fff52897d7e5ac80d5a3268327b9cbc96689f9b48fee902f2872f495619e4",
     "blockchainID": "FABRIC_2",
     "invocationType": "FabricContractInvocationType.SEND",
     "methodName": "DeleteAsset",
     "parameters": [
-      "2ee0adc1-4e86-4318-b71f-556806378520"
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc"
     ],
-    "timestamp": "2024-05-08T10:40:27.236Z",
+    "timestamp": "2024-05-22T16:12:18.134Z",
     "identity": "user1",
     "cost": 0,
     "carbonFootprint": 0.00018,
-    "latency": 16
+    "latency": 69488
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0xe8c642e999090854ce0be23b6b56cce5319dd3c345bc4fda17d5ba658d6a35b7",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61",
+      10
+    ],
+    "timestamp": "2024-05-22T16:12:19.053Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 91441,
+    "carbonFootprint": 0.00018,
+    "latency": 68569
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0x6e55a1fb5cf635aff410bcd41227366f6016c290717288a09aeb9bc4defc7d01",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
+    ],
+    "timestamp": "2024-05-22T16:12:20.347Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 30543,
+    "carbonFootprint": 0.00018,
+    "latency": 67276
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0x381f9f8277ec5e6067b9bce7dc4153783dff9b136313f815c40da200f3cb728d",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
+    ],
+    "timestamp": "2024-05-22T16:12:21.379Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 20705,
+    "carbonFootprint": 0.00018,
+    "latency": 66244
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0x8fc2d26d58c153f941eb38d2455c8388ccc29f75a9e9c4367e4264b6c6395708",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:12:25.590Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 105368370101598,
+    "carbonFootprint": 0,
+    "latency": 62034
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0xb785773ec579f32617f8390875a666c2807e494505977a4efacbdf97d5817d8f",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:12:30.684Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 34107960523650,
+    "carbonFootprint": 0,
+    "latency": 56940
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "0x21154b763fa83ddb97a9388d49a134ee51207ddeb30635865f7b64c718a10186",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1",
+      "owner1"
+    ],
+    "timestamp": "2024-05-22T16:12:35.855Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 34593776938800,
+    "carbonFootprint": 0,
+    "latency": 51770
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "2f2c1c3230e912dc523fbac3aa5a36535cdc5d7be8de6b7b532ef6dde17dafc7",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "CreateAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
+      "10",
+      "owner1"
+    ],
+    "timestamp": "2024-05-22T16:12:41.468Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 46158
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "071d30cf5371140da506fb91b6fe6b3eae7596f7c364b4a3ea54cea39b71060b",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
+      "owner2"
+    ],
+    "timestamp": "2024-05-22T16:12:46.984Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 40642
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_2",
+    "receiptID": "bec4cc381f540a875ea97d53d8cc105eb2808e982a7665a6822dcbc8cd40bf6d",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "DeleteAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc"
+    ],
+    "timestamp": "2024-05-22T16:12:52.966Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 34660
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0x1af50f60da0008f542882ccb8640a9572c42ec4cec65953ed720117ce0608a1d",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61",
+      10
+    ],
+    "timestamp": "2024-05-22T16:12:54.812Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 91441,
+    "carbonFootprint": 0.00018,
+    "latency": 32815
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0xadd61c3e392852b749b2da5d8ec43cf4d259428a79bec821af5c3b568e1d7494",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
+    ],
+    "timestamp": "2024-05-22T16:12:56.183Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 30543,
+    "carbonFootprint": 0.00018,
+    "latency": 31444
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0x8e4fc3105c61eb75d2b109590cb3e77f867992943a07cd86fdd77b6c94a6a201",
+    "blockchainID": "BESU_2X",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "fcf66e5b-2d9d-406e-ae61-cc5805793a61"
+    ],
+    "timestamp": "2024-05-22T16:12:57.247Z",
+    "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+    "cost": 20705,
+    "carbonFootprint": 0.00018,
+    "latency": 30380
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0x84fc6a0e4994c9f8cdfb585767f48ac69e4b712bd1ac3fcb34d59191804fad7d",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:13:00.252Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 95779149649546,
+    "carbonFootprint": 0,
+    "latency": 27376
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0xd316ee34a67d76b8a60b3cbd14d8a9719cc90d39856f99376c6f936025809d30",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:13:05.894Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 31339989802050,
+    "carbonFootprint": 0,
+    "latency": 21734
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "0x3f38ef95052277c1a1c3fa059865844cd85933cf3b82d629b30401162c82e0a2",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1",
+      "owner1"
+    ],
+    "timestamp": "2024-05-22T16:13:10.166Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 32095551373920,
+    "carbonFootprint": 0,
+    "latency": 17462
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "59f8a0c963d0bcd06db6c536360b31b98c4b6adbfe45d6ae72128b5ff57b9e64",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "CreateAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
+      "10",
+      "owner1"
+    ],
+    "timestamp": "2024-05-22T16:13:15.767Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 11862
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "cd9c38089aa85293585f62c9875382fc5c0b4cc4979d17966ce8938c15a91e4c",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "TransferAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc",
+      "owner2"
+    ],
+    "timestamp": "2024-05-22T16:13:21.698Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 5931
+  },
+  {
+    "caseID": "BESU_ETHEREUM_FABRIC_3",
+    "receiptID": "c6f7a872ac83e5d08d91bf51afe9c162e6d08cfc97d6bb4acadda1d4923b3627",
+    "blockchainID": "FABRIC_2",
+    "invocationType": "FabricContractInvocationType.SEND",
+    "methodName": "DeleteAsset",
+    "parameters": [
+      "3a441c63-fe63-403f-8b0b-f6fbc72e0ddc"
+    ],
+    "timestamp": "2024-05-22T16:13:27.607Z",
+    "identity": "user1",
+    "cost": 0,
+    "carbonFootprint": 0.00018,
+    "latency": 22
   }
 ]

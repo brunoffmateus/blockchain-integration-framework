@@ -671,7 +671,6 @@ export class PluginLedgerConnectorEthereum
       const data = { success, out };
 
       // create RunTransactionV1Exchange for transaction monitoring
-      const startTimeEthReceipt = new Date();
       const receiptData: RunTransactionV1Exchange = {
         request: req,
         response: out,
@@ -679,12 +678,6 @@ export class PluginLedgerConnectorEthereum
       };
       this.log.debug(`RunTransactionV1Exchange created ${receiptData}`);
       this.txSubject.next(receiptData);
-      const endTimeEthReceipt = new Date();
-      this.log.debug(
-        `EVAL-${this.className}-GENERATE-AND-CAPTURE-RECEIPT:${
-          endTimeEthReceipt.getTime() - startTimeEthReceipt.getTime()
-        }`,
-      );
 
       return data;
     } else {

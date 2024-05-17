@@ -1,63 +1,63 @@
 [
   {
     "caseID": "BESU_MONITORING",
-    "receiptID": "0xe8776235a79cea5a61fdae3afc0ffe93b578ae89d9eac61e07127cebb5d51e9f",
+    "receiptID": "0x273eb3e8fd88a8c447517bdf49a8a6969b3f98786352a78cf289a0e526ae55d4",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "createAsset",
     "parameters": [
-      "02961094-417f-477e-9f11-51d96b9e198e",
+      "358fe3ee-18cb-4baa-b531-03c11cde2657",
       10
     ],
-    "timestamp": "2024-05-03T09:25:41.035Z",
+    "timestamp": "2024-05-22T16:25:33.690Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 2743230,
+    "cost": 91441,
     "carbonFootprint": 0.00018,
-    "latency": 4504
+    "latency": 2369
   },
   {
     "caseID": "BESU_MONITORING",
-    "receiptID": "0x659e41dff031a2e836719e165235b01fff09ede0d5cdfbbe8d791f3f84d8fedf",
+    "receiptID": "0x9093754f4a29622f0ee7e721d7a30ff9462f2f4993dbe33f42a5942d521069b0",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "lockAsset",
     "parameters": [
-      "02961094-417f-477e-9f11-51d96b9e198e"
+      "358fe3ee-18cb-4baa-b531-03c11cde2657"
     ],
-    "timestamp": "2024-05-03T09:25:41.732Z",
+    "timestamp": "2024-05-22T16:25:34.790Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 916290,
+    "cost": 30543,
     "carbonFootprint": 0.00018,
-    "latency": 3808
+    "latency": 1277
   },
   {
     "caseID": "BESU_MONITORING",
-    "receiptID": "0x7e7ab4c5177f32aba018e0ceef3af9518ea07ec47b9f6e194058b71d732cde91",
+    "receiptID": "0xd57de0243af62294e12f49cc5317d0e29a0016e60312130f39df981335702673",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "isPresent",
     "parameters": [
-      "02961094-417f-477e-9f11-51d96b9e198e"
+      "358fe3ee-18cb-4baa-b531-03c11cde2657"
     ],
-    "timestamp": "2024-05-03T09:25:44.304Z",
+    "timestamp": "2024-05-22T16:25:35.714Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 754710,
+    "cost": 25157,
     "carbonFootprint": 0.00018,
-    "latency": 1236
+    "latency": 355
   },
   {
     "caseID": "BESU_MONITORING",
-    "receiptID": "0x2973ffb2bb945654c086cdf60fd64a4b574594a77d61eecf0920d9c3deb5652c",
+    "receiptID": "0x7071d0b9ef6664906e9217a845c6d9b48542bf5f925bffec29fbd918be6c0602",
     "blockchainID": "BESU_2X",
     "invocationType": "SEND",
     "methodName": "deleteAsset",
     "parameters": [
-      "02961094-417f-477e-9f11-51d96b9e198e"
+      "358fe3ee-18cb-4baa-b531-03c11cde2657"
     ],
-    "timestamp": "2024-05-03T09:25:45.529Z",
+    "timestamp": "2024-05-22T16:25:36.054Z",
     "identity": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-    "cost": 621150,
+    "cost": 20705,
     "carbonFootprint": 0.00018,
-    "latency": 12
+    "latency": 16
   }
 ]

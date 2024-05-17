@@ -112,7 +112,7 @@ let hephaestusOptions: IPluginCcModelHephaestusOptions;
 
 const log = LoggerProvider.getOrCreate({
   level: logLevel,
-  label: "monitor-besu-ethereum-fabric-events.test",
+  label: "monitor-besu-ethereum-fabric-events.test.test",
 });
 
 beforeAll(async () => {
@@ -519,149 +519,159 @@ beforeAll(async () => {
   }
 });
 
-test("monitor Besu, Ethereum and Fabric transactions", async () => {
-  hephaestus.setCaseId("BESU_ETHEREUM_FABRIC_MONITORING");
+test("Monitor Besu, Ethereum and Fabric transactions", async () => {
+  hephaestus.setCaseId("BESU_ETHEREUM_FABRIC_MONITORING_3_CASES");
   hephaestus.monitorTransactions();
 
-  {
-    const { success: createResBesu } = await besuConnector.invokeContract({
-      contractName: besuContractName,
-      keychainId: keychainPluginBesu.getKeychainId(),
-      invocationType: EthContractInvocationTypeBesu.Send,
-      methodName: "createAsset",
-      params: [BESU_ASSET_ID, 10],
-      signingCredential: {
-        ethAccount: firstHighNetWorthAccount,
-        secret: besuKeyPair.privateKey,
-        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-      },
-      gas: 1000000,
-    });
-    expect(createResBesu).toBeTruthy();
+  const numberOfCases = 3;
+  const txsPerCase = 9;
+  let caseNumber = 1;
 
-    const { success: lockResBesu } = await besuConnector.invokeContract({
-      contractName: besuContractName,
-      keychainId: keychainPluginBesu.getKeychainId(),
-      invocationType: EthContractInvocationTypeBesu.Send,
-      methodName: "lockAsset",
-      params: [BESU_ASSET_ID],
-      signingCredential: {
-        ethAccount: testEthAccountBesu.address,
-        secret: besuKeyPair.privateKey,
-        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-      },
-      gas: 1000000,
-    });
-    expect(lockResBesu).toBeTruthy();
+  while (numberOfCases >= caseNumber) {
+    hephaestus.setCaseId("BESU_ETHEREUM_FABRIC_" + caseNumber);
+    {
+      const { success: createResBesu } = await besuConnector.invokeContract({
+        contractName: besuContractName,
+        keychainId: keychainPluginBesu.getKeychainId(),
+        invocationType: EthContractInvocationTypeBesu.Send,
+        methodName: "createAsset",
+        params: [BESU_ASSET_ID, 10],
+        signingCredential: {
+          ethAccount: firstHighNetWorthAccount,
+          secret: besuKeyPair.privateKey,
+          type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+        },
+        gas: 1000000,
+      });
+      expect(createResBesu).toBeTruthy();
 
-    const { success: deleteResBesu } = await besuConnector.invokeContract({
-      contractName: besuContractName,
-      keychainId: keychainPluginBesu.getKeychainId(),
-      invocationType: EthContractInvocationTypeBesu.Send,
-      methodName: "deleteAsset",
-      params: [BESU_ASSET_ID],
-      signingCredential: {
-        ethAccount: testEthAccountBesu.address,
-        secret: besuKeyPair.privateKey,
-        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-      },
-      gas: 1000000,
-    });
-    expect(deleteResBesu).toBeTruthy();
+      const { success: lockResBesu } = await besuConnector.invokeContract({
+        contractName: besuContractName,
+        keychainId: keychainPluginBesu.getKeychainId(),
+        invocationType: EthContractInvocationTypeBesu.Send,
+        methodName: "lockAsset",
+        params: [BESU_ASSET_ID],
+        signingCredential: {
+          ethAccount: testEthAccountBesu.address,
+          secret: besuKeyPair.privateKey,
+          type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+        },
+        gas: 1000000,
+      });
+      expect(lockResBesu).toBeTruthy();
+
+      const { success: deleteResBesu } = await besuConnector.invokeContract({
+        contractName: besuContractName,
+        keychainId: keychainPluginBesu.getKeychainId(),
+        invocationType: EthContractInvocationTypeBesu.Send,
+        methodName: "deleteAsset",
+        params: [BESU_ASSET_ID],
+        signingCredential: {
+          ethAccount: testEthAccountBesu.address,
+          secret: besuKeyPair.privateKey,
+          type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+        },
+        gas: 1000000,
+      });
+      expect(deleteResBesu).toBeTruthy();
+    }
+    {
+      const createResEth = await ethereumApiClient.invokeContractV1({
+        contract: {
+          contractName: LockAssetContractJson.contractName,
+          keychainId: keychainPluginEthereum.getKeychainId(),
+        },
+        invocationType: EthContractInvocationType.Send,
+        methodName: "createAsset",
+        params: ["asset1", 5],
+        web3SigningCredential: {
+          ethAccount: WHALE_ACCOUNT_ADDRESS,
+          secret: "",
+          type: Web3SigningCredentialType.GethKeychainPassword,
+        },
+      });
+      expect(createResEth).toBeTruthy();
+      expect(createResEth.data).toBeTruthy();
+
+      const lockResEth = await ethereumApiClient.invokeContractV1({
+        contract: {
+          contractName: LockAssetContractJson.contractName,
+          keychainId: keychainPluginEthereum.getKeychainId(),
+        },
+        invocationType: EthContractInvocationType.Send,
+        methodName: "lockAsset",
+        params: ["asset1"],
+        web3SigningCredential: {
+          ethAccount: WHALE_ACCOUNT_ADDRESS,
+          secret: "",
+          type: Web3SigningCredentialType.GethKeychainPassword,
+        },
+      });
+      expect(lockResEth).toBeTruthy();
+      expect(lockResEth.data).toBeTruthy();
+      expect(lockResEth.status).toBe(200);
+
+      const deleteResEth = await ethereumApiClient.invokeContractV1({
+        contract: {
+          contractName: LockAssetContractJson.contractName,
+          keychainId: keychainPluginEthereum.getKeychainId(),
+        },
+        invocationType: EthContractInvocationType.Send,
+        methodName: "deleteAsset",
+        params: ["asset1", "owner1"],
+        web3SigningCredential: {
+          ethAccount: WHALE_ACCOUNT_ADDRESS,
+          secret: "",
+          type: Web3SigningCredentialType.GethKeychainPassword,
+        },
+      });
+      expect(deleteResEth).toBeTruthy();
+      expect(deleteResEth.data).toBeTruthy();
+      expect(deleteResEth.status).toBe(200);
+    }
+    {
+      const createResFabric = await fabricApiClient.runTransactionV1({
+        contractName: fabricContractName,
+        channelName,
+        params: [FABRIC_ASSET_ID, "10", "owner1"],
+        methodName: "CreateAsset",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: fabricSigningCredential,
+      });
+      expect(createResFabric).toBeTruthy();
+
+      const transferResFabric = await fabricApiClient.runTransactionV1({
+        contractName: fabricContractName,
+        channelName,
+        params: [FABRIC_ASSET_ID, "owner2"],
+        methodName: "TransferAsset",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: fabricSigningCredential,
+      });
+      expect(transferResFabric).toBeTruthy();
+
+      const deleteResFabric = await fabricApiClient.runTransactionV1({
+        contractName: fabricContractName,
+        channelName,
+        params: [FABRIC_ASSET_ID],
+        methodName: "DeleteAsset",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: fabricSigningCredential,
+      });
+      expect(deleteResFabric).toBeTruthy();
+    }
+
+    caseNumber++;
   }
-  {
-    const createResEth = await ethereumApiClient.invokeContractV1({
-      contract: {
-        contractName: LockAssetContractJson.contractName,
-        keychainId: keychainPluginEthereum.getKeychainId(),
-      },
-      invocationType: EthContractInvocationType.Send,
-      methodName: "createAsset",
-      params: ["asset1", 5],
-      web3SigningCredential: {
-        ethAccount: WHALE_ACCOUNT_ADDRESS,
-        secret: "",
-        type: Web3SigningCredentialType.GethKeychainPassword,
-      },
-    });
-    expect(createResEth).toBeTruthy();
-    expect(createResEth.data).toBeTruthy();
 
-    const lockResEth = await ethereumApiClient.invokeContractV1({
-      contract: {
-        contractName: LockAssetContractJson.contractName,
-        keychainId: keychainPluginEthereum.getKeychainId(),
-      },
-      invocationType: EthContractInvocationType.Send,
-      methodName: "lockAsset",
-      params: ["asset1"],
-      web3SigningCredential: {
-        ethAccount: WHALE_ACCOUNT_ADDRESS,
-        secret: "",
-        type: Web3SigningCredentialType.GethKeychainPassword,
-      },
-    });
-    expect(lockResEth).toBeTruthy();
-    expect(lockResEth.data).toBeTruthy();
-    expect(lockResEth.status).toBe(200);
-
-    const deleteResEth = await ethereumApiClient.invokeContractV1({
-      contract: {
-        contractName: LockAssetContractJson.contractName,
-        keychainId: keychainPluginEthereum.getKeychainId(),
-      },
-      invocationType: EthContractInvocationType.Send,
-      methodName: "deleteAsset",
-      params: ["asset1", "owner1"],
-      web3SigningCredential: {
-        ethAccount: WHALE_ACCOUNT_ADDRESS,
-        secret: "",
-        type: Web3SigningCredentialType.GethKeychainPassword,
-      },
-    });
-    expect(deleteResEth).toBeTruthy();
-    expect(deleteResEth.data).toBeTruthy();
-    expect(deleteResEth.status).toBe(200);
-  }
-  {
-    const createResFabric = await fabricApiClient.runTransactionV1({
-      contractName: fabricContractName,
-      channelName,
-      params: [FABRIC_ASSET_ID, "10", "owner1"],
-      methodName: "CreateAsset",
-      invocationType: FabricContractInvocationType.Send,
-      signingCredential: fabricSigningCredential,
-    });
-    expect(createResFabric).toBeTruthy();
-
-    const transferResFabric = await fabricApiClient.runTransactionV1({
-      contractName: fabricContractName,
-      channelName,
-      params: [FABRIC_ASSET_ID, "owner2"],
-      methodName: "TransferAsset",
-      invocationType: FabricContractInvocationType.Send,
-      signingCredential: fabricSigningCredential,
-    });
-    expect(transferResFabric).toBeTruthy();
-
-    const deleteResFabric = await fabricApiClient.runTransactionV1({
-      contractName: fabricContractName,
-      channelName,
-      params: [FABRIC_ASSET_ID],
-      methodName: "DeleteAsset",
-      invocationType: FabricContractInvocationType.Send,
-      signingCredential: fabricSigningCredential,
-    });
-    expect(deleteResFabric).toBeTruthy();
-  }
-
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(9);
+  const totalTxs = txsPerCase * numberOfCases;
+  expect(hephaestus.numberUnprocessedReceipts).toEqual(totalTxs);
   expect(hephaestus.numberEventsLog).toEqual(0);
 
   await hephaestus.txReceiptToCrossChainEventLogEntry();
 
   expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(9);
+  expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
   await hephaestus.persistCrossChainLogCsv(
     "example-dummy-besu-ethereum-fabric-events",

@@ -2,7 +2,7 @@
 
 The package provides `Hyperledger Cacti` a way to generate process models from arbitrary cross-chain use cases. The implementation follows the paper [Hephaestus](https://www.techrxiv.org/doi/full/10.36227/techrxiv.20718058.v3).
 
-With this plugin it will be possible to generate cross-chain models from local transactions in different ledgers (currently supports Fabric and Besu), realizing arbitrary cross-chain use cases and allowing operators to monitor their applications.
+With this plugin it will be possible to generate cross-chain models from local transactions in different ledgers (currently supports Besu, Ethereum, and Fabric), realizing arbitrary cross-chain use cases and allowing operators to monitor their applications.
 Through monitoring, errors like outliers and malicious behavior can be identified, which can enable programmatically stopping attacks (circuit breaker), including bridge hacks.
 
 ## Summary
@@ -33,15 +33,16 @@ npm run configure
 
 Know how to use the following plugins of the project:
 
-  - [cactus-plugin-ledger-connector-fabric](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-fabric)
   - [cactus-plugin-ledger-connector-besu](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-besu)
+  - [cactus-plugin-ledger-connector-ethereum](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-ethereum)
+  - [cactus-plugin-ledger-connector-fabric](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-fabric)
 
 
 ## Architecture
 
 ### RxJS Transaction Monitoring
 
-This plugin utilizes RxJS (Reactive Extensions for JavaScript) to monitor transactions issued in Hyperledger Besu and Hyperledger Fabric connectors.
+This plugin utilizes RxJS (Reactive Extensions for JavaScript) to monitor transactions issued in Hyperledger Besu, Hyperledger Ethereum, and Hyperledger Fabric connectors.
 
 RxJS provides a powerful framework for asynchronous or callback-based code, each connector maintains an RxJS `ReplaySubject`, named `txSubject`, which acts as a message bus for emitting transaction data.
 
@@ -59,17 +60,20 @@ The plugin employs a structured pipeline to create a cross-chain model from moni
 
 3. **Cross-Chain Event Logging**: Processed receipts information can then be used to create cross-chain events, forming a cross-chain event log.
 
-4. **Cross-Chain Model Updating**: The plugin parses the cross chain event log and updates the cross-chain model with the new information received from the connectors.
+4. **Cross-Chain Model**: The plugin parses the cross chain event log and creates the cross-chain model with the new information received from the connectors, using Process Mining for Python (PM4PY). This model can then be used to verify new and unmodeled transactional information received from the connectors.
 
 ## Running the tests
-  - **api-surface.test.ts**: Verifies the successful loading of the library.
-  - **cctxviz-basic-test.test.ts**: Conducts the simulation of a transaction without instantiating the connectors, and tests that the plugin monitors, captures, and processes the transactional data and creates a cross-chain event.
-  - **cctxviz-persist-cross-chain-log.test.ts**: Tests the plugin's ability to export transactional data, in both CSV and JSON formats, as cross-chain event logs.
-  - **cctxviz-generate-use-case-dummy-baseline-events.test.ts**: Conducts a simulation of a series of transactions, exporting the cross-chain event log in CSV and JSON formats, and tests if the cross-chain model is updated with the correct information.
-  - **initialize-cctxviz-usecase-fabric-besu-6-events.test.ts**: Tests the plugin's ability to effectively monitor, capture, and process transactional data emitted from the RxJS ReplaySubjects in the Fabric and Besu connectors.
+  - **basic-mock-test.test.ts**: Conducts the simulation of a transaction without instantiating the connectors, and tests that the plugin monitors, captures, and processes the transactional data and creates a cross-chain event.
+  - **monitor-4-besu-events.test.ts**: Tests the plugin's ability to monitor, capture, and process the transactional data from besu connectors, and exports transactional data, in both CSV and JSON formats, as cross-chain event logs.
+  - **monitor-4-ethereum-events.test.ts**: Tests the plugin's ability to monitor, capture, and process the transactional data from ethereum connectors, and exports transactional data, in both CSV and JSON formats, as cross-chain event logs.
+  - **monitor-4-fabric-events.test.ts**: Tests the plugin's ability to monitor, capture, and process the transactional data from fabric connectors, and exports transactional data, in both CSV and JSON formats, as cross-chain event logs.
+  - **monitor-besu-ethereum-fabric-events.test.ts**: Tests the plugin's ability to monitor transactional data from besu, ethereum, and fabric connectors at the same time.
+  - **cross-chain-model-serialization.test.ts**: Tests the plugin's ability to create the cross-chain model using the PM4PY (Process Mining for Python) library and save it serialized.
+  - **cross-chain-model-conformance-checking.test.ts**: Tests the plugin's ability to check the conformity of unmodeled transactions against the cross-chain model using the PM4PY (Process Mining for Python) library.
+  - **cross-chain-model-periodic-update.test.ts**: Tests the plugin's ability to periodically update the cross-chain model with received transactional data.
 
 ## Usage
-Let us consider two conectors: one connected to Hyperledger Besu and one connected to Hyperledger Fabric. To monitor cross-chain transactions and create a cross-chain model we should follow the next steps.
+Let us consider three conectors: one connected to Hyperledger Besu and, another connected to Hyperledger Ethereum, and a third connected to Hyperledger Fabric. To monitor cross-chain transactions and create a cross-chain model we should follow the next steps.
 
 After instantiating the connectors, we instantiate the plugin as follows:
 ```typescript
@@ -89,30 +93,36 @@ We set the desired caseID and start monitoring and processing the transactions i
 
 ```typescript
 hephaestus.setCaseId("Desired_CaseID");
-hephaestus
 hephaestus.monitorTransactions();
 ```
 
 We can create cross-chain events from processed transaction receipts and add them to the cross-chain event log:
 
 ```typescript
-await hephaestus
 hephaestus.txReceiptToCrossChainEventLogEntry();
 ```
 
 We can export the transactional data captured to CSV and JSON files:
 
 ```typescript
-await hephaestus
 hephaestus.persistCrossChainLogCsv("output-file-CSV");
-await hephaestus
 hephaestus.persistCrossChainLogJson("output-file-JSON");
 ```
 
-And we can update the cross-chain model with the events created from the transactional data captured:
+We can create the cross-chain model with events created from the transactional data captured:
 ```typescript
-await hephaestus
-hephaestus.aggregateCcTx();
+await hephaestus.createModel();
+```
+
+We can periodically update the cross-chain model with events created from the transactional data captured:
+```typescript
+const timeInterval = 10000;
+const fileName = "file-with-modeled-logs"
+await hephaestus.periodicCCModelUpdate(
+      fileName,
+      timeInterval,
+    );
+await hephaestus.stopPeriodicCCModelUpdate(fileName);
 ```
 
 ## Contributing

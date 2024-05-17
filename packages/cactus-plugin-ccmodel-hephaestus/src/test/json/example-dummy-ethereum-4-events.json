@@ -9,11 +9,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-06T15:54:50.118Z",
+    "timestamp": "2024-05-22T16:23:54.269Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 135530010970738,
     "carbonFootprint": 0,
-    "latency": 15485
+    "latency": 14966
   },
   {
     "caseID": "ETHEREUM_MONITORING",
@@ -24,11 +24,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-06T15:54:55.280Z",
+    "timestamp": "2024-05-22T16:23:59.155Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 42814248832950,
     "carbonFootprint": 0,
-    "latency": 10324
+    "latency": 10081
   },
   {
     "caseID": "ETHEREUM_MONITORING",
@@ -40,11 +40,11 @@
       "asset1",
       "owner1"
     ],
-    "timestamp": "2024-05-06T15:55:00.395Z",
+    "timestamp": "2024-05-22T16:24:04.247Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 33945972851475,
     "carbonFootprint": 0,
-    "latency": 5209
+    "latency": 4989
   },
   {
     "caseID": "ETHEREUM_MONITORING",
@@ -56,10 +56,10 @@
       "asset1",
       "owner1"
     ],
-    "timestamp": "2024-05-06T15:55:05.596Z",
+    "timestamp": "2024-05-22T16:24:09.229Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 40955256397680,
     "carbonFootprint": 0,
-    "latency": 8
+    "latency": 7
   }
 ]

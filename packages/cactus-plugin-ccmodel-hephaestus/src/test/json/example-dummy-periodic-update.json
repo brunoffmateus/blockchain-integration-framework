@@ -1,0 +1,447 @@
+[
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x1d37b5ea2741eb9b7ca8bf49ae3b563c0632ab3660953ef6298650a8248b313b",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:29:05.592Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 135530010970738,
+    "carbonFootprint": 0,
+    "latency": 4714
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xd3732704dc43d1a1035974655cd62ee9cbad0e1a76449aba26f8d25d3833ac72",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:12.167Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 42814248832950,
+    "carbonFootprint": 0,
+    "latency": 8140
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x5121ac2440d82d580bc30c9e445365871a0bbd7310580bd7e7617d66abdc0d33",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:15.321Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 42451616646000,
+    "carbonFootprint": 0,
+    "latency": 4987
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x3be2b1b2c1bec476f0d37cb6990b2ae7b54804a166262aef639ba6993d64e896",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:29:20.291Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 120363911294810,
+    "carbonFootprint": 0,
+    "latency": 17
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x1ae44035a0580491f47933802ca3f99c11ca524b9c2add9169b67079d1085d56",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:25.567Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 38436488700900,
+    "carbonFootprint": 0,
+    "latency": 4741
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xb64d1e48f4f69bf930950bc13d9c05513642af08dbdd5079f428db0fc17c839d",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:31.539Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 38500479768000,
+    "carbonFootprint": 0,
+    "latency": 8770
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xb299fbed0ff28d4b29404142d8bee7b33a6ac2d480f22af3fdac030e9197e955",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:29:35.463Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 110203266779032,
+    "carbonFootprint": 0,
+    "latency": 4847
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xf88b5da58aa42c36a798cbbb773da6650e27dd55ab9a870f542e899b827720ba",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:41.534Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 35503574548200,
+    "carbonFootprint": 0,
+    "latency": 8776
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x620e72017b4bc4689c11d329504a8ea73729ed3f4eae2c73c7d2ad440f1d3463",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:45.403Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 35853385067280,
+    "carbonFootprint": 0,
+    "latency": 4908
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xaaf8cacf1951a808f769e87a32304952d9bbdb3eeb2e56fde12959c5d775b49f",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:29:50.291Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 103396064181676,
+    "carbonFootprint": 0,
+    "latency": 20
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xb205b16fac624e125354b93d9d9b542b6dbbf84816c6ed32a9e8ddd0c89cde50",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:29:55.387Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 33538645761600,
+    "carbonFootprint": 0,
+    "latency": 4924
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x621becfe651fee97f77384c62b1730c6c0f364bf40f4be96fcc871c25d2410bc",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:00.285Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 34079943209040,
+    "carbonFootprint": 0,
+    "latency": 27
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xa9ba355c1b6c24475762f8d85e3fe31373488d4ed5767d85cdd8bad701b635d3",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:30:05.402Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 98835525300660,
+    "carbonFootprint": 0,
+    "latency": 4909
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xadf19829cc25a097e457ed78fe9430fb0d306820ed91adbb94e538a291535849",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:11.946Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 32222226180300,
+    "carbonFootprint": 0,
+    "latency": 8365
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x39d64d6a97e476d64ebee18f8769fea61f8619ada119c58264dab2a04f8b11be",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:15.898Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 32891811777840,
+    "carbonFootprint": 0,
+    "latency": 4414
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xebfd45ff34e3ff7bd33d3c9bb5379877b7b0fd08e4357045dac805ed19cee100",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:30:21.881Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 95780155968798,
+    "carbonFootprint": 0,
+    "latency": 8431
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xe280efdc199b8635b392024bf969d7a78f7de3aaef64499c01dc240c425da1c2",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:25.840Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 31340280308100,
+    "carbonFootprint": 0,
+    "latency": 4473
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x96129a0b72d96b2bb3c7d359cf0d7d444f814b18614889b07a391af1d12314f2",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:31.674Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 32095813562880,
+    "carbonFootprint": 0,
+    "latency": 8638
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xd3d2045c8d79914a43bf0d0fa48233cb0c6d3d8d4c623767badeb6f5157e9876",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:30:35.557Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 93733186606720,
+    "carbonFootprint": 0,
+    "latency": 4757
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xd5d911f6b56aaa9539605c428404558111b31701753843d7e37b8732967b721b",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:41.575Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 30749413489950,
+    "carbonFootprint": 0,
+    "latency": 8738
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xcbc1a5c07d93f980362adaf84f66db3127e7d5745cca0117cbf9f05078d6b03b",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:45.575Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 31562528045760,
+    "carbonFootprint": 0,
+    "latency": 4739
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x9cd9db21f05539f6dff370095d8d1763f0914b5d197405d30fc941d8c090c678",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:30:51.591Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 92361802785924,
+    "carbonFootprint": 0,
+    "latency": 8722
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x6adbc6ffea1acadabe5c67cef94a855383c38b58a5b8ff296b48e399f30a4ad3",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:30:55.481Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 30353557405200,
+    "carbonFootprint": 0,
+    "latency": 4833
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x96ecf2aa1876492afddccf5e2a0083e21b1c85b24550fc0e4c7437699729ce18",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:31:01.581Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 31205249014320,
+    "carbonFootprint": 0,
+    "latency": 8731
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0xcf6652ab02e110b03816ba739c83a600424e9ee0611c34544ca4a239081018be",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:31:05.538Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 91443032771380,
+    "carbonFootprint": 0,
+    "latency": 4776
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x76ea903dabc8a71125125ee782e22d06cebb3923cdeb0186236186145b299c2e",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:31:11.583Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 30088350292200,
+    "carbonFootprint": 0,
+    "latency": 8729
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x60fb968f395815fc788974d19ccb11fa5e361b74e9d9ae1bd2224b8f03be395f",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "deleteAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:31:15.471Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 30965886922560,
+    "carbonFootprint": 0,
+    "latency": 4843
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x13b53c3379a666e719caa33ea0161d08594e663f90e268f25017c2e7068290c8",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "createAsset",
+    "parameters": [
+      "asset1",
+      5
+    ],
+    "timestamp": "2024-05-22T16:31:21.604Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 90827495125774,
+    "carbonFootprint": 0,
+    "latency": 8709
+  },
+  {
+    "caseID": "CCMODEL_UPDATE",
+    "receiptID": "0x1a5e30ce40cd194e512c8195b462bc0ed107fd1686534c940b3b0493b39b4dd9",
+    "blockchainID": "ETHEREUM",
+    "invocationType": "SEND",
+    "methodName": "lockAsset",
+    "parameters": [
+      "asset1"
+    ],
+    "timestamp": "2024-05-22T16:31:25.491Z",
+    "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
+    "cost": 29910672554550,
+    "carbonFootprint": 0,
+    "latency": 4823
+  }
+]

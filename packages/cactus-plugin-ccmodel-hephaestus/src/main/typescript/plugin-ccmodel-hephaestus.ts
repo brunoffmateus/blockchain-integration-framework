@@ -33,8 +33,9 @@ import {
   CrossChainEventLog,
 } from "./models/cross-chain-event";
 import {
-  checkConformance,
-  parseMP4PYOutput,
+  createModelPM4PY,
+  checkConformancePM4PY,
+  convertToProcessTreePM4PY,
 } from "./pm4py-adapter/ccmodel-adapter";
 
 export interface IWebAppOptions {
@@ -52,10 +53,7 @@ import {
   FabricV2TxReceipt,
 } from "./models/transaction-receipt";
 import { millisecondsLatency } from "./models/utils";
-import {
-  PluginLedgerConnectorBesu,
-  RunTransactionV1Exchange as RunTransactionV1ExchangeBesu,
-} from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { RunTransactionV1Exchange as RunTransactionV1ExchangeBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { RunTransactionV1Exchange as RunTransactionV1ExchangeEth } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
 import { RunTxReqWithTxId } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
@@ -70,7 +68,6 @@ export interface IPluginCcModelHephaestusOptions extends ICactusPluginOptions {
   ethTxObservable?: Observable<RunTransactionV1ExchangeEth>;
   besuTxObservable?: Observable<RunTransactionV1ExchangeBesu>;
   fabricTxObservable?: Observable<RunTxReqWithTxId>;
-  besuConnector?: PluginLedgerConnectorBesu;
 }
 
 export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
@@ -80,6 +77,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private httpServer: Server | SecureServer | null = null;
   private crossChainLog: CrossChainEventLog;
   private conformanceCrossChainLog: CrossChainEventLog;
+  private nonConformanceCrossChainLog: CrossChainEventLog;
   private crossChainModel: CrossChainModel;
   public readonly className = "plugin-ccmodel-hephaestus";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,8 +86,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private ethTxObservable?: Observable<RunTransactionV1ExchangeEth>;
   private besuTxObservable?: Observable<RunTransactionV1ExchangeBesu>;
   private fabricTxObservable?: Observable<RunTxReqWithTxId>;
-  private besuConnector?: PluginLedgerConnectorBesu;
   private startMonitoring: number | null = null;
+  private periodicUpdate: boolean;
 
   constructor(public readonly options: IPluginCcModelHephaestusOptions) {
     const startTime = new Date();
@@ -111,6 +109,9 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     this.conformanceCrossChainLog = new CrossChainEventLog({
       name: "HEPHAESTUS_CONFORMANCE_LOGS",
     });
+    this.nonConformanceCrossChainLog = new CrossChainEventLog({
+      name: "HEPHAESTUS_NON_CONFORMANCE_LOGS",
+    });
     //todo should allow different models to be instantiated
     this.crossChainModel = new CrossChainModel();
     this.txReceipts = [];
@@ -121,7 +122,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     this.besuTxObservable = options.besuTxObservable;
     this.fabricTxObservable = options.fabricTxObservable;
 
-    this.besuConnector = options.besuConnector;
+    this.periodicUpdate = false;
 
     const finalTime = new Date();
     this.log.debug(
@@ -141,12 +142,16 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return this.crossChainLog.numberEvents();
   }
 
+  get numberUnprocessedReceipts(): number {
+    return this.txReceipts.length;
+  }
+
   get numberEventsConformanceLog(): number {
     return this.conformanceCrossChainLog.numberEvents();
   }
 
-  get numberUnprocessedReceipts(): number {
-    return this.txReceipts.length;
+  get numberEventsNonConformanceLog(): number {
+    return this.nonConformanceCrossChainLog.numberEvents();
   }
 
   public purgeCrossChainEvents(): void {
@@ -508,12 +513,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     if (checkConformance == false) {
       this.crossChainLog.addCrossChainEvent(ccEventFromBesu);
-      this.log.info("Added Cross Chain event from ETHEREUM");
+      this.log.info("Added Cross Chain event from BESU");
       this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromBesu)}`);
     } else {
       this.conformanceCrossChainLog.addCrossChainEvent(ccEventFromBesu);
       this.log.info(
-        "Added Cross Chain event from ETHEREUM for conformance checking",
+        "Added Cross Chain event from BESU for conformance checking",
       );
       this.log.debug(
         `Conformance Cross-chain log: ${JSON.stringify(ccEventFromBesu)}`,
@@ -541,12 +546,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     if (checkConformance == false) {
       this.crossChainLog.addCrossChainEvent(ccEventFromFabric);
-      this.log.info("Added Cross Chain event from ETHEREUM");
+      this.log.info("Added Cross Chain event from FABRIC");
       this.log.debug(`Cross-chain log: ${JSON.stringify(ccEventFromFabric)}`);
     } else {
       this.conformanceCrossChainLog.addCrossChainEvent(ccEventFromFabric);
       this.log.info(
-        "Added Cross Chain event from ETHEREUM for conformance checking",
+        "Added Cross Chain event from FABRIC for conformance checking",
       );
       this.log.debug(
         `Conformance Cross-chain log: ${JSON.stringify(ccEventFromFabric)}`,
@@ -630,7 +635,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  // Parses the cross chain event log and updates the cross chain model
+  // Parses the cross chain event log to updates the cross chain model
   // This is part of the cc model; have a set that maps case id to data structure; this data structure are the consolidated metrics for a cctx, stores each txid
   // run over cc log; if case id is unique create new entry, otherwise add tx to cctx, update metrics, update last update; this is an updatable model
   public async aggregateCcTx(): Promise<void> {
@@ -727,10 +732,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return;
   }
 
-  public async persistCrossChainLogCsv(
-    name?: string,
-    checkConformance: boolean = false,
-  ): Promise<string> {
+  public async persistCrossChainLogCsv(name?: string): Promise<string> {
     const startTime = new Date();
     const columns =
       this.crossChainLog.getCrossChainLogAttributes() as (keyof CrossChainEvent)[];
@@ -740,13 +742,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     const csvFolder = path.join(__dirname, "../", "../", "test", "csv");
     const logPath = path.join(csvFolder, logName);
     const fnTag = `${this.className}#persistCrossChainLogCsv()`;
+    const ccEvents = this.crossChainLog.logEntries;
 
-    let ccEvents: CrossChainEvent[];
-    if (checkConformance == true) {
-      ccEvents = this.conformanceCrossChainLog.logEntries;
-    } else {
-      ccEvents = this.crossChainLog.logEntries;
-    }
     try {
       // Convert log entries to CSV rows
       const csvRows = ccEvents.map((entry) => {
@@ -781,10 +778,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  public async persistCrossChainLogJson(
-    name?: string,
-    checkConformance: boolean = false,
-  ): Promise<string> {
+  public async persistCrossChainLogJson(name?: string): Promise<string> {
     const startTime = new Date();
     const logName = name
       ? `${name}.json`
@@ -793,12 +787,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     const logPath = path.join(jsonFolder, logName);
     const fnTag = `${this.className}#persistCrossChainLogJson()`;
 
-    let ccEvents: CrossChainEvent[];
-    if (checkConformance == true) {
-      ccEvents = this.conformanceCrossChainLog.logEntries;
-    } else {
-      ccEvents = this.crossChainLog.logEntries;
-    }
+    const ccEvents = this.crossChainLog.logEntries;
 
     try {
       const data = JSON.stringify(ccEvents, null, 2);
@@ -822,28 +811,166 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  // Receives a serialized model
-  public async saveModel(
-    modelType: CrossChainModelType,
-    model: string,
+  private async persistConformanceCrossChainLog(): Promise<string> {
+    const startTime = new Date();
+    const logName = `hephaestus_log_${startTime.getTime()}`;
+    const jsonFolder = path.join(__dirname, "../", "../", "test", "json");
+    const logPath = path.join(jsonFolder, logName + ".json");
+    const fnTag = `${this.className}#persistConformanceCrossChainLog()`;
+
+    const ccEvents = this.conformanceCrossChainLog.logEntries;
+
+    try {
+      const data = JSON.stringify(ccEvents, null, 2);
+      this.log.debug(data);
+
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(jsonFolder)) {
+        fs.mkdirSync(jsonFolder);
+      }
+      fs.writeFileSync(logPath, data);
+
+      const finalTime = new Date();
+      this.log.debug(
+        `EVAL-${this.className}-PERSIST-LOG-JSON:${finalTime.getTime() - startTime.getTime()}`,
+      );
+
+      return logName;
+    } catch (error) {
+      const errorMessage = `${fnTag} Failed to export cross-chain event log to JSON file:`;
+      throw new RuntimeError(errorMessage, error);
+    }
+  }
+
+  public async stopPeriodicCCModelUpdate(fileName: string = ""): Promise<void> {
+    const fnTag = `${this.className}#stopPeriodicCCModelUpdate()`;
+    this.log.debug(fnTag);
+    await this.txReceiptToCrossChainEventLogEntry();
+    await this.createModel(fileName);
+    this.periodicUpdate = false;
+  }
+
+  public async periodicCCModelUpdate(
+    fileName: string = "",
+    timeInterval: number,
   ): Promise<void> {
+    const fnTag = `${this.className}#periodicCCModelUpdate()`;
+    this.log.debug(fnTag);
+
+    timeInterval = timeInterval < 5000 ? 5000 : timeInterval;
+
+    this.periodicUpdate = true;
+    const intervalId = setInterval(async () => {
+      if (this.periodicUpdate == true) {
+        await this.txReceiptToCrossChainEventLogEntry();
+        if (fileName != "") {
+          await this.persistCrossChainLogCsv(fileName);
+          await this.persistCrossChainLogJson(fileName);
+        }
+        const modelPM4PY = await this.createModel(fileName);
+        this.ccModel.setType(CrossChainModelType.PetriNet);
+        this.saveModel(CrossChainModelType.PetriNet, modelPM4PY);
+      } else {
+        clearInterval(intervalId);
+      }
+    }, timeInterval);
+  }
+
+  // Receives a serialized model and saves it
+  public saveModel(modelType: CrossChainModelType, model: string): void {
     this.crossChainModel.saveModel(modelType, model);
   }
 
-  public async getModel(
-    modelType: CrossChainModelType,
-  ): Promise<string | undefined> {
+  // Gets the saved serialized model with the specified CrossChainModelType
+  public getModel(modelType: CrossChainModelType): string | undefined {
     return this.crossChainModel.getModel(modelType);
   }
 
-  public async checkConformance(
-    file1: string,
-    file2: string,
-  ): Promise<string | undefined> {
-    return checkConformance(file1, file2);
+  public async createModel(fileName: string = ""): Promise<string> {
+    if (fileName == "") {
+      fileName = await this.persistCrossChainLogCsv();
+      fileName = fileName.split(".")[0];
+    }
+    await this.aggregateCcTx();
+    const petriNet = createModelPM4PY(fileName);
+    this.ccModel.setType(CrossChainModelType.PetriNet);
+    this.saveModel(CrossChainModelType.PetriNet, petriNet);
+    return petriNet;
   }
 
-  public async parseMP4PYOutput(output: string | undefined): Promise<string> {
-    return parseMP4PYOutput(output);
+  // creates a file with unmodeled logs and performs a conformance check
+  public async checkConformance(serializedCCModel: string): Promise<string> {
+    const fileName = await this.persistConformanceCrossChainLog();
+    const conformanceDetails = checkConformancePM4PY(
+      fileName,
+      serializedCCModel,
+    );
+    this.filterCrossChainLogsAndUpdateModel(fileName, conformanceDetails);
+    return conformanceDetails;
+  }
+
+  private filterCrossChainLogsByConformance(
+    conformanceDetails: string | undefined,
+  ): boolean {
+    const fnTag = `${this.className}#filterCrossChainLogsByConformance()`;
+    if (!conformanceDetails) {
+      throw new Error(`${fnTag} conformance details falsy.`);
+    }
+    let updateModel: boolean = false;
+    const entries = this.conformanceCrossChainLog.logEntries;
+    const details = conformanceDetails.split("\n");
+
+    const misbehaviour = details[2];
+
+    if (misbehaviour === "[]") {
+      // if it conforms, add to ccmodel
+      entries.forEach((entry) => {
+        this.crossChainLog.addCrossChainEvent(entry);
+      });
+      // set to true to update the model
+      updateModel = true;
+    } else {
+      // else keep it in a different log of bad behavior?
+      entries.forEach((entry) => {
+        this.nonConformanceCrossChainLog.addCrossChainEvent(entry);
+      });
+      // set to false to not update the model
+      updateModel = false;
+    }
+
+    // clean conformanceCrossChainLog
+    this.conformanceCrossChainLog.purgeLogs();
+
+    return updateModel;
+  }
+
+  public async filterCrossChainLogsAndUpdateModel(
+    fileName: string,
+    conformanceDetails: string | undefined,
+  ): Promise<void> {
+    const update = this.filterCrossChainLogsByConformance(conformanceDetails);
+    if (!update) {
+      return;
+    }
+    await this.persistCrossChainLogCsv(fileName);
+    await this.persistCrossChainLogJson(fileName);
+    const modelPM4PY = await this.createModel(fileName);
+    if (modelPM4PY) {
+      this.ccModel.setType(CrossChainModelType.PetriNet);
+      this.saveModel(CrossChainModelType.PetriNet, modelPM4PY);
+    }
+  }
+
+  public convertModelToProcessTree(): string | undefined {
+    const petriNet = this.ccModel.getModel(CrossChainModelType.PetriNet);
+    if (!petriNet) {
+      return;
+    }
+    const tree = convertToProcessTreePM4PY(petriNet);
+    if (!tree) {
+      return;
+    }
+    this.saveModel(CrossChainModelType.ProcessTree, tree);
+    return tree;
   }
 }

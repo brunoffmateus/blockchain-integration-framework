@@ -1218,7 +1218,6 @@ export class PluginLedgerConnectorFabric
       }
 
       // create RunTxReqWithTxId for transaction monitoring
-      const startTimeFabricReceipt = new Date();
       const receiptData: RunTxReqWithTxId = {
         request: req,
         transactionId: transactionId == "" ? uuidv4() : transactionId,
@@ -1228,11 +1227,6 @@ export class PluginLedgerConnectorFabric
         `RunTxReqWithTxId created with ID: ${receiptData.transactionId}`,
       );
       this.txSubject.next(receiptData);
-
-      const endTimeFabricReceipt = new Date();
-      this.log.debug(
-        `EVAL-${this.className}-ISSUE-TRANSACTION:${endTimeFabricReceipt.getTime() - startTimeFabricReceipt.getTime()}`,
-      );
 
       const res: RunTransactionResponse = {
         functionOutput: this.convertToTransactionResponseType(

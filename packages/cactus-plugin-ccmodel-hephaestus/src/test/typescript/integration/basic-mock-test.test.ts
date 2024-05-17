@@ -111,9 +111,6 @@ test(testCase, async () => {
     "example-dummy-basic-test",
   );
   expect(logNameJson).toBeTruthy();
-
-  await hephaestus.aggregateCcTx();
-  expect(hephaestus.ccModel).toBeTruthy();
 });
 
 afterAll(async () => {
