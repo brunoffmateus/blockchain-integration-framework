@@ -146,18 +146,54 @@ def unserialize_and_check_conformance(ccLog):
 
     # check  conformance:
     diagnostics = pm4py.conformance_diagnostics_alignments(ccLog, net, initial_marking, final_marking)
-    print(diagnostics)
+    if diagnostics == []:
+        print("No event log provided")
+        return
 
     alignment = diagnostics[0]["alignment"]
-    non_modeled_activities = []
-    skips = []
+    conforming_activities = []
+    non_conforming_activities = []
+    skipped_activities = []
+    
     for activity in alignment:
         if activity[0] == ">>" and activity[1] != None:
-            skips.append(activity)
+            skipped_activities.append(activity)
         elif activity[0] != ">>" and activity[1] == ">>":
-            non_modeled_activities.append(activity)
-    print(skips)
-    print(non_modeled_activities)
+            non_conforming_activities.append(activity)
+        elif activity[0] != None and activity[1] != None:
+            conforming_activities.append(activity)
+    
+    # Check for non-confomant behaviour
+    if len(non_conforming_activities) != 0:
+        print("NON-CONFORMANCE: The events do not conform to the given cross-chain model, as the following events are not represented in the model:")
+        print(non_conforming_activities)
+        return
+
+    # Check for important skipped activities
+    indexes = []
+    for activity in conforming_activities:
+        index = alignment.index(activity)
+        indexes.append(index)
+
+    # if there are no skips in the case, then all indexes will be in a row
+    # if not, then there are skips that cannot be ignored
+    ignore_skips = True
+    if indexes[0] != 1:
+        ignore_skips = False
+    else:
+        for i in range(len(indexes) - 1):
+            if indexes[i] + 1 != indexes[i + 1]:
+                ignore_skips = False
+                break
+    
+    if ignore_skips == True:
+        print("CONFORMANCE: The events conform to the given cross-chain model:")
+        print(conforming_activities)
+        return
+    
+    print("SKIPPED ACTIVITY: The events do not conform to the given cross-chain model, as the following events were skipped:")
+    print(skipped_activities)
+
 
 ##################################################################
 
@@ -179,9 +215,9 @@ def main():
         exit(1)
 
 if __name__ == "__main__":
-    # if len(sys.argv) != 3:
-    #     print("Usage: python3 check_conformance_json.py file_with_new_logs serialized_ccmodel")
-    #     exit(1)
+    if len(sys.argv) != 3:
+        print("Usage: python3 check_conformance.py file_with_new_logs serialized_ccmodel")
+        exit(1)
     
     file = sys.argv[1]
     serialized_ccmodel = sys.argv[2]
