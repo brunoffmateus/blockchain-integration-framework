@@ -80,6 +80,7 @@ describe("Test cross-chain model serialization and conformance checking", () => 
 
   let hephaestus: CcModelHephaestus;
   let hephaestusOptions: IPluginCcModelHephaestusOptions;
+  let totalTxs = 0;
 
   //////////////////////////////////
   // Environment Setup
@@ -252,15 +253,10 @@ describe("Test cross-chain model serialization and conformance checking", () => 
       caseNumber++;
     }
 
-    const totalTxs = txsPerCase * numberOfCases;
+    totalTxs = txsPerCase * numberOfCases;
 
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(totalTxs);
-    expect(hephaestus.numberEventsLog).toEqual(0);
-
-    await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
     expect(hephaestus.numberEventsLog).toEqual(totalTxs);
+    expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
 
     const model = await hephaestus.createModel();
     expect(model).toBeTruthy();
@@ -324,34 +320,15 @@ describe("Test cross-chain model serialization and conformance checking", () => 
     expect(deleteResEth.data).toBeTruthy();
     expect(deleteResEth.status).toBe(200);
 
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(0);
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(3);
-
-    await hephaestus.txReceiptToCrossChainEventLogEntry();
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(3);
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
-
     const serializedCCModel = hephaestus.getModel(CrossChainModelType.PetriNet);
     expect(serializedCCModel).toBeTruthy();
 
-    const conformanceDetails = await hephaestus.checkConformance(
-      serializedCCModel!,
-    );
-    expect(conformanceDetails).toBeTruthy();
-    console.log(conformanceDetails);
-
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(0);
-
-    const tree = hephaestus.convertModelToProcessTree();
-    expect(tree).toBeTruthy();
-    expect(
-      hephaestus.ccModel.getModel(CrossChainModelType.ProcessTree),
-    ).toBeTruthy();
-    console.log(hephaestus.ccModel.getModel(CrossChainModelType.ProcessTree));
+    totalTxs = totalTxs + 3;
+    expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+    expect(hephaestus.numberEventsLog).toEqual(totalTxs);
   });
 
-  test("Check confomity of unmodeled transactions that should not conform", async () => {
+  test("Check confomity of unmodeled transactions with one non conformant", async () => {
     const createResEth = await apiClient.invokeContractV1({
       contract: {
         contractName: LockAssetContractJson.contractName,
@@ -423,30 +400,13 @@ describe("Test cross-chain model serialization and conformance checking", () => 
     expect(getResEth.data).toBeTruthy();
     expect(getResEth.status).toBe(200);
 
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(0);
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(4);
-
-    await hephaestus.txReceiptToCrossChainEventLogEntry();
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(4);
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
-
     const serializedCCModel = hephaestus.getModel(CrossChainModelType.PetriNet);
     expect(serializedCCModel).toBeTruthy();
 
-    const conformanceDetails = await hephaestus.checkConformance(
-      serializedCCModel!,
-    );
-    expect(conformanceDetails).toBeTruthy();
-    console.log(conformanceDetails);
-
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
-    expect(hephaestus.numberEventsUncheckedLog).toEqual(0);
-    expect(hephaestus.numberEventsNonConformanceLog).toEqual(4);
-
-    const tree = hephaestus.convertModelToProcessTree();
-    expect(tree).toBeTruthy();
-    expect(hephaestus.getModel(CrossChainModelType.ProcessTree)).toBeTruthy();
-    console.log(hephaestus.getModel(CrossChainModelType.ProcessTree));
+    totalTxs = totalTxs + 3;
+    expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+    expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
+    expect(hephaestus.numberEventsLog).toEqual(totalTxs);
   });
 
   afterAll(async () => {

@@ -217,12 +217,6 @@ test("monitor Besu transactions", async () => {
   });
   expect(deleteResBesu).toBeTruthy();
 
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(4);
-  expect(hephaestus.numberEventsLog).toEqual(0);
-
-  await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(4);
 
   await hephaestus.persistCrossChainLogCsv("example-dummy-besu-4-events");

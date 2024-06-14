@@ -9,11 +9,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:40:42.941Z",
+    "timestamp": "2024-06-18T09:43:56.933Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 135530010970738,
     "carbonFootprint": 0,
-    "latency": 4921
+    "latency": 4772
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -24,11 +24,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:40:49.281Z",
+    "timestamp": "2024-06-18T09:44:01.510Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 42814248832950,
     "carbonFootprint": 0,
-    "latency": 8580
+    "latency": 197
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -39,11 +39,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:40:52.233Z",
+    "timestamp": "2024-06-18T09:44:06.998Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 42451616646000,
     "carbonFootprint": 0,
-    "latency": 5628
+    "latency": 4707
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -55,11 +55,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:40:57.247Z",
+    "timestamp": "2024-06-18T09:44:11.528Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 120363911294810,
     "carbonFootprint": 0,
-    "latency": 615
+    "latency": 177
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -70,11 +70,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:02.421Z",
+    "timestamp": "2024-06-18T09:44:16.877Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 38436488700900,
     "carbonFootprint": 0,
-    "latency": 5440
+    "latency": 4828
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -85,11 +85,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:07.408Z",
+    "timestamp": "2024-06-18T09:44:21.210Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 38500479768000,
     "carbonFootprint": 0,
-    "latency": 454
+    "latency": 495
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -101,11 +101,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:41:12.385Z",
+    "timestamp": "2024-06-18T09:44:26.534Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 110203266779032,
     "carbonFootprint": 0,
-    "latency": 5476
+    "latency": 5171
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -116,11 +116,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:17.387Z",
+    "timestamp": "2024-06-18T09:44:31.750Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 35503574548200,
     "carbonFootprint": 0,
-    "latency": 475
+    "latency": 9955
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -131,11 +131,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:22.263Z",
+    "timestamp": "2024-06-18T09:44:36.264Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 35853385067280,
     "carbonFootprint": 0,
-    "latency": 5598
+    "latency": 5445
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -147,11 +147,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:41:27.170Z",
+    "timestamp": "2024-06-18T09:44:41.490Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 103396064181676,
     "carbonFootprint": 0,
-    "latency": 692
+    "latency": 219
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -162,11 +162,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:32.195Z",
+    "timestamp": "2024-06-18T09:44:46.794Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 33538645761600,
     "carbonFootprint": 0,
-    "latency": 5666
+    "latency": 4911
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -177,11 +177,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:37.087Z",
+    "timestamp": "2024-06-18T09:44:51.049Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 34079943209040,
     "carbonFootprint": 0,
-    "latency": 775
+    "latency": 658
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -193,11 +193,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:41:42.152Z",
+    "timestamp": "2024-06-18T09:44:56.602Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 98835525300660,
     "carbonFootprint": 0,
-    "latency": 5710
+    "latency": 5103
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -208,11 +208,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:47.039Z",
+    "timestamp": "2024-06-18T09:45:01.756Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 32222226180300,
     "carbonFootprint": 0,
-    "latency": 823
+    "latency": 9950
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -223,11 +223,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:41:52.133Z",
+    "timestamp": "2024-06-18T09:45:06.250Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 32891811777840,
     "carbonFootprint": 0,
-    "latency": 5728
+    "latency": 5456
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -239,11 +239,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:41:57.039Z",
+    "timestamp": "2024-06-18T09:45:11.373Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 95780155968798,
     "carbonFootprint": 0,
-    "latency": 823
+    "latency": 333
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -254,11 +254,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:02.152Z",
+    "timestamp": "2024-06-18T09:45:16.575Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 31340280308100,
     "carbonFootprint": 0,
-    "latency": 5709
+    "latency": 5144
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -269,11 +269,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:07.066Z",
+    "timestamp": "2024-06-18T09:45:21.671Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 32095813562880,
     "carbonFootprint": 0,
-    "latency": 796
+    "latency": 48
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -285,11 +285,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:42:12.164Z",
+    "timestamp": "2024-06-18T09:45:26.023Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 93733186606720,
     "carbonFootprint": 0,
-    "latency": 5697
+    "latency": 5696
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -300,11 +300,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:17.148Z",
+    "timestamp": "2024-06-18T09:45:31.230Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 30749413489950,
     "carbonFootprint": 0,
-    "latency": 714
+    "latency": 490
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -315,11 +315,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:22.248Z",
+    "timestamp": "2024-06-18T09:45:36.592Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 31562528045760,
     "carbonFootprint": 0,
-    "latency": 5613
+    "latency": 5129
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -331,11 +331,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:42:27.135Z",
+    "timestamp": "2024-06-18T09:45:41.704Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 92361802785924,
     "carbonFootprint": 0,
-    "latency": 727
+    "latency": 18
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -346,11 +346,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:32.319Z",
+    "timestamp": "2024-06-18T09:45:46.045Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 30353557405200,
     "carbonFootprint": 0,
-    "latency": 5542
+    "latency": 5679
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -361,11 +361,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:37.207Z",
+    "timestamp": "2024-06-18T09:45:51.312Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 31205249014320,
     "carbonFootprint": 0,
-    "latency": 655
+    "latency": 414
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -377,11 +377,11 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:42:42.165Z",
+    "timestamp": "2024-06-18T09:45:56.853Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 91443032771380,
     "carbonFootprint": 0,
-    "latency": 5696
+    "latency": 4871
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -392,11 +392,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:47.055Z",
+    "timestamp": "2024-06-18T09:46:01.188Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 30088350292200,
     "carbonFootprint": 0,
-    "latency": 806
+    "latency": 537
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -407,11 +407,11 @@
     "parameters": [
       "asset1"
     ],
-    "timestamp": "2024-05-27T09:42:52.213Z",
+    "timestamp": "2024-06-18T09:46:06.546Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 30965886922560,
     "carbonFootprint": 0,
-    "latency": 5648
+    "latency": 5178
   },
   {
     "caseID": "CCMODEL_UPDATE",
@@ -423,10 +423,10 @@
       "asset1",
       5
     ],
-    "timestamp": "2024-05-27T09:42:57.111Z",
+    "timestamp": "2024-06-18T09:46:11.654Z",
     "identity": "0x6a2ec8c50ba1a9ce47c52d1cb5b7136ee9d0ccc0",
     "cost": 90827495125774,
     "carbonFootprint": 0,
-    "latency": 751
+    "latency": 71
   }
 ]

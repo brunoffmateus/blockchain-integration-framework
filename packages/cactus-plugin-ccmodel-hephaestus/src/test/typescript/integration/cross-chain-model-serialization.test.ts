@@ -254,12 +254,6 @@ describe("Test cross-chain model serialization", () => {
 
     const totalTxs = txsPerCase * numberOfCases;
 
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(totalTxs);
-    expect(hephaestus.numberEventsLog).toEqual(0);
-
-    await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
     expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
     const model = await hephaestus.createModel();

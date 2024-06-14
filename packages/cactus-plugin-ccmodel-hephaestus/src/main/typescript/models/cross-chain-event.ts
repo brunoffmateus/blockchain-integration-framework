@@ -53,6 +53,11 @@ export class CrossChainEventLog {
     this.lastUpdateDate = new Date();
   }
 
+  public removeLastEvent(): void {
+    this.crossChainEvents.pop();
+    this.lastUpdateDate = new Date();
+  }
+
   public getCrossChainLogAttributes(): string[] {
     return [
       "caseID",

@@ -35,18 +35,3 @@ export function checkConformancePM4PY(
     throw error;
   }
 }
-
-export function convertToProcessTreePM4PY(
-  serializedCCModel: string,
-): string | undefined {
-  const ConvertModelScript = path.join(__dirname, "convert_model.py");
-  const command = `python3 ${ConvertModelScript} \'${serializedCCModel}\'`;
-
-  try {
-    const output = execSync(command, { encoding: "utf-8" });
-    return output;
-  } catch (error) {
-    console.error(`Error executing ${command}:`, error);
-    throw error;
-  }
-}

@@ -154,7 +154,7 @@ def unserialize_and_check_conformance(ccLog):
     conforming_activities = []
     non_conforming_activities = []
     skipped_activities = []
-    
+
     for activity in alignment:
         if activity[0] == ">>" and activity[1] != None:
             skipped_activities.append(activity)
@@ -165,12 +165,19 @@ def unserialize_and_check_conformance(ccLog):
     
     # Check for non-confomant behaviour
     if len(non_conforming_activities) != 0:
-        print("NON-CONFORMANCE: The events do not conform to the given cross-chain model, as the following events are not represented in the model:")
+        print("NON-CONFORMANCE:")
         print(non_conforming_activities)
+        return
+
+    token_replay = pm4py.conformance_diagnostics_token_based_replay(ccLog, net, initial_marking, final_marking)
+    if token_replay[0]["trace_is_fit"]:
+        print("FULL CONFORMANCE:")
+        print(conforming_activities)
         return
 
     # Check for important skipped activities
     indexes = []
+    seen_indexes = []
     for activity in conforming_activities:
         index = alignment.index(activity)
         indexes.append(index)
@@ -178,22 +185,24 @@ def unserialize_and_check_conformance(ccLog):
     # if there are no skips in the case, then all indexes will be in a row
     # if not, then there are skips that cannot be ignored
     ignore_skips = True
-    if indexes[0] != 1:
-        ignore_skips = False
-    else:
-        for i in range(len(indexes) - 1):
-            if indexes[i] + 1 != indexes[i + 1]:
-                ignore_skips = False
-                break
+    
+    for i in range(len(indexes) - 1):
+        if indexes[i] in seen_indexes:
+            continue
+        seen_indexes.append(indexes[i])
+        if indexes[i] + 1 != indexes[i + 1]:
+            ignore_skips = False
+            break
+    
+    # print(indexes)
     
     if ignore_skips == True:
-        print("CONFORMANCE: The events conform to the given cross-chain model:")
+        print("PARTIAL CONFORMANCE:")
         print(conforming_activities)
         return
     
-    print("SKIPPED ACTIVITY: The events do not conform to the given cross-chain model, as the following events were skipped:")
+    print("SKIPPED ACTIVITY:")
     print(skipped_activities)
-
 
 ##################################################################
 

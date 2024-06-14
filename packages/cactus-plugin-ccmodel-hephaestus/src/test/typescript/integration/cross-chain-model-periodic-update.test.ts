@@ -80,7 +80,6 @@ describe("Test the periodic update of the cross-chain model", () => {
 
   let hephaestus: CcModelHephaestus;
   let hephaestusOptions: IPluginCcModelHephaestusOptions;
-  const fileName = "example-dummy-periodic-update";
 
   //////////////////////////////////
   // Environment Setup
@@ -191,8 +190,9 @@ describe("Test the periodic update of the cross-chain model", () => {
   test("update cross-chain model across 10 cases", async () => {
     hephaestus.setCaseId("CCMODEL_UPDATE");
     hephaestus.monitorTransactions();
+    hephaestus.setIsModeling(false);
 
-    await hephaestus.periodicCCModelUpdate(fileName, 10000);
+    await hephaestus.periodicCCModelUpdate(10000);
 
     const numberOfCases = 10;
     const txsPerCase = 3;
@@ -257,8 +257,8 @@ describe("Test the periodic update of the cross-chain model", () => {
 
     const totalTxs = txsPerCase * numberOfCases;
 
-    await hephaestus.stopPeriodicCCModelUpdate(fileName);
-    expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
+    await hephaestus.stopPeriodicCCModelUpdate();
+    expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
     expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
     console.log(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet));

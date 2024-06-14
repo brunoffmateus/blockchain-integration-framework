@@ -35,7 +35,6 @@ import {
 import {
   createModelPM4PY,
   checkConformancePM4PY,
-  convertToProcessTreePM4PY,
 } from "./pm4py-adapter/ccmodel-adapter";
 
 export interface IWebAppOptions {
@@ -76,12 +75,11 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private endpoints: IWebServiceEndpoint[] | undefined;
   private httpServer: Server | SecureServer | null = null;
   private crossChainLog: CrossChainEventLog;
-  private uncheckedEventLog: CrossChainEventLog;
-  private nonConformanceCrossChainLog: CrossChainEventLog;
+  private unmodeledEventLog: CrossChainEventLog;
+  private nonConformedCrossChainLog: CrossChainEventLog;
+  private nonConformedCCTxs: string[];
   private crossChainModel: CrossChainModel;
   public readonly className = "plugin-ccmodel-hephaestus";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private txReceipts: any[];
   private caseID: string;
   private ethTxObservable?: Observable<RunTransactionV1ExchangeEth>;
   private besuTxObservable?: Observable<RunTransactionV1ExchangeBesu>;
@@ -107,15 +105,15 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     this.crossChainLog = new CrossChainEventLog({
       name: "HEPHAESTUS_EVENT_LOGS",
     });
-    this.uncheckedEventLog = new CrossChainEventLog({
-      name: "HEPHAESTUS_UNCHECKED_LOGS",
+    this.unmodeledEventLog = new CrossChainEventLog({
+      name: "HEPHAESTUS_UNMODELED_LOGS",
     });
-    this.nonConformanceCrossChainLog = new CrossChainEventLog({
+    this.nonConformedCrossChainLog = new CrossChainEventLog({
       name: "HEPHAESTUS_NON_CONFORMANCE_LOGS",
     });
+
     //todo should allow different models to be instantiated
     this.crossChainModel = new CrossChainModel();
-    this.txReceipts = [];
 
     this.caseID = "UNDEFINED_CASE_ID";
 
@@ -125,6 +123,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     this.periodicUpdate = false;
     this.isModeling = true;
+
+    this.nonConformedCCTxs = [];
 
     const finalTime = new Date();
     this.log.debug(
@@ -144,16 +144,16 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return this.crossChainLog.numberEvents();
   }
 
-  get numberEventsUncheckedLog(): number {
-    return this.uncheckedEventLog.numberEvents();
+  get numberEventsUnmodeledLog(): number {
+    return this.unmodeledEventLog.numberEvents();
   }
 
-  get numberEventsNonConformanceLog(): number {
-    return this.nonConformanceCrossChainLog.numberEvents();
+  public purgeNonConformedEvents(): void {
+    this.nonConformedCrossChainLog.purgeLogs();
   }
 
-  get numberUnprocessedReceipts(): number {
-    return this.txReceipts.length;
+  get numberEventsNonConformedLog(): number {
+    return this.nonConformedCrossChainLog.numberEvents();
   }
 
   public purgeCrossChainEvents(): void {
@@ -173,6 +173,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   }
 
   public setCaseId(id: string): void {
+    this.unmodeledEventLog.purgeLogs();
     this.caseID = id;
   }
 
@@ -226,7 +227,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return `@hyperledger/cactus-plugin-ccmodel-hephaestus`;
   }
 
-  public createReceiptFromRunTransactionV1ExchangeBesu(
+  private createReceiptFromRunTransactionV1ExchangeBesu(
     data: RunTransactionV1ExchangeBesu,
     caseId: string,
   ): BesuV2TxReceipt {
@@ -244,7 +245,9 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
   }
 
-  public pollTxReceiptsBesu(data: RunTransactionV1ExchangeBesu): void {
+  private pollTxReceiptsBesu(
+    data: RunTransactionV1ExchangeBesu,
+  ): BesuV2TxReceipt {
     const fnTag = `${this.className}#pollTxReceiptsBesu()`;
     this.log.debug(fnTag);
 
@@ -252,11 +255,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       data,
       this.caseID,
     );
-    this.txReceipts.push(besuReceipt);
-    return;
+    return besuReceipt;
   }
 
-  public createReceiptFromRunTransactionV1ExchangeEth(
+  private createReceiptFromRunTransactionV1ExchangeEth(
     data: RunTransactionV1ExchangeEth,
     caseId: string,
   ): EthereumTxReceipt {
@@ -274,7 +276,9 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
   }
 
-  public pollTxReceiptsEth(data: RunTransactionV1ExchangeEth): void {
+  private pollTxReceiptsEth(
+    data: RunTransactionV1ExchangeEth,
+  ): EthereumTxReceipt {
     const fnTag = `${this.className}#pollTxReceiptsEth()`;
     this.log.debug(fnTag);
 
@@ -282,11 +286,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       data,
       this.caseID,
     );
-    this.txReceipts.push(ethReceipt);
-    return;
+    return ethReceipt;
   }
 
-  public createReceiptFromRunTxReqWithTxId(
+  private createReceiptFromRunTxReqWithTxId(
     data: RunTxReqWithTxId,
     caseId: string,
   ): FabricV2TxReceipt {
@@ -304,7 +307,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
   }
 
-  public pollTxReceiptsFabric(data: RunTxReqWithTxId): void {
+  private pollTxReceiptsFabric(data: RunTxReqWithTxId): FabricV2TxReceipt {
     const fnTag = `${this.className}#pollTxReceiptsFabric()`;
     this.log.debug(fnTag);
 
@@ -312,11 +315,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       data,
       this.caseID,
     );
-    this.txReceipts.push(fabricReceipt);
-    return;
+    return fabricReceipt;
   }
 
-  public watchRunTransactionV1ExchangeBesu(duration: number = 0): void {
+  private watchRunTransactionV1ExchangeBesu(duration: number = 0): void {
     const fnTag = `${this.className}#watchRunTransactionV1ExchangeBesu()`;
     this.log.debug(fnTag);
 
@@ -346,9 +348,19 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           : tap(),
       )
       .subscribe({
-        next: (data: RunTransactionV1ExchangeBesu) => {
-          // Handle the data whenever a new value is received by the observer
-          this.pollTxReceiptsBesu(data);
+        next: async (data: RunTransactionV1ExchangeBesu) => {
+          // Handle the data whenever a new value is received by the observer:
+          // this includes creating the receipt, then the cross-chain event
+          // and check its conformance to the model, if the model is already defined
+          const besuReceipt = this.pollTxReceiptsBesu(data);
+          this.createCrossChainEventFromBesuReceipt(
+            besuReceipt,
+            this.isModeling,
+          );
+          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
+          if (!this.isModeling && model) {
+            await this.checkConformance(model);
+          }
         },
         error: (error: unknown) => {
           this.log.error(
@@ -362,7 +374,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
-  public watchRunTransactionV1ExchangeEth(duration: number = 0): void {
+  private watchRunTransactionV1ExchangeEth(duration: number = 0): void {
     const fnTag = `${this.className}#watchRunTransactionV1ExchangeEth()`;
     this.log.debug(fnTag);
 
@@ -391,9 +403,16 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           : tap(),
       )
       .subscribe({
-        next: (data: RunTransactionV1ExchangeEth) => {
+        next: async (data: RunTransactionV1ExchangeEth) => {
           // Handle the data whenever a new value is received by the observer
-          this.pollTxReceiptsEth(data);
+          // this includes creating the receipt, then the cross-chain event
+          // and check its conformance to the model, if the model is already defined
+          const ethReceipt = this.pollTxReceiptsEth(data);
+          this.createCrossChainEventFromEthReceipt(ethReceipt, this.isModeling);
+          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
+          if (!this.isModeling && model) {
+            await this.checkConformance(model);
+          }
         },
         error: (error: unknown) => {
           this.log.error(
@@ -407,7 +426,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
-  public watchRunTxReqWithTxId(duration: number = 0): void {
+  private watchRunTxReqWithTxId(duration: number = 0): void {
     const fnTag = `${this.className}#watchRunTxReqWithTxId()`;
     this.log.debug(fnTag);
 
@@ -436,9 +455,19 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           : tap(),
       )
       .subscribe({
-        next: (data: RunTxReqWithTxId) => {
+        next: async (data: RunTxReqWithTxId) => {
           // Handle the data whenever a new value is received by the observer
-          this.pollTxReceiptsFabric(data);
+          // this includes creating the receipt, then the cross-chain event
+          // and check its conformance to the model, if the model is already defined
+          const fabricReceipt = this.pollTxReceiptsFabric(data);
+          this.createCrossChainEventFromFabricReceipt(
+            fabricReceipt,
+            this.isModeling,
+          );
+          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
+          if (!this.isModeling && model) {
+            await this.checkConformance(model);
+          }
         },
         error: (error: unknown) => {
           this.log.error(
@@ -482,7 +511,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
 
     if (this.isModeling == false && updatingCCModel == false) {
-      this.uncheckedEventLog.addCrossChainEvent(ccEventFromBesu);
+      this.unmodeledEventLog.addCrossChainEvent(ccEventFromBesu);
 
       this.log.info(
         "Added Cross Chain event from BESU for conformance checking",
@@ -519,7 +548,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
 
     if (this.isModeling == false && updatingCCModel == false) {
-      this.uncheckedEventLog.addCrossChainEvent(ccEventFromEth);
+      this.unmodeledEventLog.addCrossChainEvent(ccEventFromEth);
 
       this.log.info(
         "Added Cross Chain event from ETHEREUM for conformance checking",
@@ -553,7 +582,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
 
     if (this.isModeling == false && updatingCCModel == false) {
-      this.uncheckedEventLog.addCrossChainEvent(ccEventFromFabric);
+      this.unmodeledEventLog.addCrossChainEvent(ccEventFromFabric);
 
       this.log.info(
         "Added Cross Chain event from FABRIC for conformance checking",
@@ -568,86 +597,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  private async createCrossChainEventFromReceipt(
-    receipt: BesuV2TxReceipt | EthereumTxReceipt | FabricV2TxReceipt,
-    updatingCCModel: boolean,
-  ): Promise<void> {
-    switch (receipt.blockchainID) {
-      // Process Besu transaction receipt
-      case LedgerType.Besu2X:
-        this.createCrossChainEventFromBesuReceipt(
-          receipt as BesuV2TxReceipt,
-          updatingCCModel,
-        );
-        break;
-      // Process Ethereum transaction receipt
-      case LedgerType.Ethereum:
-        this.createCrossChainEventFromEthReceipt(
-          receipt as EthereumTxReceipt,
-          updatingCCModel,
-        );
-        break;
-      // Process Fabric transaction receipt
-      case LedgerType.Fabric2:
-        this.createCrossChainEventFromFabricReceipt(
-          receipt as FabricV2TxReceipt,
-          updatingCCModel,
-        );
-        break;
-      default:
-        this.log.warn(
-          `Tx Receipt with case ID ${receipt.caseID} is not supported`,
-        );
-        break;
-    }
-  }
-
-  public async txReceiptToCrossChainEventLogEntry(
-    updatingCCModel: boolean = false,
-  ): Promise<CrossChainEvent[] | void> {
-    const startTime = new Date();
-    const fnTag = `${this.className}#txReceiptToCrossChainEventLogEntry()`;
-    this.log.debug(fnTag);
-    // We are processing receipts to update the CrossChainLog.
-    // At the end of the processing, we need to clear the transaction receipts that have been processed
-    // Therefore, we need a listen method that hephaestus is always running, doing polls every X seconds, followed by receipt processing (this method)
-    try {
-      this.txReceipts.forEach((receipt) => {
-        this.createCrossChainEventFromReceipt(receipt, updatingCCModel);
-      });
-      // Clear receipt array
-      this.txReceipts = [];
-      const finalTime = new Date();
-      this.log.debug(
-        `EVAL-${this.className}-RECEIPT2EVENT:${finalTime.getTime() - startTime.getTime()}`,
-      );
-      return;
-    } catch (error) {
-      const details = this.txReceipts.map((receipt) => {
-        return {
-          caseID: receipt.caseID,
-          receiptID: receipt.receiptID,
-          blockchainID: receipt.blockchainID,
-          timestamp: receipt.timestamp,
-          invocationType: receipt.invocationType,
-          methodName: receipt.methodName,
-          parameters: receipt.parameters,
-        };
-      });
-      this.log.error(
-        `${fnTag} Failed to create cross chain events from transaction receipts:`,
-        error,
-        `Receipts' details:`,
-        JSON.stringify(details),
-      );
-      throw error;
-    }
-  }
-
-  // Parses the cross chain event log to updates the cross chain model
+  // Parses the cross chain event log to update the cross chain model
   // This is part of the cc model; have a set that maps case id to data structure; this data structure are the consolidated metrics for a cctx, stores each txid
   // run over cc log; if case id is unique create new entry, otherwise add tx to cctx, update metrics, update last update; this is an updatable model
-  public async aggregateCcTx(): Promise<void> {
+  private async aggregateCcTx(): Promise<void> {
     const startTime = new Date();
     const lastAggregated = this.crossChainModel.lastAggregation;
     const newAggregationDate = new Date();
@@ -664,9 +617,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       latestUpdate: newAggregationDate,
     };
     const lastAggregatedTime = new Date(lastAggregated).getTime();
+    console.log(logEntries);
     const logsToAggregate = logEntries.filter(
       (log) => new Date(log.timestamp).getTime() > lastAggregatedTime,
     );
+    console.log(logsToAggregate);
+
     if (logsToAggregate.length === 0) {
       const finalTime = new Date();
 
@@ -678,19 +634,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     logsToAggregate.forEach((eventEntry) => {
       const key = eventEntry.caseID;
       const eventID = eventEntry.receiptID;
-      let latency = eventEntry.latency as number;
-      let carbonFootprint = eventEntry.carbonFootprint as number;
-      let cost = eventEntry.cost as number;
+      const latency = (eventEntry.latency as number) || 0;
+      const carbonFootprint = (eventEntry.carbonFootprint as number) || 0;
+      const cost = (eventEntry.cost as number) || 0;
 
-      if (!latency) {
-        latency = 0;
-      }
-      if (!carbonFootprint) {
-        carbonFootprint = 0;
-      }
-      if (!cost) {
-        cost = 0;
-      }
       if (ccTxSet?.has(key)) {
         const existingCCTx = ccTxSet.get(key);
         const previousEvents = existingCCTx?.processedCrossChainEvents || [];
@@ -820,17 +767,17 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  private async persistUncheckedEventLog(): Promise<string> {
+  private async persistUnmodeledEventLog(): Promise<string> {
     const startTime = new Date();
     const logName = `hephaestus_log_${startTime.getTime()}`;
     const jsonFolder = path.join(__dirname, "../", "../", "test", "json");
     const logPath = path.join(jsonFolder, logName + ".json");
-    const fnTag = `${this.className}#persistUncheckedEventLog()`;
+    const fnTag = `${this.className}#persistUnmodeledEventLog()`;
 
-    const ccEvents = this.uncheckedEventLog.logEntries;
+    const ccLogEvents = this.unmodeledEventLog.logEntries;
 
     try {
-      const data = JSON.stringify(ccEvents, null, 2);
+      const data = JSON.stringify(ccLogEvents, null, 2);
       this.log.debug(data);
 
       // Create directory if it doesn't exist
@@ -851,18 +798,14 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  public async stopPeriodicCCModelUpdate(fileName: string = ""): Promise<void> {
+  public async stopPeriodicCCModelUpdate(): Promise<void> {
     const fnTag = `${this.className}#stopPeriodicCCModelUpdate()`;
     this.log.debug(fnTag);
-    await this.txReceiptToCrossChainEventLogEntry(true);
-    await this.createModel(fileName);
+    await this.createModel();
     this.periodicUpdate = false;
   }
 
-  public async periodicCCModelUpdate(
-    fileName: string = "",
-    timeInterval: number,
-  ): Promise<void> {
+  public async periodicCCModelUpdate(timeInterval: number): Promise<void> {
     const fnTag = `${this.className}#periodicCCModelUpdate()`;
     this.log.debug(fnTag);
 
@@ -871,30 +814,11 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     this.periodicUpdate = true;
     const intervalId = setInterval(async () => {
       if (this.periodicUpdate == true) {
-        await this.txReceiptToCrossChainEventLogEntry(true);
-        if (fileName != "") {
-          await this.persistCrossChainLogCsv(fileName);
-          await this.persistCrossChainLogJson(fileName);
-        }
-        await this.checkConformanceAndUpdateModel(fileName);
+        await this.createModel();
       } else {
         clearInterval(intervalId);
       }
     }, timeInterval);
-  }
-
-  public async checkConformanceAndUpdateModel(fileName: string): Promise<void> {
-    const model = this.getModel(CrossChainModelType.PetriNet);
-    if (!model) {
-      return;
-    }
-    const conformanceOutput = await this.checkConformance(model);
-    this.filterCrossChainLogsByConformance(conformanceOutput);
-    const modelPM4PY = await this.createModel(fileName);
-    if (modelPM4PY) {
-      this.ccModel.setType(CrossChainModelType.PetriNet);
-      this.saveModel(CrossChainModelType.PetriNet, modelPM4PY);
-    }
   }
 
   // Receives a serialized model and saves it
@@ -907,11 +831,9 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return this.crossChainModel.getModel(modelType);
   }
 
-  public async createModel(fileName: string = ""): Promise<string> {
-    if (fileName == "") {
-      fileName = await this.persistCrossChainLogCsv();
-      fileName = fileName.split(".")[0];
-    }
+  public async createModel(): Promise<string> {
+    let fileName = await this.persistCrossChainLogCsv();
+    fileName = fileName.split(".")[0];
     await this.aggregateCcTx();
     const petriNet = createModelPM4PY(fileName);
     this.ccModel.setType(CrossChainModelType.PetriNet);
@@ -920,75 +842,52 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   }
 
   // creates a file with unmodeled logs and performs a conformance check
-  public async checkConformance(serializedCCModel: string): Promise<string> {
-    const fileName = await this.persistUncheckedEventLog();
+  private async checkConformance(serializedCCModel: string): Promise<string> {
+    const fileName = await this.persistUnmodeledEventLog();
     const conformanceDetails = checkConformancePM4PY(
       fileName,
       serializedCCModel,
     );
-    return this.filterCrossChainLogsByConformance(conformanceDetails);
+    this.filterCrossChainLogsByConformance(conformanceDetails);
+    return conformanceDetails;
   }
 
   private filterCrossChainLogsByConformance(
     conformanceDetails: string | undefined,
-  ): string {
+  ): void {
     const fnTag = `${this.className}#filterCrossChainLogsByConformance()`;
     if (!conformanceDetails) {
       throw new Error(`${fnTag} conformance details falsy.`);
     }
 
-    const entries = this.uncheckedEventLog.logEntries;
-
     const details = conformanceDetails.split("\n");
     const diagnosis = details[0];
-    const activities = details[1];
 
-    let event: string = "";
-    let output: string = "";
-    if (diagnosis.includes("NON-CONFORMANCE")) {
-      entries.forEach((entry) => {
-        this.nonConformanceCrossChainLog.addCrossChainEvent(entry);
+    if (
+      diagnosis.includes("NON-CONFORMANCE") ||
+      diagnosis.includes("SKIPPED ACTIVITY")
+    ) {
+      console.log("NON-CONFORMANCE or SKIPPED ACTIVITY");
+      this.nonConformedCCTxs.push(this.caseID);
+      this.unmodeledEventLog.logEntries.forEach((event) => {
+        this.nonConformedCrossChainLog.addCrossChainEvent(event);
       });
-      for (const entry of entries) {
-        if (activities.includes(entry.methodName)) {
-          event = entry.methodName;
-          break;
-        }
+      this.unmodeledEventLog.purgeLogs();
+    } else if (diagnosis.includes("PARTIAL CONFORMANCE")) {
+      console.log("PARTIAL CONFORMANCE");
+      if (this.nonConformedCCTxs.includes(this.caseID)) {
+        this.unmodeledEventLog.logEntries.forEach((event) => {
+          this.nonConformedCrossChainLog.addCrossChainEvent(event);
+        });
+        this.unmodeledEventLog.purgeLogs();
       }
-      output = "The following event does not conform to the ccmodel:\n" + event;
-    } else if (diagnosis.includes("SKIPPED ACTIVITY")) {
-      entries.forEach((entry) => {
-        this.nonConformanceCrossChainLog.addCrossChainEvent(entry);
+    } else if (diagnosis.includes("FULL CONFORMANCE")) {
+      console.log("FULL CONFORMANCE");
+      this.unmodeledEventLog.logEntries.forEach((event) => {
+        this.crossChainLog.addCrossChainEvent(event);
       });
-      for (const entry of entries) {
-        if (activities.includes(entry.methodName)) {
-          event = entry.methodName;
-          break;
-        }
-      }
-      output = "The following event was skipped in the ccmodel:\n" + event;
-    } else if (diagnosis.includes("CONFORMANCE")) {
-      entries.forEach((entry) => {
-        this.crossChainLog.addCrossChainEvent(entry);
-        event = event + entry.methodName + ";";
-      });
-      output = "The events conformed to the ccmodel:\n" + event.slice(0, -1);
+      this.unmodeledEventLog.purgeLogs();
+      this.createModel();
     }
-    // clean uncheckedEventLog
-    this.uncheckedEventLog.purgeLogs();
-    return output;
-  }
-
-  public convertModelToProcessTree(): string | undefined {
-    const petriNet = this.ccModel.getModel(CrossChainModelType.PetriNet);
-    if (!petriNet) {
-      return;
-    }
-    const tree = convertToProcessTreePM4PY(petriNet);
-    if (!tree) {
-      return;
-    }
-    this.saveModel(CrossChainModelType.ProcessTree, tree);
-    return tree;
   }
 }

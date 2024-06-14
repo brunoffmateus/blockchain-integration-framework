@@ -665,12 +665,6 @@ test("Monitor Besu, Ethereum and Fabric transactions", async () => {
   }
 
   const totalTxs = txsPerCase * numberOfCases;
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(totalTxs);
-  expect(hephaestus.numberEventsLog).toEqual(0);
-
-  await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
   await hephaestus.persistCrossChainLogCsv(

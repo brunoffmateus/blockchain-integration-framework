@@ -49,7 +49,6 @@ test(testCase, async () => {
   expect(hephaestus).toBeTruthy();
   log.info("hephaestus plugin is ok");
 
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(0);
 
   const txSim1: RunTxReqWithTxId = {
@@ -94,12 +93,6 @@ test(testCase, async () => {
   fabricReplaySubject.next(txSim2);
   log.debug(txSim2);
 
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(1);
-  expect(hephaestus.numberEventsLog).toEqual(0);
-
-  await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(1);
 
   const logNameCsv = await hephaestus.persistCrossChainLogCsv(

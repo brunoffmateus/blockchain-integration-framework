@@ -336,12 +336,6 @@ test("monitor Fabric transactions", async () => {
   });
   expect(deleteResFabric).toBeTruthy();
 
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(4);
-  expect(hephaestus.numberEventsLog).toEqual(0);
-
-  await hephaestus.txReceiptToCrossChainEventLogEntry();
-
-  expect(hephaestus.numberUnprocessedReceipts).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(4);
 
   await hephaestus.persistCrossChainLogCsv("example-dummy-fabric-4-events");
