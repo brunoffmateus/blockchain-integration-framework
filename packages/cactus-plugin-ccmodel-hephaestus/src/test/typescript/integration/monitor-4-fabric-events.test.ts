@@ -37,6 +37,7 @@ import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
+import { LedgerType } from "@hyperledger/cactus-core-api";
 
 let server: Server;
 
@@ -279,11 +280,14 @@ beforeAll(async () => {
       keychainId,
       keychainRef: keychainEntryKey,
     };
-
+  }
+  {
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       fabricTxObservable: fabricConnector.getTxSubjectObservable(),
+      sourceLedger: LedgerType.Fabric2,
+      targetLedger: LedgerType.Fabric2,
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);

@@ -120,23 +120,9 @@ We can create the cross-chain model with events created from the transactional d
 await hephaestus.createModel();
 ```
 
-We can periodically update the cross-chain model with events created from the transactional data captured:
+After creating a model with the desired event logs, we can set the modeling flag to false so that newly received transactional data will be compared against the model:
 ```typescript
-const timeInterval = 10000;
-const fileName = "file-with-modeled-logs"
-await hephaestus.periodicCCModelUpdate(
-      fileName,
-      timeInterval,
-    );
-await hephaestus.stopPeriodicCCModelUpdate(fileName);
-```
-
-After creating or updating a model with the desired event logs, we can perform a conformance check of the newly received transactional data against the model:
-```typescript
-const model = hephaestus.getModel(CrossChainModelType.PetriNet);
 hephaestus.setIsModeling(false);
-//receive more transactional data from connectors
-await hephaestus.checkConformance(model);
 ```
 
 

@@ -27,6 +27,7 @@ export function checkConformancePM4PY(
   const checkConformanceScript = path.join(__dirname, "check_conformance.py");
   const command = `python3 ${checkConformanceScript} ${file_name} \'${serializedCCModel}\'`;
 
+  // console.log(command);
   try {
     const checkOutput = execSync(command).toString("utf-8");
     return checkOutput;

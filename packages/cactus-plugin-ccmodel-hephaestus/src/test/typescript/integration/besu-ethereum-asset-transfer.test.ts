@@ -7,7 +7,11 @@ import {
 } from "@hyperledger/cactus-common";
 import { Server as SocketIoServer } from "socket.io";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import { Configuration, Constants } from "@hyperledger/cactus-core-api";
+import {
+  Configuration,
+  Constants,
+  LedgerType,
+} from "@hyperledger/cactus-core-api";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import bodyParser from "body-parser";
 import http from "http";
@@ -271,6 +275,8 @@ beforeAll(async () => {
       logLevel: logLevel,
       besuTxObservable: besuConnector.getTxSubjectObservable(),
       ethTxObservable: ethereumConnector.getTxSubjectObservable(),
+      sourceLedger: LedgerType.Besu2X,
+      targetLedger: LedgerType.Ethereum,
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -313,7 +319,7 @@ beforeAll(async () => {
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationTypeBesu.Send,
       methodName: "createAsset",
-      params: ["asset3_besu", 10],
+      params: ["test1_asset_besu", 10],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -328,7 +334,7 @@ beforeAll(async () => {
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationTypeBesu.Send,
       methodName: "createAsset",
-      params: ["asset4_besu", 10],
+      params: ["test2_asset_besu", 10],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -343,7 +349,7 @@ beforeAll(async () => {
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationTypeBesu.Send,
       methodName: "createAsset",
-      params: ["asset5_besu", 10],
+      params: ["test3_asset_besu", 10],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -358,7 +364,7 @@ beforeAll(async () => {
       keychainId: keychainPluginBesu.getKeychainId(),
       invocationType: EthContractInvocationTypeBesu.Send,
       methodName: "createAsset",
-      params: ["asset6_besu", 10],
+      params: ["test4_asset_besu", 10],
       signingCredential: {
         ethAccount: firstHighNetWorthAccount,
         secret: besuKeyPair.privateKey,
@@ -375,7 +381,7 @@ beforeAll(async () => {
       },
       invocationType: EthContractInvocationType.Send,
       methodName: "createAsset",
-      params: ["asset_eth", 10],
+      params: ["test5_asset_eth", 10],
       web3SigningCredential: {
         ethAccount: WHALE_ACCOUNT_ADDRESS,
         secret: "",
@@ -384,142 +390,131 @@ beforeAll(async () => {
     });
     expect(createResEth1).toBeTruthy();
   }
+  {
+    hephaestus.monitorTransactions(1);
+
+    hephaestus.setCaseId("cctx1");
+
+    const { success: lockResBesu1 } = await besuConnector.invokeContract({
+      contractName: besuContractName,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationTypeBesu.Send,
+      methodName: "lockAsset",
+      params: ["asset1_besu"],
+      signingCredential: {
+        ethAccount: firstHighNetWorthAccount,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    expect(lockResBesu1).toBeTruthy();
+
+    const { success: deleteResBesu1 } = await besuConnector.invokeContract({
+      contractName: besuContractName,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationTypeBesu.Send,
+      methodName: "deleteAsset",
+      params: ["asset1_besu"],
+      signingCredential: {
+        ethAccount: testEthAccountBesu.address,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    expect(deleteResBesu1).toBeTruthy();
+
+    const createResEth1 = await ethereumApiClient.invokeContractV1({
+      contract: {
+        contractName: LockAssetContractJson.contractName,
+        keychainId: keychainPluginEthereum.getKeychainId(),
+      },
+      invocationType: EthContractInvocationType.Send,
+      methodName: "createAsset",
+      params: ["asset1_eth", 10],
+      web3SigningCredential: {
+        ethAccount: WHALE_ACCOUNT_ADDRESS,
+        secret: "",
+        type: Web3SigningCredentialType.GethKeychainPassword,
+      },
+    });
+    expect(createResEth1).toBeTruthy();
+    modeledTransactions = 3;
+    expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
+
+    hephaestus.setCaseId("cctx2");
+
+    const { success: lockResBesu2 } = await besuConnector.invokeContract({
+      contractName: besuContractName,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationTypeBesu.Send,
+      methodName: "lockAsset",
+      params: ["asset2_besu"],
+      signingCredential: {
+        ethAccount: firstHighNetWorthAccount,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    expect(lockResBesu2).toBeTruthy();
+
+    const { success: deleteResBesu2 } = await besuConnector.invokeContract({
+      contractName: besuContractName,
+      keychainId: keychainPluginBesu.getKeychainId(),
+      invocationType: EthContractInvocationTypeBesu.Send,
+      methodName: "deleteAsset",
+      params: ["asset2_besu"],
+      signingCredential: {
+        ethAccount: testEthAccountBesu.address,
+        secret: besuKeyPair.privateKey,
+        type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+      },
+      gas: 1000000,
+    });
+    expect(deleteResBesu2).toBeTruthy();
+
+    const createResEth2 = await ethereumApiClient.invokeContractV1({
+      contract: {
+        contractName: LockAssetContractJson.contractName,
+        keychainId: keychainPluginEthereum.getKeychainId(),
+      },
+      invocationType: EthContractInvocationType.Send,
+      methodName: "createAsset",
+      params: ["asset2_eth", 10],
+      web3SigningCredential: {
+        ethAccount: WHALE_ACCOUNT_ADDRESS,
+        secret: "",
+        type: Web3SigningCredentialType.GethKeychainPassword,
+      },
+    });
+    expect(createResEth2).toBeTruthy();
+
+    modeledTransactions = 6;
+    expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
+
+    const model = await hephaestus.createModel();
+    expect(model).toBeTruthy();
+    expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet))
+      .toBeTruthy;
+    hephaestus.setIsModeling(false);
+  }
 });
 
-test("Monitor asset transfer from Besu to Ethereum blockchain and create a cross-chain model", async () => {
-  hephaestus.monitorTransactions(1);
-
-  hephaestus.setCaseId("cctx1");
-
-  const { success: lockResBesu1 } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "lockAsset",
-    params: ["asset1_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu1).toBeTruthy();
-
-  const createResEth1 = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset1_eth", 10],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(createResEth1).toBeTruthy();
-
-  const { success: deleteResBesu1 } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "deleteAsset",
-    params: ["asset1_besu"],
-    signingCredential: {
-      ethAccount: testEthAccountBesu.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(deleteResBesu1).toBeTruthy();
-
-  expect(hephaestus.numberEventsLog).toEqual(3);
-
-  hephaestus.setCaseId("cctx2");
-
-  const { success: lockResBesu2 } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "lockAsset",
-    params: ["asset2_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu2).toBeTruthy();
-
-  const { success: lockResBesu_double } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "lockAsset",
-    params: ["asset2_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu_double).toBeTruthy();
-
-  const createResEth2 = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset2_eth", 10],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(createResEth2).toBeTruthy();
-
-  const { success: deleteResBesu2 } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "deleteAsset",
-    params: ["asset2_besu"],
-    signingCredential: {
-      ethAccount: testEthAccountBesu.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(deleteResBesu2).toBeTruthy();
-
-  modeledTransactions = 7;
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const model = await hephaestus.createModel();
-  expect(model).toBeTruthy();
-  expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet)).toBeTruthy;
-  hephaestus.setIsModeling(false);
-});
-
-test("Unlock after mint", async () => {
+test("Tx1 - Unlock after lock", async () => {
   hephaestus.setCaseId("unmodeled_cctx1");
+  hephaestus.purgeNonConformedEvents();
+  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
+  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
   const { success: lockResBesu } = await besuConnector.invokeContract({
     contractName: besuContractName,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationTypeBesu.Send,
     methodName: "lockAsset",
-    params: ["asset3_besu"],
+    params: ["test1_asset_besu"],
     signingCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
@@ -530,29 +525,12 @@ test("Unlock after mint", async () => {
   expect(lockResBesu).toBeTruthy();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(1);
 
-  const createResEth = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset3_eth", 10],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(createResEth).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(2);
-
   const { success: unlockResBesu } = await besuConnector.invokeContract({
     contractName: besuContractName,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationTypeBesu.Send,
     methodName: "unLockAsset",
-    params: ["asset3_besu"],
+    params: ["test1_asset_besu"],
     signingCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
@@ -563,23 +541,50 @@ test("Unlock after mint", async () => {
   expect(unlockResBesu).toBeTruthy();
 
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
   expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 
-test("Unlock before mint", async () => {
+test("Tx2 - Skip escrow", async () => {
   hephaestus.setCaseId("unmodeled_cctx2");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
+  const createResEth = await ethereumApiClient.invokeContractV1({
+    contract: {
+      contractName: LockAssetContractJson.contractName,
+      keychainId: keychainPluginEthereum.getKeychainId(),
+    },
+    invocationType: EthContractInvocationType.Send,
+    methodName: "createAsset",
+    params: ["test2_asset_eth", 10],
+    web3SigningCredential: {
+      ethAccount: WHALE_ACCOUNT_ADDRESS,
+      secret: "",
+      type: Web3SigningCredentialType.GethKeychainPassword,
+    },
+  });
+  expect(createResEth).toBeTruthy();
+  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
+  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
+});
+
+test("Tx3 - Skip burn", async () => {
+  hephaestus.setCaseId("unmodeled_cctx3");
+  hephaestus.purgeNonConformedEvents();
+  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
+  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
+
   const { success: lockResBesu } = await besuConnector.invokeContract({
     contractName: besuContractName,
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationTypeBesu.Send,
     methodName: "lockAsset",
-    params: ["asset3_besu"],
+    params: ["test3_asset_besu"],
     signingCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
@@ -590,24 +595,6 @@ test("Unlock before mint", async () => {
   expect(lockResBesu).toBeTruthy();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(1);
 
-  const { success: unlockResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "unLockAsset",
-    params: ["asset3_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(unlockResBesu).toBeTruthy();
-
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
-
   const createResEth = await ethereumApiClient.invokeContractV1({
     contract: {
       contractName: LockAssetContractJson.contractName,
@@ -615,7 +602,7 @@ test("Unlock before mint", async () => {
     },
     invocationType: EthContractInvocationType.Send,
     methodName: "createAsset",
-    params: ["asset3_eth", 10],
+    params: ["test3_asset_eth", 10],
     web3SigningCredential: {
       ethAccount: WHALE_ACCOUNT_ADDRESS,
       secret: "",
@@ -623,57 +610,13 @@ test("Unlock before mint", async () => {
     },
   });
   expect(createResEth).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-});
 
-test("Skip lock", async () => {
-  hephaestus.setCaseId("unmodeled_cctx3");
-  hephaestus.purgeNonConformedEvents();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const { success: unlockResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "unLockAsset",
-    params: ["asset4_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(unlockResBesu).toBeTruthy();
-
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
-
-  const createResEth = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset4_eth", 10],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(createResEth).toBeTruthy();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
   expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 
-test("Skip mint", async () => {
+test("Tx4 - Double mint", async () => {
   hephaestus.setCaseId("unmodeled_cctx4");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
@@ -685,7 +628,7 @@ test("Skip mint", async () => {
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationTypeBesu.Send,
     methodName: "lockAsset",
-    params: ["asset5_besu"],
+    params: ["test4_asset_besu"],
     signingCredential: {
       ethAccount: firstHighNetWorthAccount,
       secret: besuKeyPair.privateKey,
@@ -701,7 +644,7 @@ test("Skip mint", async () => {
     keychainId: keychainPluginBesu.getKeychainId(),
     invocationType: EthContractInvocationTypeBesu.Send,
     methodName: "deleteAsset",
-    params: ["asset5_besu"],
+    params: ["test4_asset_besu"],
     signingCredential: {
       ethAccount: testEthAccountBesu.address,
       secret: besuKeyPair.privateKey,
@@ -710,34 +653,7 @@ test("Skip mint", async () => {
     gas: 1000000,
   });
   expect(deleteResBesu1).toBeTruthy();
-
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-});
-
-test("Double mint", async () => {
-  hephaestus.setCaseId("unmodeled_cctx5");
-  hephaestus.purgeNonConformedEvents();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const { success: lockResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "lockAsset",
-    params: ["asset6_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(1);
+  expect(hephaestus.numberEventsUnmodeledLog).toEqual(2);
 
   const createResEth = await ethereumApiClient.invokeContractV1({
     contract: {
@@ -746,7 +662,7 @@ test("Double mint", async () => {
     },
     invocationType: EthContractInvocationType.Send,
     methodName: "createAsset",
-    params: ["asset6_eth", 10],
+    params: ["test4_asset_eth", 10],
     web3SigningCredential: {
       ethAccount: WHALE_ACCOUNT_ADDRESS,
       secret: "",
@@ -754,7 +670,9 @@ test("Double mint", async () => {
     },
   });
   expect(createResEth).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(2);
+  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
+  modeledTransactions += 3;
+  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
   const createResEth2 = await ethereumApiClient.invokeContractV1({
     contract: {
@@ -763,7 +681,7 @@ test("Double mint", async () => {
     },
     invocationType: EthContractInvocationType.Send,
     methodName: "createAsset",
-    params: ["asset6_eth", 10],
+    params: ["test4_asset_eth", 10],
     web3SigningCredential: {
       ethAccount: WHALE_ACCOUNT_ADDRESS,
       secret: "",
@@ -771,68 +689,34 @@ test("Double mint", async () => {
     },
   });
   expect(createResEth2).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
-
-  const { success: deleteResBesu1 } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "deleteAsset",
-    params: ["asset6_besu"],
-    signingCredential: {
-      ethAccount: testEthAccountBesu.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(deleteResBesu1).toBeTruthy();
 
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(4);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
 });
 
-test("Asset transfer from Ethereum to Besu", async () => {
-  hephaestus.setCaseId("unmodeled_cctx6");
+test("Tx5 - Asset transfer from Ethereum to Besu", async () => {
+  hephaestus.setCaseId("unmodeled_cctx5");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
-  const createResEth = await ethereumApiClient.invokeContractV1({
+  const lockResEth = await ethereumApiClient.invokeContractV1({
     contract: {
       contractName: LockAssetContractJson.contractName,
       keychainId: keychainPluginEthereum.getKeychainId(),
     },
     invocationType: EthContractInvocationType.Send,
     methodName: "lockAsset",
-    params: ["asset_eth"],
+    params: ["test5_asset_eth"],
     web3SigningCredential: {
       ethAccount: WHALE_ACCOUNT_ADDRESS,
       secret: "",
       type: Web3SigningCredentialType.GethKeychainPassword,
     },
   });
-  expect(createResEth).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(1);
-
-  const { success: lockResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "createAsset",
-    params: ["asset_besu", 10],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu).toBeTruthy();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(2);
+  expect(lockResEth).toBeTruthy();
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
 
   const deleteResEth = await ethereumApiClient.invokeContractV1({
     contract: {
@@ -841,7 +725,7 @@ test("Asset transfer from Ethereum to Besu", async () => {
     },
     invocationType: EthContractInvocationType.Send,
     methodName: "deleteAsset",
-    params: ["asset_eth"],
+    params: ["test5_asset_eth"],
     web3SigningCredential: {
       ethAccount: WHALE_ACCOUNT_ADDRESS,
       secret: "",
@@ -849,14 +733,32 @@ test("Asset transfer from Ethereum to Besu", async () => {
     },
   });
   expect(deleteResEth).toBeTruthy();
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
+
+  const { success: createResBesu } = await besuConnector.invokeContract({
+    contractName: besuContractName,
+    keychainId: keychainPluginBesu.getKeychainId(),
+    invocationType: EthContractInvocationTypeBesu.Send,
+    methodName: "createAsset",
+    params: ["test5_asset_eth", 10],
+    signingCredential: {
+      ethAccount: firstHighNetWorthAccount,
+      secret: besuKeyPair.privateKey,
+      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
+    },
+    gas: 1000000,
+  });
+  expect(createResBesu).toBeTruthy();
+
+  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions + 3);
+  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 
-// test("Skip burn", async () => {}); // unlock after burn is the same thing
-
 afterAll(async () => {
+  console.log(hephaestus.ccModel.getCrossChainState());
+  console.log(hephaestus.ccModel);
+
   await besuLedger.stop();
   await besuLedger.destroy();
 

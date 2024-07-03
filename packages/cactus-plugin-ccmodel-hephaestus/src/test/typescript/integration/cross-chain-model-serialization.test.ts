@@ -18,7 +18,11 @@ import { v4 as uuidv4 } from "uuid";
 import { Server as SocketIoServer } from "socket.io";
 import { AddressInfo } from "net";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import { Configuration, Constants } from "@hyperledger/cactus-core-api";
+import {
+  Configuration,
+  Constants,
+  LedgerType,
+} from "@hyperledger/cactus-core-api";
 import {
   IListenOptions,
   Logger,
@@ -180,6 +184,8 @@ describe("Test cross-chain model serialization", () => {
       instanceId: uuidv4(),
       logLevel: testLogLevel,
       ethTxObservable: connector.getTxSubjectObservable(),
+      sourceLedger: LedgerType.Ethereum,
+      targetLedger: LedgerType.Ethereum,
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);

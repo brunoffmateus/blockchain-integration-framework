@@ -154,55 +154,48 @@ def unserialize_and_check_conformance(ccLog):
     conforming_activities = []
     non_conforming_activities = []
     skipped_activities = []
+    all_activities = []
 
     for activity in alignment:
         if activity[0] == ">>" and activity[1] != None:
+            all_activities.append(activity)
             skipped_activities.append(activity)
         elif activity[0] != ">>" and activity[1] == ">>":
+            all_activities.append(activity)
             non_conforming_activities.append(activity)
         elif activity[0] != None and activity[1] != None:
+            all_activities.append(activity)
             conforming_activities.append(activity)
-    
+            
     # Check for non-confomant behaviour
     if len(non_conforming_activities) != 0:
         print("NON-CONFORMANCE:")
         print(non_conforming_activities)
+        print(file)
         return
 
-    token_replay = pm4py.conformance_diagnostics_token_based_replay(ccLog, net, initial_marking, final_marking)
-    if token_replay[0]["trace_is_fit"]:
+    if len(all_activities) == len(conforming_activities):
         print("FULL CONFORMANCE:")
         print(conforming_activities)
+        print(file)
         return
 
-    # Check for important skipped activities
-    indexes = []
-    seen_indexes = []
-    for activity in conforming_activities:
-        index = alignment.index(activity)
-        indexes.append(index)
-
-    # if there are no skips in the case, then all indexes will be in a row
-    # if not, then there are skips that cannot be ignored
+    # If there were no skips in the case, then all the conforming activities 
+    # will be the same as the initial activities of the model
+    # If not, then there were skips that cannot be ignored
     ignore_skips = True
-    
-    for i in range(len(indexes) - 1):
-        if indexes[i] in seen_indexes:
-            continue
-        seen_indexes.append(indexes[i])
-        if indexes[i] + 1 != indexes[i + 1]:
+    for i in range(len(conforming_activities)):
+        if(conforming_activities[i] != all_activities[i]):
             ignore_skips = False
-            break
-    
-    # print(indexes)
-    
+
     if ignore_skips == True:
         print("PARTIAL CONFORMANCE:")
         print(conforming_activities)
-        return
-    
-    print("SKIPPED ACTIVITY:")
-    print(skipped_activities)
+        print(file)
+    else:
+        print("SKIPPED ACTIVITY:")
+        print(skipped_activities)
+        print(file)
 
 ##################################################################
 
