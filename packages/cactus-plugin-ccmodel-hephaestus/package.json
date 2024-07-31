@@ -1,6 +1,6 @@
 {
   "name": "@hyperledger/cactus-plugin-ccmodel-hephaestus",
-  "version": "1.0.0",
+  "version": "2.0.0-rc.3",
   "description": "A web service plugin that provides management capabilities on cross-chain transactions visualization.",
   "keywords": [
     "Hyperledger",
@@ -50,7 +50,8 @@
     "dist/*"
   ],
   "scripts": {
-    "build": "npm run tsc",
+    "build": "npm run tsc && npm run postbuild",
+    "postbuild": "copyfiles -u 4 \"src/main/typescript/pm4py-adapter/*.py\" dist/lib/main/typescript/pm4py-adapter",
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
     "webpack": "npm-run-all webpack:dev webpack:prod",
@@ -78,6 +79,7 @@
     "@types/express": "4.17.21",
     "@types/uuid": "10.0.0",
     "body-parser": "1.20.2",
+    "copyfiles": "2.4.1",
     "express": "4.19.2",
     "fabric-network": "2.2.20",
     "socket.io": "4.6.2",

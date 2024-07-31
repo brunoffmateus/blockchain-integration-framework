@@ -13,10 +13,10 @@ from pm4py.objects.petri_net.utils import petri_utils
 
 #chage path if necessary
 path = os.getcwd()
-parent = os.path.dirname(path)
-csv_dir = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/csv"
-json_dir = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/json"
-pnml_file = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/main/typescript/pm4py-adapter/process_models/pnml/petri_output.pnml"
+csv_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/csv"
+csv_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/csv"
+json_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/json"
+json_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/json"
 
 ##################################################################
 
@@ -31,17 +31,6 @@ def import_json_original(file_path):
     event_log = pandas.DataFrame(data)
     event_log = pm4py.format_dataframe(event_log, case_id='caseID', activity_key='methodName', timestamp_key='timestamp')
     return event_log
-
-##################################################################
-
-def unserialize_and_check_conformance_file(ccLog):
-    net, initial_marking, final_marking = pm4py.read_pnml(pnml_file)
-    # pm4py.view_petri_net(net, initial_marking, final_marking)
-
-    # check  conformance:
-    print("\n----diagnostics:")
-    diagnostics = pm4py.conformance_diagnostics_alignments(ccLog, net, initial_marking, final_marking)
-    print(diagnostics)
 
 ##################################################################
 
@@ -203,13 +192,22 @@ def main():
     file_csv = file + ".csv"
     file_json = file + ".json"
 
-    file_path_csv = os.path.join(csv_dir, file_csv)
-    file_path_json = os.path.join(json_dir, file_json)
-    if (os.path.exists(file_path_csv)):
-        ccLog = import_csv_original(file_path_csv)
+    file_path_csv_src = os.path.join(csv_dir_src, file_csv)
+    file_path_json_src = os.path.join(json_dir_src, file_json)
+    file_path_csv_lib = os.path.join(csv_dir_lib, file_csv)
+    file_path_json_lib = os.path.join(json_dir_lib, file_json)
+    
+    if (os.path.exists(file_path_json_src)):
+        ccLog = import_json_original(file_path_json_src)
         unserialize_and_check_conformance(ccLog)
-    elif (os.path.exists(file_path_json)):
-        ccLog = import_json_original(file_path_json)
+    elif (os.path.exists(file_path_csv_src)):
+        ccLog = import_csv_original(file_path_csv_src)
+        unserialize_and_check_conformance(ccLog)
+    elif (os.path.exists(file_path_json_lib)):
+        ccLog = import_json_original(file_path_json_lib)
+        unserialize_and_check_conformance(ccLog)
+    elif (os.path.exists(file_path_csv_lib)):
+        ccLog = import_csv_original(file_path_csv_lib)
         unserialize_and_check_conformance(ccLog)
     else:
         print(f"File '{file}' does not exist")

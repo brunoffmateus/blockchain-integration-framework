@@ -66,7 +66,9 @@ export type SATPWrapperContractEvents =
   | 'Lock'
   | 'Mint'
   | 'OwnershipTransferred'
+  | 'Paused'
   | 'Unlock'
+  | 'Unpaused'
   | 'Unwrap'
   | 'Wrap';
 export interface SATPWrapperContractEventsContext {
@@ -127,7 +129,25 @@ export interface SATPWrapperContractEventsContext {
     },
     callback?: (error: Error, event: EventData) => void
   ): EventResponse;
+  Paused(
+    parameters: {
+      filter?: {};
+      fromBlock?: number;
+      toBlock?: 'latest' | number;
+      topics?: string[];
+    },
+    callback?: (error: Error, event: EventData) => void
+  ): EventResponse;
   Unlock(
+    parameters: {
+      filter?: {};
+      fromBlock?: number;
+      toBlock?: 'latest' | number;
+      topics?: string[];
+    },
+    callback?: (error: Error, event: EventData) => void
+  ): EventResponse;
+  Unpaused(
     parameters: {
       filter?: {};
       fromBlock?: number;
@@ -162,14 +182,18 @@ export type SATPWrapperContractMethodNames =
   | 'burn'
   | 'getAllAssetsIDs'
   | 'getToken'
+  | 'isPaused'
   | 'lock'
   | 'mint'
   | 'owner'
+  | 'pause'
+  | 'paused'
   | 'renounceOwnership'
   | 'tokens'
   | 'tokensInteractions'
   | 'transferOwnership'
   | 'unlock'
+  | 'unpause'
   | 'unwrap'
   | 'wrap'
   | 'wrap';
@@ -222,9 +246,15 @@ export interface OwnershipTransferredEventEmittedResponse {
   previousOwner: string;
   newOwner: string;
 }
+export interface PausedEventEmittedResponse {
+  account: string;
+}
 export interface UnlockEventEmittedResponse {
   tokenId: string;
   amount: string;
+}
+export interface UnpausedEventEmittedResponse {
+  account: string;
 }
 export interface UnwrapEventEmittedResponse {
   tokenId: string;
@@ -291,6 +321,13 @@ export interface SATPWrapperContract {
   getToken(tokenId: string): MethodConstantReturnContext<TokenResponse>;
   /**
    * Payable: false
+   * Constant: true
+   * StateMutability: view
+   * Type: function
+   */
+  isPaused(): MethodConstantReturnContext<boolean>;
+  /**
+   * Payable: false
    * Constant: false
    * StateMutability: nonpayable
    * Type: function
@@ -314,6 +351,20 @@ export interface SATPWrapperContract {
    * Type: function
    */
   owner(): MethodConstantReturnContext<string>;
+  /**
+   * Payable: false
+   * Constant: false
+   * StateMutability: nonpayable
+   * Type: function
+   */
+  pause(): MethodReturnContext;
+  /**
+   * Payable: false
+   * Constant: true
+   * StateMutability: view
+   * Type: function
+   */
+  paused(): MethodConstantReturnContext<boolean>;
   /**
    * Payable: false
    * Constant: false
@@ -358,6 +409,13 @@ export interface SATPWrapperContract {
    * @param amount Type: uint256, Indexed: false
    */
   unlock(tokenId: string, amount: string): MethodReturnContext;
+  /**
+   * Payable: false
+   * Constant: false
+   * StateMutability: nonpayable
+   * Type: function
+   */
+  unpause(): MethodReturnContext;
   /**
    * Payable: false
    * Constant: false
