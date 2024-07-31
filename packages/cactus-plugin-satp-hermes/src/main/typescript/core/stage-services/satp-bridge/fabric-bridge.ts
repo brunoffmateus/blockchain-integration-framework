@@ -45,6 +45,60 @@ export class FabricBridge implements NetworkBridge {
       level,
     });
   }
+
+  public get bridgeConnector(): PluginLedgerConnectorFabric {
+    return this.connector;
+  }
+
+  public async pauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`Pausing Bridge`);
+    const response = await this.connector.transact({
+      signingCredential: this.config.signingCredential,
+      channelName: this.config.channelName,
+      methodName: "pause",
+      params: [],
+      contractName: this.config.contractName,
+      invocationType: FabricContractInvocationType.Send,
+    });
+
+    return {
+      transactionId: response.transactionId,
+      output: response.functionOutput,
+    };
+  }
+  public async unpauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`Unpausing Bridge`);
+    const response = await this.connector.transact({
+      signingCredential: this.config.signingCredential,
+      channelName: this.config.channelName,
+      methodName: "unpause",
+      params: [],
+      contractName: this.config.contractName,
+      invocationType: FabricContractInvocationType.Send,
+    });
+
+    return {
+      transactionId: response.transactionId,
+      output: response.functionOutput,
+    };
+  }
+  public async bridgeIsPaused(): Promise<TransactionResponse> {
+    this.log.debug(`Checking if the Bridge is paused`);
+    const response = await this.connector.transact({
+      signingCredential: this.config.signingCredential,
+      channelName: this.config.channelName,
+      methodName: "isPaused",
+      params: [],
+      contractName: this.config.contractName,
+      invocationType: FabricContractInvocationType.Send,
+    });
+
+    return {
+      transactionId: response.transactionId,
+      output: response.functionOutput,
+    };
+  }
+
   public async wrapAsset(asset: FabricAsset): Promise<TransactionResponse> {
     this.log.debug(`Wrapping Asset: ${asset.tokenId}`);
 

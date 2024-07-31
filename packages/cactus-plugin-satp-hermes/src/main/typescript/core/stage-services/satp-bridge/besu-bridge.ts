@@ -52,6 +52,74 @@ export class BesuBridge implements NetworkBridge {
     this.bungee.addStrategy(this.network, new StrategyBesu(level));
   }
 
+  public get bridgeConnector(): PluginLedgerConnectorBesu {
+    return this.connector;
+  }
+
+  public async unpauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`${BesuBridge.CLASS_NAME}#unpauseBridge`);
+    const response = (await this.connector.invokeContract({
+      contractName: this.config.contractName,
+      keychainId: this.config.keychainId,
+      invocationType: EthContractInvocationType.Send,
+      methodName: "unpause",
+      params: [],
+      signingCredential: this.config.signingCredential,
+      gas: this.config.gas,
+    })) as BesuResponse;
+    if (!response.success) {
+      throw new Error(
+        `${BesuBridge.CLASS_NAME}#unpauseBridge:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+  public async pauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`${BesuBridge.CLASS_NAME}#pauseBridge`);
+    const response = (await this.connector.invokeContract({
+      contractName: this.config.contractName,
+      keychainId: this.config.keychainId,
+      invocationType: EthContractInvocationType.Send,
+      methodName: "pause",
+      params: [],
+      signingCredential: this.config.signingCredential,
+      gas: this.config.gas,
+    })) as BesuResponse;
+    if (!response.success) {
+      throw new Error(
+        `${BesuBridge.CLASS_NAME}#pauseBridge:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+  public async bridgeIsPaused(): Promise<TransactionResponse> {
+    this.log.debug(`${BesuBridge.CLASS_NAME}#bridgeIsPaused`);
+    const response = (await this.connector.invokeContract({
+      contractName: this.config.contractName,
+      keychainId: this.config.keychainId,
+      invocationType: EthContractInvocationType.Send,
+      methodName: "isPaused",
+      params: [],
+      signingCredential: this.config.signingCredential,
+      gas: this.config.gas,
+    })) as BesuResponse;
+    if (!response.success) {
+      throw new Error(
+        `${BesuBridge.CLASS_NAME}#bridgeIsPaused:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+
   public async wrapAsset(asset: BesuAsset): Promise<TransactionResponse> {
     this.log.debug(
       `${BesuBridge.CLASS_NAME}#wrapAsset Wrapping Asset: {${asset.tokenId}, ${asset.owner}, ${asset.contractAddress}, ${asset.tokenType}}`,
