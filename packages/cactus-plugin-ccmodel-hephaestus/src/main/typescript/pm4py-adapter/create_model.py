@@ -11,10 +11,10 @@ import json
 
 #chage path if necessary
 path = os.getcwd()
-parent = os.path.dirname(path)
-csv_dir = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/csv"
-json_dir = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/json"
-pnml_file = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/main/typescript/pm4py-adapter/process_models/pnml/petri_output.pnml"
+csv_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/csv"
+csv_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/csv"
+json_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/json"
+json_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/json"
 
 def import_csv_original(file_path):
     event_log = pandas.read_csv(file_path, sep=';')
@@ -29,25 +29,6 @@ def import_json_original(file_path):
     return event_log
 
 ##################################################################
-# unused
-
-def create_and_serialize_model_file(ccLog):
-    pn, im, fm = pm4py.discover_petri_net_inductive(ccLog)
-    pm4py.write_pnml(pn, im, fm, pnml_file)
-
-def create_and_serialize_model_pickle(ccLog):
-    pn, im, fm = pm4py.discover_petri_net_inductive(ccLog)
-
-    pn_str = pickle.dumps(pn)
-    print(pn_str)
-    im_str = pickle.dumps(im)
-    print(im_str)
-    fm_str = pickle.dumps(fm)
-    print(fm_str)
-
-    return pn_str + b"\n" + im_str + b"\n" + fm_str + b"\n"
-
-##################################################################
 
 def create_and_serialize_model(ccLog):
     pn, im, fm = pm4py.discover_petri_net_inductive(ccLog)
@@ -60,15 +41,25 @@ def main():
     file_csv = file + ".csv"
     file_json = file + ".json"
 
-    file_path_csv = os.path.join(csv_dir, file_csv)
-    file_path_json = os.path.join(json_dir, file_json)
+    file_path_csv_src = os.path.join(csv_dir_src, file_csv)
+    file_path_json_src = os.path.join(json_dir_src, file_json)
+    file_path_csv_lib = os.path.join(csv_dir_lib, file_csv)
+    file_path_json_lib = os.path.join(json_dir_lib, file_json)
 
-    if (os.path.exists(file_path_csv)):
-        ccLog = import_csv_original(file_path_csv)
+    if (os.path.exists(file_path_json_src)):
+        ccLog = import_json_original(file_path_json_src)
         serialized_model = create_and_serialize_model(ccLog)
         print(serialized_model)
-    elif (os.path.exists(file_path_json)):
-        ccLog = import_json_original(file_path_json)
+    elif (os.path.exists(file_path_csv_src)):
+        ccLog = import_csv_original(file_path_csv_src)
+        serialized_model = create_and_serialize_model(ccLog)
+        print(serialized_model)
+    elif (os.path.exists(file_path_json_lib)):
+        ccLog = import_json_original(file_path_json_lib)
+        serialized_model = create_and_serialize_model(ccLog)
+        print(serialized_model)
+    elif (os.path.exists(file_path_csv_lib)):
+        ccLog = import_csv_original(file_path_csv_lib)
         serialized_model = create_and_serialize_model(ccLog)
         print(serialized_model)
     else:

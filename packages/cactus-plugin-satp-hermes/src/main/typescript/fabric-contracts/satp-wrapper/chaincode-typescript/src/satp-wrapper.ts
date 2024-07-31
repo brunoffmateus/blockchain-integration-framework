@@ -26,8 +26,11 @@ export class SATPContractWrapper
   extends Contract
   implements ITraceableContract
 {
+  private pausedBridge: boolean;
+
   constructor() {
     super();
+    this.pausedBridge = false;
   }
 
   @Transaction()
@@ -46,6 +49,20 @@ export class SATPContractWrapper
     await ctx.stub.putState("bridgeMSPID", Buffer.from(bridgeMSPID));
     await ctx.stub.putState("bridgeID", Buffer.from(bridgeID));
     return true;
+  }
+
+  @Transaction()
+  public async pause(): Promise<void> {
+    this.pausedBridge = true;
+  }
+  @Transaction()
+  public async unpause(): Promise<void> {
+    this.pausedBridge = false;
+  }
+  @Transaction()
+  @Returns("boolean")
+  public async isPaused(): Promise<boolean> {
+    return this.pausedBridge == true;
   }
 
   @Transaction()
@@ -71,6 +88,9 @@ export class SATPContractWrapper
     contractName: string,
     interactions: string,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const valueBytes = await ctx.stub.getState(tokenId);
@@ -125,6 +145,9 @@ export class SATPContractWrapper
   @Transaction()
   @Returns("boolean")
   public async unwrap(ctx: Context, tokenId: string): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -159,6 +182,9 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -184,6 +210,9 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -221,6 +250,9 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -245,6 +277,9 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -274,6 +309,9 @@ export class SATPContractWrapper
     to: string,
     amount: number,
   ): Promise<boolean> {
+    if (this.pausedBridge == true) {
+      throw new Error(`Wrapper: The Bridge is paused`);
+    }
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);

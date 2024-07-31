@@ -5,13 +5,14 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./ITraceableContract.sol";
 
 import "./satp-contract-interface.sol";
 
 error noPermission(address adr);
 
-contract SATPContract is AccessControl, ERC20, ITraceableContract, SATPContractInterface {
+contract SATPContract is AccessControl, ERC20, ITraceableContract, SATPContractInterface, Pausable {
 
     bytes32 public constant BRIDGE_ROLE = keccak256("BRIDGE_ROLE");
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
@@ -25,23 +26,23 @@ contract SATPContract is AccessControl, ERC20, ITraceableContract, SATPContractI
         id = _id;
     }
 
-    function mint(address account, uint256 amount) external onlyRole(BRIDGE_ROLE) returns (bool success) {
+    function mint(address account, uint256 amount) external onlyRole(BRIDGE_ROLE) whenNotPaused returns (bool success) {
         _mint(account, amount);
         return true;
     }
 
-    function burn(address account, uint256 amount) external onlyRole(BRIDGE_ROLE) returns (bool success) {
+    function burn(address account, uint256 amount) external onlyRole(BRIDGE_ROLE) whenNotPaused returns (bool success) {
         _burn(account, amount);
         return true;
     }
 
-    function assign(address from, address recipient, uint256 amount) external onlyRole(BRIDGE_ROLE) returns (bool success) {
+    function assign(address from, address recipient, uint256 amount) external onlyRole(BRIDGE_ROLE) whenNotPaused returns (bool success) {
         require(from == _msgSender(), "The msgSender is not the owner");
         _transfer(from, recipient, amount);
         return true;
     }
 
-    function transfer(address from, address recipient, uint256 amount) external onlyRole(BRIDGE_ROLE) returns (bool success) {
+    function transfer(address from, address recipient, uint256 amount) external onlyRole(BRIDGE_ROLE) whenNotPaused returns (bool success) {
         transferFrom(from, recipient, amount);
         return true;
     }
@@ -70,5 +71,17 @@ contract SATPContract is AccessControl, ERC20, ITraceableContract, SATPContractI
 
     function checkBalance(address account) external view returns (uint256) {
         return balanceOf(account);
+    }
+    
+    function unpause() internal onlyRole(BRIDGE_ROLE) whenPaused {
+        _unpause();
+    }
+
+    function pause() public onlyRole(BRIDGE_ROLE) {
+        _pause();
+    }
+    
+    function isPaused() external view returns (bool) {
+        return paused();
     }
 }
