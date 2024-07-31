@@ -325,7 +325,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
-  private watchRunTransactionV1ExchangeEth(duration: number = 0): void {
+  private watchRunTransactionV1ExchangeEth(duration: number): void {
     const fnTag = `${this.className}#watchRunTransactionV1ExchangeEth()`;
     this.log.debug(fnTag);
 
@@ -375,7 +375,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
-  private watchRunTxReqWithTxId(duration: number = 0): void {
+  private watchRunTxReqWithTxId(duration: number): void {
     const fnTag = `${this.className}#watchRunTxReqWithTxId()`;
     this.log.debug(fnTag);
 

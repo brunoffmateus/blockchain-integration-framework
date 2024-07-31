@@ -48,7 +48,6 @@ Know how to use the following plugins of the project:
   - [cactus-plugin-ledger-connector-ethereum](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-ethereum)
   - [cactus-plugin-ledger-connector-fabric](https://github.com/hyperledger/cactus/tree/main/packages/cactus-plugin-ledger-connector-fabric)
 
-
 ## Architecture
 
 ### RxJS Transaction Monitoring
