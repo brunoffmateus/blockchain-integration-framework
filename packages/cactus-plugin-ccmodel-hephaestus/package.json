@@ -50,7 +50,8 @@
     "dist/*"
   ],
   "scripts": {
-    "build": "npm run tsc",
+    "build": "npm run tsc && npm run postbuild",
+    "postbuild": "copyfiles -u 4 \"src/main/typescript/pm4py-adapter/*.py\" dist/lib/main/typescript/pm4py-adapter",
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
     "webpack": "npm-run-all webpack:dev webpack:prod",
@@ -81,6 +82,8 @@
     "@types/express": "5.0.0",
     "@types/uuid": "10.0.0",
     "body-parser": "1.20.3",
+    "copyfiles": "2.4.1",
+    "express": "4.19.2",
     "fabric-network": "2.2.20",
     "socket.io": "4.6.2",
     "uuid": "10.0.0",

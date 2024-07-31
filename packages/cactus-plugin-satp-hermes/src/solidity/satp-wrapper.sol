@@ -5,6 +5,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./ITraceableContract.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 enum TokenType { ERC20, ERC721, ERC1155, OTHER }
 enum InteractionType { MINT, BURN, ASSIGN, CHECKPERMITION, LOCK, UNLOCK }
@@ -38,7 +39,7 @@ error TokenNotUnlocked(string tokenId);
 
 error InsuficientAmountLocked(string tokenId, uint256 amount);
 
-contract SATPWrapperContract is Ownable, ITraceableContract{
+contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
 
     mapping (string  => Token) public tokens; //contract address to Token
 
@@ -60,7 +61,19 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         bridge_address = address(_bridge_address);
     }
 
-    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner, InteractionSignature[] memory interactions ) external onlyOwner returns (bool wrapSuccess) {
+    function unpause() external onlyOwner whenPaused {
+        _unpause();
+    }
+
+    function pause() external onlyOwner whenNotPaused{
+        _pause();
+    }
+    
+    function isPaused() external view returns (bool) {
+        return paused();
+    }
+
+    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner, InteractionSignature[] memory interactions ) external onlyOwner whenNotPaused returns (bool wrapSuccess) {
         if(tokens[tokenId].contractAddress != address(0)) {
             revert TokenAlreadyWrapped(tokenId);
         }
@@ -79,11 +92,11 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         return true;
     }
 
-    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner) external onlyOwner returns (bool wrapSuccess) {
+    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner) external onlyOwner whenNotPaused returns (bool wrapSuccess) {
         return this.wrap(contractAddress, tokenType, tokenId, owner, new InteractionSignature[](0));
     }
 
-    function unwrap(string memory tokenId) external onlyOwner returns (bool success) {
+    function unwrap(string memory tokenId) external onlyOwner whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)) {
             revert TokenNotAvailable(tokenId);
         }
@@ -97,7 +110,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         return true;
     }
 
-    function lock(string memory tokenId, uint256 amount) external onlyOwner returns (bool success) {
+    function lock(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -113,7 +126,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         revert TokenNotLocked(tokenId);
     } 
 
-    function unlock(string memory tokenId, uint256 amount) external onlyOwner returns (bool success) { //ammount
+    function unlock(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) { //ammount
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -133,7 +146,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         revert TokenNotUnlocked(tokenId);
     } 
 
-    function mint(string memory tokenId, uint256 amount) external onlyOwner returns (bool success) {
+    function mint(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -145,7 +158,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         return true;
     }
 
-    function burn(string memory tokenId, uint256 amount) external onlyOwner returns (bool success) {
+    function burn(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
         require(tokens[tokenId].amount >= amount, "burn asset asset is not locked");
 
         require(interact(tokenId, InteractionType.BURN, amount), "burn asset call failed");
@@ -156,7 +169,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract{
         return true;
     }
 
-    function assign(string memory tokenId, address receiver_account, uint256 amount) external onlyOwner returns (bool success) {
+    function assign(string memory tokenId, address receiver_account, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
         require(tokens[tokenId].amount >= amount, "assign asset asset is not locked");
 
         require(interact(tokenId, InteractionType.ASSIGN, amount, receiver_account), "assign asset call failed");
