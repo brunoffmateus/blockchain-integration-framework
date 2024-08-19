@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  satp-hermes-gateway:
+    build:
+      context: ./
+      dockerfile: satp-hermes-gateway.Dockerfile
+    ports:
+      - 13010:3010/tcp # SERVER_PORT
+      - 13011:3011/tcp # CLIENT_PORT
+    env_file:
+      - ./.env.example
+    volumes:
+      - knex:/opt/cacti/satp-hermes/knex
+      - logs:/opt/cacti/satp-hermes/log
+    deploy:
+      resources:
+        limits:
+          cpus: '0.9'
+volumes:
+  knex:
+  logs:
