@@ -34,6 +34,7 @@ import {
   FABRIC_25_LTS_AIO_IMAGE_VERSION,
   FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
   FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
+  SATPGatewayRunner,
 } from "@hyperledger/cactus-test-tooling";
 import bodyParser from "body-parser";
 import express from "express";
@@ -43,6 +44,7 @@ import path from "path";
 import {
   BesuConfig,
   FabricConfig,
+  NetworkConfig,
 } from "../../../main/typescript/types/blockchain-interaction";
 import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-hermes";
 import { Account } from "web3-core";
@@ -55,30 +57,18 @@ import {
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import Web3 from "web3";
 import SATPContract from "../../solidity/generated/satp-erc20.sol/SATPContract.json";
-import SATPWrapperContract from "../../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
-import {
-  SATPGatewayConfig,
-  SATPGateway,
-  PluginFactorySATPGateway,
-  TransactRequest,
-  Asset,
-} from "../../../main/typescript";
-import {
-  Address,
-  GatewayIdentity,
-  SupportedChain,
-} from "../../../main/typescript/core/types";
-import {
-  IPluginFactoryOptions,
-  PluginImportType,
-} from "@hyperledger/cactus-core-api";
-import FabricSATPInteraction from "../../../test/typescript/fabric/satp-erc20-interact.json";
-import BesuSATPInteraction from "../../solidity/satp-erc20-interact.json";
 import {
   AdminApi,
   TransactionApi,
   Configuration as GatewayConfiguration,
 } from "../../../main/typescript/generated/gateway-client/typescript-axios";
+import SATPWrapperContract from "../../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
+import { TransactRequest, Asset } from "../../../main/typescript";
+import { SupportedChain } from "../../../main/typescript/core/types";
+import FabricSATPInteraction from "../../../test/typescript/fabric/satp-erc20-interact.json";
+import BesuSATPInteraction from "../../solidity/satp-erc20-interact.json";
+
+import { jsonc } from "jsonc";
 
 const logLevel: LogLevelDesc = "DEBUG";
 const log = LoggerProvider.getOrCreate({
@@ -103,6 +93,7 @@ const BRIDGE_ID =
 
 let clientId: string;
 let fabricConfig: FabricConfig;
+let pluginOptionsFabricBridge: IPluginLedgerConnectorFabricOptions;
 let pluginBungeeFabricOptions: IPluginBungeeHermesOptions;
 
 let erc20TokenContract: string;
@@ -132,7 +123,13 @@ let fabricUser: X509Identity;
 
 let apiClient: FabricApi;
 
+let gatewayTransactionApi: TransactionApi;
+let gatewayAdminApi: AdminApi;
+let gatewayRunner: SATPGatewayRunner;
+
 afterAll(async () => {
+  await gatewayRunner.stop();
+  await gatewayRunner.destroy();
   await besuLedger.stop();
   await besuLedger.destroy();
   await fabricLedger.stop();
@@ -626,7 +623,7 @@ beforeAll(async () => {
       keychainRef: keychainEntryKey,
     };
 
-    bridgeFabricSigningCredential = {
+    bridgeFabricSigningCredential = { // criar
       keychainId: keychainIdBridge,
       keychainRef: keychainEntryKeyBridge,
     };
@@ -704,18 +701,18 @@ beforeAll(async () => {
     clientId = responseClientId.data.functionOutput.toString();
 
     pluginBungeeFabricOptions = {
-      keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
-      instanceId: uuidv4(),
+      keyPair: Secp256k1Keys.generateKeyPairsBuffer(), // criar
+      instanceId: uuidv4(), // enviar
       pluginRegistry: new PluginRegistry(),
       logLevel,
     };
 
-    const pluginOptionsFabricBridge: IPluginLedgerConnectorFabricOptions = {
+    pluginOptionsFabricBridge = {
       instanceId: uuidv4(),
       dockerBinary: "/usr/local/bin/docker",
       peerBinary: "/fabric-samples/bin/peer",
       goBinary: "/usr/local/go/bin/go",
-      pluginRegistry: pluginRegistryBridge,
+      pluginRegistry: pluginRegistryBridge, // criar
       cliContainerEnv: FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
       sshConfig,
       logLevel: "DEBUG",
@@ -728,12 +725,12 @@ beforeAll(async () => {
     };
 
     fabricConfig = {
-      network: SupportedChain.FABRIC,
+      network: SupportedChain.FABRIC, // enviar
       signingCredential: bridgeFabricSigningCredential,
-      channelName: fabricChannelName,
-      contractName: satpWrapperContractName,
-      options: pluginOptionsFabricBridge,
-      bungeeOptions: pluginBungeeFabricOptions,
+      channelName: fabricChannelName, // enviar
+      contractName: satpWrapperContractName, // enviar
+      options: pluginOptionsFabricBridge, // criar
+      bungeeOptions: pluginBungeeFabricOptions, // criar
     } as FabricConfig;
 
     // networkDetails = {
@@ -763,9 +760,9 @@ beforeAll(async () => {
     erc20TokenContract = "SATPContract";
     contractNameWrapper = "SATPWrapperContract";
 
-    const keychainEntryValue = besuKeyPair.privateKey;
-    const keychainEntryKey = uuidv4();
-    keychainPlugin1 = new PluginKeychainMemory({
+    const keychainEntryValue = besuKeyPair.privateKey; // enviar
+    const keychainEntryKey = uuidv4(); // enviar
+    keychainPlugin1 = new PluginKeychainMemory({ // criar
       instanceId: uuidv4(),
       keychainId: uuidv4(),
 
@@ -773,7 +770,7 @@ beforeAll(async () => {
       logLevel,
     });
 
-    keychainPlugin2 = new PluginKeychainMemory({
+    keychainPlugin2 = new PluginKeychainMemory({ // criar
       instanceId: uuidv4(),
       keychainId: uuidv4(),
 
@@ -787,16 +784,16 @@ beforeAll(async () => {
       JSON.stringify(SATPWrapperContract),
     );
 
-    const pluginRegistry = new PluginRegistry({
+    const pluginRegistry = new PluginRegistry({ // criar
       plugins: [keychainPlugin1, keychainPlugin2],
     });
 
     besuOptions = {
-      instanceId: uuidv4(),
-      rpcApiHttpHost,
-      rpcApiWsHost,
-      pluginRegistry,
-      logLevel,
+      instanceId: uuidv4(), // enviar
+      rpcApiHttpHost, // enviar
+      rpcApiWsHost, // enviar
+      pluginRegistry, // criar
+      logLevel, // criar
     };
     testing_connector = new PluginLedgerConnectorBesu(besuOptions);
 
@@ -871,25 +868,25 @@ beforeAll(async () => {
       deployOutWrapperContract.transactionReceipt.contractAddress ?? "";
 
     pluginBungeeBesuOptions = {
-      keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
-      instanceId: uuidv4(),
-      pluginRegistry: new PluginRegistry(),
-      logLevel,
+      keyPair: Secp256k1Keys.generateKeyPairsBuffer(), // criar
+      instanceId: uuidv4(), // enviar
+      pluginRegistry: new PluginRegistry(), // criar
+      logLevel, // criar
     };
 
     besuConfig = {
-      network: SupportedChain.BESU,
+      network: SupportedChain.BESU, // enviar
       keychainId: keychainPlugin2.getKeychainId(),
       signingCredential: {
         ethAccount: bridgeEthAccount.address,
         secret: bridgeEthAccount.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
-      },
-      contractName: contractNameWrapper,
-      contractAddress: wrapperContractAddress,
-      options: besuOptions,
-      bungeeOptions: pluginBungeeBesuOptions,
-      gas: 999999999999999,
+      }, // enviar
+      contractName: contractNameWrapper, // enviar
+      contractAddress: wrapperContractAddress, // enviar
+      options: besuOptions, // criar
+      bungeeOptions: pluginBungeeBesuOptions, // criar
+      gas: 999999999999999, // enviar
     };
 
     const giveRoleRes = await testing_connector.invokeContract({
@@ -948,45 +945,54 @@ beforeAll(async () => {
 describe("SATPGateway sending a token from Besu to Fabric", () => {
   it("should realize a transfer", async () => {
     //setup satp gateway
-    const factoryOptions: IPluginFactoryOptions = {
-      pluginImportType: PluginImportType.Local,
-    };
-    const factory = new PluginFactorySATPGateway(factoryOptions);
+    // log file and paths
+    // run existence check
 
-    const gatewayIdentity = {
-      id: "mockID",
-      name: "CustomGateway",
-      version: [
-        {
-          Core: "v02",
-          Architecture: "v02",
-          Crash: "v02",
-        },
+    // const bridgesConfig = [besuConfig, fabricConfig];
+
+    const configDir = path.join(__dirname, "config");
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    const besuConfigPath = path.join(configDir, "besu-config.jsonc");
+    const besuConfigStringified = jsonc.stringify(besuConfig);
+    fs.writeFileSync(besuConfigPath, besuConfigStringified);
+    const besuBungeeConfigPath = path.join(
+      configDir,
+      "besu-bungee-config.jsonc",
+    );
+    const besuBungeeConfigStringified = jsonc.stringify(
+      besuConfig.bungeeOptions,
+    );
+    fs.writeFileSync(besuBungeeConfigPath, besuBungeeConfigStringified);
+    const fabricConfigPath = path.join(configDir, "fabric-config.jsonc");
+    const fabricConfigStringified = jsonc.stringify(fabricConfig);
+    fs.writeFileSync(fabricConfigPath, fabricConfigStringified);
+    const fabricBungeeConfigPath = path.join(
+      configDir,
+      "fabric-bungee-config.jsonc",
+    );
+    const fabricBungeeConfigStringified = jsonc.stringify(
+      fabricConfig.bungeeOptions,
+    );
+    fs.writeFileSync(fabricBungeeConfigPath, fabricBungeeConfigStringified);
+
+    gatewayRunner = new SATPGatewayRunner({
+      logLevel,
+      emitContainerLogs: true,
+      envVars: [
+        "SATP_GATEWAY_ID=mockID",
+        "SATP_GATEWAY_NAME=CustomGateway",
+        "SATP_SUPPORTED_DLTS=FabricSATPGateway,BesuSATPGateway",
+        "SATP_GATEWAY_ADDRESS=http://localhost",
+        "SATP_PROOF_ID=mockProofID10",
+        "SATP_COUNTER_PARTY_GATEWAYS=[]",
       ],
-      supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
-      proofID: "mockProofID10",
-      address: "http://localhost" as Address,
-    } as GatewayIdentity;
+      besuConfigPath,
+      fabricConfigPath,
+    });
+    await gatewayRunner.start();
 
-    const options: SATPGatewayConfig = {
-      logLevel: "DEBUG",
-      gid: gatewayIdentity,
-      counterPartyGateways: [], //only knows itself
-      bridgesConfig: [besuConfig, fabricConfig],
-    };
-    const gateway = await factory.create(options);
-    expect(gateway).toBeInstanceOf(SATPGateway);
-
-    const identity = gateway.Identity;
-    // default servers
-    expect(identity.gatewayServerPort).toBe(3010);
-    expect(identity.gatewayClientPort).toBe(3011);
-    expect(identity.address).toBe("http://localhost");
-    await gateway.startup();
-
-    const dispatcher = gateway.getBLODispatcher();
-
-    expect(dispatcher).toBeTruthy();
     const sourceAsset: Asset = {
       owner: firstHighNetWorthAccount,
       ontology: JSON.stringify(BesuSATPInteraction),
@@ -1012,14 +1018,11 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       destinyAsset,
     };
 
-    // const res = await dispatcher?.Transact(req);
-    // log.info(res?.statusResponse);
-
-    const apiUrl = `http://localhost:4010`;
+    const apiUrl = await gatewayRunner.getApiHost();
     console.log(apiUrl);
     const config = new GatewayConfiguration({ basePath: apiUrl });
-    const gatewayTransactionApi = new TransactionApi(config);
-    const gatewayAdminApi = new AdminApi(config);
+    gatewayTransactionApi = new TransactionApi(config);
+    gatewayAdminApi = new AdminApi(config);
 
     const responseHealth = await gatewayAdminApi.getHealthCheck();
     expect(responseHealth).not.toBeUndefined();
@@ -1093,7 +1096,5 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     expect(responseBalance2.data).not.toBeUndefined();
     expect(responseBalance2.data.functionOutput).toBe("1");
     log.info("Amount was transfer correctly to the Owner account");
-    // log.info(res?.statusResponse);
-    await gateway.shutdown();
   });
 });
