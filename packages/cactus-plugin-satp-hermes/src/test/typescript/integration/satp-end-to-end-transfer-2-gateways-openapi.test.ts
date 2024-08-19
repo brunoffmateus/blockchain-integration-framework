@@ -883,6 +883,7 @@ beforeAll(async () => {
       },
       contractName: contractNameWrapper,
       contractAddress: wrapperContractAddress,
+      contractAbi: JSON.stringify(SATPWrapperContract.abi),
       options: besuOptions,
       bungeeOptions: pluginBungeeBesuOptions,
       gas: 999999999999999,
@@ -989,6 +990,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
     const options1: SATPGatewayConfig = {
       logLevel: "DEBUG",
       gid: gatewayIdentity1,
+      enableOpenAPI: true,
       counterPartyGateways: [
         // this need to be like this because the shared memory was being altered
         {
@@ -1017,6 +1019,7 @@ describe("2 SATPGateway sending a token from Besu to Fabric using openApi to req
     const options2: SATPGatewayConfig = {
       logLevel: "DEBUG",
       gid: gatewayIdentity2,
+      enableOpenAPI: true,
       counterPartyGateways: [
         {
           id: "mockID-1",

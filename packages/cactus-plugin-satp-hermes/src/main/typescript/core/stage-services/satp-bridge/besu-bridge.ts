@@ -46,7 +46,8 @@ export class BesuBridge implements NetworkBridge {
     this.options = besuConfig.options;
     const label = BesuBridge.CLASS_NAME;
 
-    level = level || "INFO";
+    // level = level || "INFO";
+    level = "DEBUG";
     this.log = LoggerProvider.getOrCreate({ label, level });
 
     this.connector = new PluginLedgerConnectorBesu(besuConfig.options);
@@ -75,7 +76,8 @@ export class BesuBridge implements NetworkBridge {
 
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "wrap",
       params: [
@@ -103,7 +105,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Unwrapping Asset: ${assetId}`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "unwrap",
       params: [assetId],
@@ -126,7 +129,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Locking Asset: ${assetId} amount: ${amount}`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "lock",
       params: [assetId, amount.toString()],
@@ -149,7 +153,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Unlocking Asset: ${assetId} amount: ${amount}`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "unlock",
       params: [assetId, amount.toString()],
@@ -172,7 +177,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Minting Asset: ${assetId} amount: ${amount}`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "mint",
       params: [assetId, amount.toString()],
@@ -195,7 +201,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Burning Asset: ${assetId} amount: ${amount}`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "burn",
       params: [assetId, amount.toString()],
@@ -221,7 +228,8 @@ export class BesuBridge implements NetworkBridge {
     );
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Send,
       methodName: "assign",
       params: [assetId, to, amount],
@@ -242,7 +250,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Getting Assets`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Call,
       methodName: "getAllAssetsIDs",
       params: [],
@@ -262,7 +271,8 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(`${fnTag}, Getting Asset`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: EthContractInvocationType.Call,
       methodName: "getToken",
       params: [assetId],
@@ -292,7 +302,8 @@ export class BesuBridge implements NetworkBridge {
     );
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
-      keychainId: this.config.keychainId,
+      contractAbi: JSON.parse(this.config.contractAbi),
+      contractAddress: this.config.contractAddress,
       invocationType: invocationType,
       methodName: methodName,
       params: params,

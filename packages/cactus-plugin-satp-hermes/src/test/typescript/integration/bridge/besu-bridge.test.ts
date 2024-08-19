@@ -220,6 +220,7 @@ beforeAll(async () => {
       },
       contractName: contractNameWrapper,
       contractAddress: wrapperContractAddress,
+      contractAbi: JSON.stringify(SATPWrapperContract.abi),
       options: besuOptions,
       bungeeOptions: pluginBungeeHermesOptions,
       gas: 9999999999999,

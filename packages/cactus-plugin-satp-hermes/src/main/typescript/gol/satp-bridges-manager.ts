@@ -48,14 +48,19 @@ export class SATPBridgesManager {
       let bridge: NetworkBridge;
       switch (bridgeConfig.network) {
         case SupportedChain.FABRIC:
-          bridge = new FabricBridge(bridgeConfig as FabricConfig, this.level);
+          this.log.debug(`Creating new FabricBridge...`);
+          bridge = new FabricBridge(bridgeConfig as FabricConfig);
+          this.log.debug(`Created new FabricBridge sucessfully`);
           break;
         case SupportedChain.BESU:
+          this.log.debug(`Creating new BesuBridge...`);
           bridge = new BesuBridge(bridgeConfig as BesuConfig);
+          this.log.debug(`Created new BesuBridge sucessfully`);
           break;
         default:
           throw new Error(`Unsupported network: ${bridgeConfig.network}`);
       }
+      this.log.debug(`Bridge type: ${bridge.constructor.name}`);
 
       const config: SATPBridgeConfig = {
         network: bridge,
