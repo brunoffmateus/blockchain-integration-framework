@@ -46,7 +46,8 @@ export class BesuBridge implements NetworkBridge {
     this.options = besuConfig.options;
     const label = BesuBridge.CLASS_NAME;
 
-    level = level || "INFO";
+    // level = level || "INFO";
+    level = "DEBUG";
     this.log = LoggerProvider.getOrCreate({ label, level });
 
     this.connector = new PluginLedgerConnectorBesu(besuConfig.options);
@@ -66,6 +67,23 @@ export class BesuBridge implements NetworkBridge {
     this.log.debug(
       `${fnTag}, Wrapping Asset: {${asset.tokenId}, ${asset.owner}, ${asset.contractAddress}, ${asset.tokenType}}`,
     );
+
+    this.log.debug(`
+      ${fnTag}
+      Invoking contract with the following details:
+      - Contract Name: ${this.config.contractName}
+      - Keychain ID: ${this.config.keychainId}
+      - Invocation Type: ${EthContractInvocationType.Send}
+      - Method Name: "wrap"
+      - Parameters:
+        - Asset Contract Address: ${asset.contractAddress}
+        - Token Type: ${asset.tokenType}
+        - Token ID: ${asset.tokenId}
+        - Owner: ${asset.owner}
+        - Ontology: ${asset.ontology}
+      - Signing Credential: ${JSON.stringify(this.config.signingCredential)}
+      - Gas: ${this.config.gas}
+      `);
 
     if (asset.ontology === undefined) {
       throw new OntologyError(fnTag);
