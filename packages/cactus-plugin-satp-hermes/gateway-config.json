@@ -1,0 +1,64 @@
+{
+    "gid": {
+        "id": "gatewayID",
+        "name": "gatewayName",
+        "version": [
+            {
+                "Core": "v02",
+                "Architecture": "v02",
+                "Crash": "v02"
+            }
+        ],
+        "supportedDLTs": [ "FabricSATPGateway", "BesuSATPGateway"],
+        "proofID": "mockProofID",
+        "address": "http://localhost",
+        "gatewayServerPort": 3010,
+        "gatewayClientPort": 3011,
+        "gatewayOpenAPIPort": 4010
+    },
+    "logLevel": "DEBUG",
+    "counterPartyGateways": [
+        {
+            "id": "counterPartyID1",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey1",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "BesuSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 3000,
+            "gatewayClientPort": 3001,
+            "gatewayOpenAPIPort": 40001
+        },
+        {
+            "id": "counterPartyID2",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey2",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "FabricSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 5001,
+            "gatewayClientPort": 5002,
+            "gatewayOpenAPIPort": 6001
+        }
+    ],
+    "keyPair": {
+        "publicKey": "4d7beb3964a19ce07eab13251eaaa9bd6859f14c5aff0500e0e7a9ffcc8fd3da174c2fb12b9be9e844337d81bba42d426d6129ad1b162bb9c521577097d792e2",
+        "privateKey": "082324e26fb3ec8c1e763b01eca33f60a12c521ef6453ad8c39c4fb3f39bfb0b"
+    },
+    "environment": "development",
+    "enableOpenAPI": true
+}

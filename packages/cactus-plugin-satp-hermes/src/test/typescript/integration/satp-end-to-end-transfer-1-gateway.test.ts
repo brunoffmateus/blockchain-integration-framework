@@ -744,6 +744,10 @@ beforeAll(async () => {
     //setup besu ledger
     rpcApiHttpHost = await besuLedger.getRpcApiHttpHost();
     rpcApiWsHost = await besuLedger.getRpcApiWsHost();
+    console.log("test - rpcApiHttpHost:");
+    console.log(rpcApiHttpHost);
+    console.log("test - rpcApiWsHost:");
+    console.log(rpcApiWsHost);
     web3 = new Web3(rpcApiHttpHost);
     firstHighNetWorthAccount = besuLedger.getGenesisAccountPubKey();
 
