@@ -1,0 +1,64 @@
+{
+    "gid": {
+        "id": "gatewayID",
+        "name": "gatewayName",
+        "version": [
+            {
+                "Core": "v02",
+                "Architecture": "v02",
+                "Crash": "v02"
+            }
+        ],
+        "supportedDLTs": [ "FabricSATPGateway", "BesuSATPGateway"],
+        "proofID": "mockProofID",
+        "address": "http://localhost",
+        "gatewayServerPort": 3010,
+        "gatewayClientPort": 3011,
+        "gatewayOpenAPIPort": 4010
+    },
+    "logLevel": "DEBUG",
+    "counterPartyGateways": [
+        {
+            "id": "counterPartyID1",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey1",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "BesuSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 3000,
+            "gatewayClientPort": 3001,
+            "gatewayOpenAPIPort": 40001
+        },
+        {
+            "id": "counterPartyID2",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey2",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "FabricSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 5001,
+            "gatewayClientPort": 5002,
+            "gatewayOpenAPIPort": 6001
+        }
+    ],
+    "gatewayKeyPair": {
+        "publicKey": "9728d2e5ddd2b842d527707dffa0ab912c4253bcc26b6ea69bd741f2a8fe84cd5a3472f54e5efec4732dedaaaf132c230c58b715cdf2da85d30d26cddead0086",
+        "privateKey": "9bcdaa6c1dcb406d9273bcf26d3805d57e83898dfcceba5e6ca9b04f0919a590"
+    },
+    "environment": "development",
+    "enableOpenAPI": true
+}

@@ -33,6 +33,7 @@ export interface BesuConfig extends NetworkConfig {
   signingCredential: Web3SigningCredential;
   contractName: string;
   contractAddress: string;
+  contractAbi: string;
   gas: number;
   options: IPluginLedgerConnectorBesuOptions;
   bungeeOptions: IPluginBungeeHermesOptions;

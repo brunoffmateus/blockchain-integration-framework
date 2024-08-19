@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  satp-hermes-gateway:
+    build:
+      context: ./
+      dockerfile: satp-hermes-gateway.Dockerfile
+    ports:
+      - 13010:3010/tcp # SERVER_PORT
+      - 13011:3011/tcp # CLIENT_PORT
+      - 14010:4010/tcp # API_PORT
