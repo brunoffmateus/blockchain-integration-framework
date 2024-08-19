@@ -1,0 +1,227 @@
+{
+  "gid": {
+    "id": "mockID",
+    "name": "CustomGateway",
+    "version": [
+      {
+        "Core": "v02",
+        "Architecture": "v02",
+        "Crash": "v02"
+      }
+    ],
+    "supportedDLTs": [
+      "FabricSATPGateway",
+      "BesuSATPGateway"
+    ],
+    "proofID": "mockProofID10",
+    "address": "http://localhost",
+    "gatewayClientPort": 3011,
+    "gatewayServerPort": 3010,
+    "gatewayOpenAPIPort": 4010
+  },
+  "logLevel": "DEBUG",
+  "counterPartyGateways": [],
+  "environment": "development",
+  "enableOpenAPI": true,
+  "bridgesConfig": [
+    {
+      "network": "BesuSATPGateway",
+      "keychainId": "1bb00043-41fb-4718-bf25-13e02ca814d6",
+      "signingCredential": {
+        "ethAccount": "0x7e909e7AE0Ca7A13360c0573cfd7979A199e108c",
+        "secret": "0x8098071b5bb3c9cda5e40f136b30b50b7faf90d36deae3315e4cf99a5874409c",
+        "type": "PRIVATE_KEY_HEX"
+      },
+      "contractName": "SATPWrapperContract",
+      "contractAddress": "0xBbAAE9CE521EbCDa44aF42852983c3Ea045DD7bC",
+      "gas": 999999999999999,
+      "options": {
+        "instanceId": "7d635308-8b86-48d1-bb49-7fe132893f3e",
+        "rpcApiHttpHost": "http://127.0.0.1:32789",
+        "rpcApiWsHost": "ws://127.0.0.1:32790",
+        "pluginRegistryOptions": {
+          "plugins": [
+            {
+              "instanceId": "16102756-59b0-4cad-8b31-e5547719f75e",
+              "keychainId": "f70fd94e-1fb0-47c6-8328-b7e6076200b0",
+              "logLevel": "DEBUG",
+              "backend": [
+                {
+                  "keychainEntry": "d48ffc4f-e1c4-4bd4-968d-8c45688d26c9",
+                  "keychainEntryValue": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+                }
+              ],
+              "erc20TokenContract": "SATPContract"
+            },
+            {
+              "instanceId": "d8487da2-7292-4e7d-a82e-d8e79f1601c4",
+              "keychainId": "1bb00043-41fb-4718-bf25-13e02ca814d6",
+              "logLevel": "DEBUG",
+              "backend": [
+                {
+                  "keychainEntry": "d48ffc4f-e1c4-4bd4-968d-8c45688d26c9",
+                  "keychainEntryValue": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+                }
+              ],
+              "contractNameWrapper": "SATPWrapperContract"
+            }
+          ]
+        },
+        "logLevel": "DEBUG"
+      },
+      "bungeeOptions": {
+        "keyPair": {
+          "privateKey": "9d5862d0b085427db2889fd89079e1a5eeaa7f61b1a59e46eeb9e213bb3af345",
+          "publicKey": "03caf06a4be58f225f843aadd2bb8192259a8d5ef772adf4b822996979f7feb065"
+        },
+        "instanceId": "e1623dbe-95bb-4168-b9ff-7c24ae120dc2",
+        "logLevel": "DEBUG"
+      }
+    },
+    {
+      "network": "FabricSATPGateway",
+      "signingCredential": {
+        "keychainId": "ddedb5c5-be70-47f0-afb1-9f20ddb8c315",
+        "keychainRef": "bridge1"
+      },
+      "channelName": "mychannel",
+      "contractName": "satp-wrapper-contract",
+      "options": {
+        "instanceId": "5d5e4493-c56e-43a3-ab2e-2a1f51ae5c3f",
+        "dockerBinary": "/usr/local/bin/docker",
+        "peerBinary": "/fabric-samples/bin/peer",
+        "goBinary": "/usr/local/go/bin/go",
+        "pluginRegistryOptions": {
+          "plugins": [
+            {
+              "instanceId": "ca9b9271-b8d6-4e0d-a016-29930a4a97b4",
+              "keychainId": "ddedb5c5-be70-47f0-afb1-9f20ddb8c315",
+              "logLevel": "DEBUG",
+              "backend": [
+                {
+                  "keychainEntry": "bridge1",
+                  "keychainEntryValue": "{\"credentials\":{\"certificate\":\"-----BEGIN CERTIFICATE-----\\nMIICfjCCAiSgAwIBAgIURd+eiSLiILrPeAS56PlGdU+jhscwCgYIKoZIzj0EAwIw\\nbDELMAkGA1UEBhMCVUsxEjAQBgNVBAgTCUhhbXBzaGlyZTEQMA4GA1UEBxMHSHVy\\nc2xleTEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eub3Jn\\nMi5leGFtcGxlLmNvbTAeFw0yNDEwMTgxNTQ3MDBaFw0yNTEwMTgxNTU0MDBaMEMx\\nMDALBgNVBAsTBG9yZzIwDQYDVQQLEwZjbGllbnQwEgYDVQQLEwtkZXBhcnRtZW50\\nMTEPMA0GA1UEAxMGYnJpZGdlMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgkq1\\nizn2CXF0OxMx8rQ5ZLmLhREScMOtWGxaWCKQY1rHgvT18kZVsAcs9Un2NAs/v7wA\\njbMpHl5QjE+cTBFruqOBzDCByTAOBgNVHQ8BAf8EBAMCB4AwDAYDVR0TAQH/BAIw\\nADAdBgNVHQ4EFgQUEMNKh2xAnFUrJ2QxVmihxoSx76MwHwYDVR0jBBgwFoAUkfJ+\\nyY9oZ0NQshJWSWHygCoEcSwwaQYIKgMEBQYHCAEEXXsiYXR0cnMiOnsiaGYuQWZm\\naWxpYXRpb24iOiJvcmcyLmRlcGFydG1lbnQxIiwiaGYuRW5yb2xsbWVudElEIjoi\\nYnJpZGdlIiwiaGYuVHlwZSI6ImNsaWVudCJ9fTAKBggqhkjOPQQDAgNIADBFAiEA\\njKFa/Vmf//ZdcCmTdO0dK0vd0qkkiWKd/C0gmzmtPTkCIH8RcnKNYRmsJdKiIn1m\\nnYzwDActt4MsFntvJnRNuSy/\\n-----END CERTIFICATE-----\\n\",\"privateKey\":\"-----BEGIN PRIVATE KEY-----\\r\\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgjDrd5TZnd8QbExwV\\r\\nK4BiO8ADa8/GwQHG1a8PnBYbru+hRANCAASCSrWLOfYJcXQ7EzHytDlkuYuFERJw\\r\\nw61YbFpYIpBjWseC9PXyRlWwByz1SfY0Cz+/vACNsykeXlCMT5xMEWu6\\r\\n-----END PRIVATE KEY-----\\r\\n\"},\"mspId\":\"Org2MSP\",\"type\":\"X.509\"}"
+                },
+                {
+                  "keychainEntry": "some-other-entry-key",
+                  "keychainEntryValue": "some-other-entry-value"
+                }
+              ]
+            }
+          ]
+        },
+        "cliContainerEnv": {
+          "CORE_PEER_TLS_ENABLED": "true",
+          "CORE_PEER_LOCALMSPID": "Org2MSP",
+          "CORE_PEER_TLS_CERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.crt",
+          "CORE_PEER_TLS_KEY_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.key",
+          "CORE_PEER_ADDRESS": "peer0.org2.example.com:9051",
+          "CORE_PEER_MSPCONFIGPATH": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp",
+          "CORE_PEER_TLS_ROOTCERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt",
+          "ORDERER_TLS_ROOTCERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem"
+        },
+        "sshConfig": {
+          "host": "localhost",
+          "privateKey": "-----BEGIN OPENSSH PRIVATE KEY-----\n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\n-----END OPENSSH PRIVATE KEY-----\n",
+          "username": "root",
+          "port": 30022
+        },
+        "logLevel": "DEBUG",
+        "connectionProfile": {
+          "name": "test-network-org2",
+          "version": "1.0.0",
+          "client": {
+            "organization": "Org2",
+            "connection": {
+              "timeout": {
+                "peer": {
+                  "endorser": "300"
+                }
+              }
+            }
+          },
+          "organizations": {
+            "Org2": {
+              "mspid": "Org2MSP",
+              "peers": [
+                "peer0.org2.example.com"
+              ],
+              "certificateAuthorities": [
+                "ca.org2.example.com"
+              ]
+            }
+          },
+          "peers": {
+            "peer0.org2.example.com": {
+              "url": "grpcs://localhost:9051",
+              "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICHjCCAcWgAwIBAgIUKVevrTjQAoU+4Vl3jpMRM9yUz+cwCgYIKoZIzj0EAwIw\nbDELMAkGA1UEBhMCVUsxEjAQBgNVBAgTCUhhbXBzaGlyZTEQMA4GA1UEBxMHSHVy\nc2xleTEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eub3Jn\nMi5leGFtcGxlLmNvbTAeFw0yNDEwMTgxNTQ3MDBaFw0zOTEwMTUxNTQ3MDBaMGwx\nCzAJBgNVBAYTAlVLMRIwEAYDVQQIEwlIYW1wc2hpcmUxEDAOBgNVBAcTB0h1cnNs\nZXkxGTAXBgNVBAoTEG9yZzIuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2NhLm9yZzIu\nZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASaKQlxnO4phdb0\nIxeJkDjrz+KeSJqUK3/LDyL9YGpM6KxFmLKjVBTmyeCddt1zrC6eFg8QzH7i0Oik\naxjLtoMco0UwQzAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBATAd\nBgNVHQ4EFgQUkfJ+yY9oZ0NQshJWSWHygCoEcSwwCgYIKoZIzj0EAwIDRwAwRAIg\nEYGQw7ZCP8YXEqvTLYL2ll1NTpzF5f072oc0AOXpe10CIEBWOSB0Oqrkx7towxUc\nbgAcfLY2vxMgVJ4dz+i8hn0b\n-----END CERTIFICATE-----\n"
+              },
+              "grpcOptions": {
+                "ssl-target-name-override": "peer0.org2.example.com",
+                "hostnameOverride": "peer0.org2.example.com"
+              }
+            }
+          },
+          "certificateAuthorities": {
+            "ca.org2.example.com": {
+              "url": "https://localhost:8054",
+              "caName": "ca-org2",
+              "tlsCACerts": {
+                "pem": [
+                  "-----BEGIN CERTIFICATE-----\nMIICHjCCAcWgAwIBAgIUKVevrTjQAoU+4Vl3jpMRM9yUz+cwCgYIKoZIzj0EAwIw\nbDELMAkGA1UEBhMCVUsxEjAQBgNVBAgTCUhhbXBzaGlyZTEQMA4GA1UEBxMHSHVy\nc2xleTEZMBcGA1UEChMQb3JnMi5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eub3Jn\nMi5leGFtcGxlLmNvbTAeFw0yNDEwMTgxNTQ3MDBaFw0zOTEwMTUxNTQ3MDBaMGwx\nCzAJBgNVBAYTAlVLMRIwEAYDVQQIEwlIYW1wc2hpcmUxEDAOBgNVBAcTB0h1cnNs\nZXkxGTAXBgNVBAoTEG9yZzIuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2NhLm9yZzIu\nZXhhbXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASaKQlxnO4phdb0\nIxeJkDjrz+KeSJqUK3/LDyL9YGpM6KxFmLKjVBTmyeCddt1zrC6eFg8QzH7i0Oik\naxjLtoMco0UwQzAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBATAd\nBgNVHQ4EFgQUkfJ+yY9oZ0NQshJWSWHygCoEcSwwCgYIKoZIzj0EAwIDRwAwRAIg\nEYGQw7ZCP8YXEqvTLYL2ll1NTpzF5f072oc0AOXpe10CIEBWOSB0Oqrkx7towxUc\nbgAcfLY2vxMgVJ4dz+i8hn0b\n-----END CERTIFICATE-----\n"
+                ]
+              },
+              "httpOptions": {
+                "verify": false
+              }
+            }
+          },
+          "orderers": {
+            "orderer.example.com": {
+              "url": "grpcs://localhost:7050",
+              "grpcOptions": {
+                "ssl-target-name-override": "orderer.example.com"
+              },
+              "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICCzCCAbGgAwIBAgIUN1nvboJee9YjZJX417gT97jEhr4wCgYIKoZIzj0EAwIw\nYjELMAkGA1UEBhMCVVMxETAPBgNVBAgTCE5ldyBZb3JrMREwDwYDVQQHEwhOZXcg\nWW9yazEUMBIGA1UEChMLZXhhbXBsZS5jb20xFzAVBgNVBAMTDmNhLmV4YW1wbGUu\nY29tMB4XDTI0MTAxODE1NDcwMFoXDTM5MTAxNTE1NDcwMFowYjELMAkGA1UEBhMC\nVVMxETAPBgNVBAgTCE5ldyBZb3JrMREwDwYDVQQHEwhOZXcgWW9yazEUMBIGA1UE\nChMLZXhhbXBsZS5jb20xFzAVBgNVBAMTDmNhLmV4YW1wbGUuY29tMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAEIBO5oY4u2upwqlhnPgSXIsihzLIGtyAAi4z97PVa\nfoLYTGcTMmo+CYQ8ebe/VJSm6BsyDcHbhitjTmGze5NuiKNFMEMwDgYDVR0PAQH/\nBAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQEwHQYDVR0OBBYEFFuFLZpmXr5Mg/CC\nI33v4CyS1KbKMAoGCCqGSM49BAMCA0gAMEUCIQCRI4RcCJTOFo5ow0mDLsxNNFqV\nPCyRnlx8Wv4XBevxbwIgcAUTkQ1oSfI4zAMxNsu864eKoG7VthwVF5ayzNVaF9Q=\n-----END CERTIFICATE-----\n"
+              }
+            }
+          },
+          "channels": {
+            "mychannel": {
+              "orderers": [
+                "orderer.example.com"
+              ],
+              "peers": {
+                "peer0.org2.example.com": {
+                  "endorsingPeer": true,
+                  "chaincodeQuery": true,
+                  "ledgerQuery": true,
+                  "eventSource": true,
+                  "discover": true
+                }
+              }
+            }
+          }
+        },
+        "discoveryOptions": {
+          "enabled": true,
+          "asLocalhost": true
+        },
+        "eventHandlerOptions": {
+          "strategy": "NETWORK_SCOPE_ALLFORTX",
+          "commitTimeout": 300
+        }
+      },
+      "bungeeOptions": {
+        "keyPair": {
+          "privateKey": "15aa2fd350d6f62067d6a8bec59560c548681e3e4da4ea4a8133f0f67fa9de1f",
+          "publicKey": "028239fc9e8f1c4979f360d06e999546c383ef3496e3ce9c635978a21e35d6a14f"
+        },
+        "instanceId": "a50ee53c-04bf-441d-b8d1-40915cb2bbc9",
+        "logLevel": "DEBUG"
+      }
+    }
+  ]
+}
