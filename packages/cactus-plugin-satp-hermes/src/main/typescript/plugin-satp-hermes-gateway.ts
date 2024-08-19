@@ -17,8 +17,6 @@ import {
   Contains,
 } from "class-validator";
 
-import path from "path";
-
 import {
   SATPGatewayConfig,
   GatewayIdentity,
@@ -36,6 +34,7 @@ import {
   DEFAULT_PORT_GATEWAY_API,
   DEFAULT_PORT_GATEWAY_CLIENT,
   DEFAULT_PORT_GATEWAY_SERVER,
+  SATP_VERSION,
 } from "./core/constants";
 import { bufArray2HexStr } from "./gateway-utils";
 import {
@@ -43,7 +42,6 @@ import {
   IRemoteLogRepository,
 } from "./repository/interfaces/repository";
 import { BLODispatcher, BLODispatcherOptions } from "./blo/dispatcher";
-import fs from "fs";
 import swaggerUi, { JsonObject } from "swagger-ui-express";
 import {
   IPluginWebService,
@@ -56,6 +54,9 @@ import {
 } from "./gol/satp-bridges-manager";
 import bodyParser from "body-parser";
 import cors from "cors";
+
+import * as OAS from "../json/openapi-blo-bundled.json";
+
 export class SATPGateway implements IPluginWebService, ICactusPlugin {
   // todo more checks; example port from config is between 3000 and 9000
   @IsDefined()
@@ -113,6 +114,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     this._pubKey = bufArray2HexStr(this.config.keyPair.publicKey);
 
     this.logger.info(`Gateway's public key: ${this._pubKey}`);
+    this.logger.info(`options.bridgesConfig: ${options.bridgesConfig}`);
 
     const signerOptions: IJsObjectSignerOptions = {
       privateKey: bufArray2HexStr(this.config.keyPair.privateKey),
@@ -170,11 +172,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     this.BLODispatcher = new BLODispatcher(dispatcherOps);
     this.OAPIServerEnabled = this.config.enableOpenAPI ?? true;
 
-    const specPath = path.join(__dirname, "../json/openapi-blo-bundled.json");
-    this.OAS = JSON.parse(fs.readFileSync(specPath, "utf8"));
-    if (!this.OAS) {
-      this.logger.warn("Error loading OAS");
-    }
+    this.OAS = OAS;
   }
 
   /* ICactus Plugin methods */
@@ -258,97 +256,68 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     return this.config.gid!;
   }
 
-  /* Gateway configuration helpers */
   static ProcessGatewayCoordinatorConfig(
     pluginOptions: SATPGatewayConfig,
   ): SATPGatewayConfig {
     if (!pluginOptions.keyPair) {
+      console.log("Generating Key Pair...");
       pluginOptions.keyPair = Secp256k1Keys.generateKeyPairsBuffer();
     }
 
-    const id = uuidv4();
-    if (!pluginOptions.gid) {
-      pluginOptions.gid = {
-        id: id,
-        pubKey: bufArray2HexStr(pluginOptions.keyPair.publicKey),
-        name: id,
-        version: [
-          {
-            Core: "v02",
-            Architecture: "v02",
-            Crash: "v02",
-          },
-        ],
-        supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
-        proofID: "mockProofID1",
-        gatewayServerPort: DEFAULT_PORT_GATEWAY_SERVER,
-        gatewayClientPort: DEFAULT_PORT_GATEWAY_CLIENT,
-        address: "http://localhost",
-      };
-    } else {
-      if (!pluginOptions.gid.id) {
-        pluginOptions.gid.id = id;
-      }
+    const gid: GatewayIdentity = {
+      id: pluginOptions.gid?.id || uuidv4(),
+      name: pluginOptions.gid?.name || uuidv4(),
+      version: pluginOptions.gid?.version || [
+        {
+          Core: SATP_VERSION,
+          Architecture: SATP_VERSION,
+          Crash: SATP_VERSION,
+        },
+      ],
+      supportedDLTs: pluginOptions.gid?.supportedDLTs || [],
+      proofID: pluginOptions.gid?.proofID || uuidv4(),
+      gatewayServerPort:
+        pluginOptions.gid?.gatewayServerPort || DEFAULT_PORT_GATEWAY_SERVER,
+      gatewayClientPort:
+        pluginOptions.gid?.gatewayClientPort || DEFAULT_PORT_GATEWAY_CLIENT,
+      gatewayOpenAPIPort:
+        pluginOptions.gid?.gatewayOpenAPIPort || DEFAULT_PORT_GATEWAY_API,
+      address: pluginOptions.gid?.address || `http://localhost`,
+    };
+    pluginOptions.gid = gid;
 
-      if (!pluginOptions.gid.name) {
-        pluginOptions.gid.name = id;
-      }
-
-      if (!pluginOptions.gid.pubKey) {
-        pluginOptions.gid.pubKey = bufArray2HexStr(
-          pluginOptions.keyPair.publicKey,
-        );
-      }
-
-      if (!pluginOptions.gid.version) {
-        pluginOptions.gid.version = [
-          {
-            Core: "v02",
-            Architecture: "v02",
-            Crash: "v02",
-          },
-        ];
-      }
-
-      if (!pluginOptions.gid.supportedDLTs) {
-        pluginOptions.gid.supportedDLTs = [
-          SupportedChain.FABRIC,
-          SupportedChain.BESU,
-        ];
-      }
-
-      if (!pluginOptions.gid.proofID) {
-        pluginOptions.gid.proofID = "mockProofID1";
-      }
-
-      if (!pluginOptions.gid.gatewayServerPort) {
-        pluginOptions.gid.gatewayServerPort = DEFAULT_PORT_GATEWAY_SERVER;
-      }
-
-      if (!pluginOptions.gid.gatewayClientPort) {
-        pluginOptions.gid.gatewayClientPort = DEFAULT_PORT_GATEWAY_CLIENT;
-      }
-
-      if (!pluginOptions.gid.gatewayOpenAPIPort) {
-        pluginOptions.gid.gatewayOpenAPIPort = DEFAULT_PORT_GATEWAY_API;
-      }
-
-      if (!pluginOptions.logLevel) {
-        pluginOptions.logLevel = "DEBUG";
-      }
-
-      if (!pluginOptions.environment) {
-        pluginOptions.environment = "development";
-      }
-
-      if (!pluginOptions.enableOpenAPI) {
-        pluginOptions.enableOpenAPI = true;
-      }
-
-      if (!pluginOptions.validationOptions) {
-        // do nothing
-      }
+    if (!pluginOptions.counterPartyGateways) {
+      pluginOptions.counterPartyGateways = [];
     }
+
+    if (!pluginOptions.logLevel) {
+      pluginOptions.logLevel = "DEBUG";
+    }
+
+    if (!pluginOptions.environment) {
+      pluginOptions.environment = "development";
+    }
+
+    if (!pluginOptions.enableOpenAPI) {
+      pluginOptions.enableOpenAPI = false;
+    }
+
+    if (!pluginOptions.validationOptions) {
+      pluginOptions.validationOptions = {};
+    }
+
+    if (!pluginOptions.privacyPolicies) {
+      pluginOptions.privacyPolicies = [];
+    }
+
+    if (!pluginOptions.mergePolicies) {
+      pluginOptions.mergePolicies = [];
+    }
+
+    if (!pluginOptions.bridgesConfig) {
+      pluginOptions.bridgesConfig = [];
+    }
+
     return pluginOptions;
   }
 
