@@ -44,7 +44,6 @@ import path from "path";
 import {
   BesuConfig,
   FabricConfig,
-  NetworkConfig,
 } from "../../../main/typescript/types/blockchain-interaction";
 import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-hermes";
 import { Account } from "web3-core";
@@ -623,7 +622,8 @@ beforeAll(async () => {
       keychainRef: keychainEntryKey,
     };
 
-    bridgeFabricSigningCredential = { // criar
+    bridgeFabricSigningCredential = {
+      // criar
       keychainId: keychainIdBridge,
       keychainRef: keychainEntryKeyBridge,
     };
@@ -762,7 +762,8 @@ beforeAll(async () => {
 
     const keychainEntryValue = besuKeyPair.privateKey; // enviar
     const keychainEntryKey = uuidv4(); // enviar
-    keychainPlugin1 = new PluginKeychainMemory({ // criar
+    keychainPlugin1 = new PluginKeychainMemory({
+      // criar
       instanceId: uuidv4(),
       keychainId: uuidv4(),
 
@@ -770,7 +771,8 @@ beforeAll(async () => {
       logLevel,
     });
 
-    keychainPlugin2 = new PluginKeychainMemory({ // criar
+    keychainPlugin2 = new PluginKeychainMemory({
+      // criar
       instanceId: uuidv4(),
       keychainId: uuidv4(),
 
@@ -784,7 +786,8 @@ beforeAll(async () => {
       JSON.stringify(SATPWrapperContract),
     );
 
-    const pluginRegistry = new PluginRegistry({ // criar
+    const pluginRegistry = new PluginRegistry({
+      // criar
       plugins: [keychainPlugin1, keychainPlugin2],
     });
 
@@ -1007,6 +1010,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       channelName: fabricChannelName,
     };
     const req: TransactRequest = {
+      mode: "FIXME" as any,
       contextID: "mockContext",
       fromDLTNetworkID: SupportedChain.BESU,
       toDLTNetworkID: SupportedChain.FABRIC,

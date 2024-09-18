@@ -10919,6 +10919,7 @@ __metadata:
     "@types/fs-extra": "npm:11.0.4"
     "@types/google-protobuf": "npm:3.15.5"
     "@types/node": "npm:18.18.2"
+    "@types/ssh2": "npm:0.5.47"
     "@types/swagger-ui-express": "npm:4.1.6"
     "@types/tape": "npm:4.13.4"
     "@types/uuid": "npm:10.0.0"

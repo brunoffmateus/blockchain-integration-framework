@@ -1053,6 +1053,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
         `FABRIC_CONFIG_CHANNEL=${fabricConfigChannel}`,
         `FABRIC_CONFIG_CONTRACT=${fabricConfigContract}`,
       ],
+
       envFile: "../../../../.env.example",
     });
     await gatewayRunner.start();

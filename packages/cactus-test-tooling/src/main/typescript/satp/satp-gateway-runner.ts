@@ -95,8 +95,9 @@ export class SATPGatewayRunner implements ITestLedger {
       options.apiPort || SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS.apiPort;
     this.envVars =
       options.envVars || SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS.envVars;
-    this.besuConfigPath = options.besuConfigPath;
-    this.fabricConfigPath = options.fabricConfigPath;
+    // FIXME(peter)
+    // this.besuConfigPath = options.besuConfigPath;
+    // this.fabricConfigPath = options.fabricConfigPath;
     this.envFile = options.envFile;
 
     this.emitContainerLogs = Bools.isBooleanStrict(options.emitContainerLogs)

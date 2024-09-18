@@ -7,6 +7,10 @@ import { SATP_VERSION } from "./core/constants";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import fs from "fs-extra";
+import {
+  IMergePolicyValue,
+  isMergePolicyValueArray,
+} from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/view-merging/merge-policies";
 
 export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
   const logLevel: LogLevelDesc =
@@ -31,6 +35,13 @@ export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
         Object.values(SupportedChain).includes(dlt as SupportedChain),
       ) as SupportedChain[];
   };
+
+  logger.debug("Parsing Merge Policies...");
+  const mergePolicies = parseSatpMergePoliciesEnv({
+    envVarValue: env?.SATP_MERGE_POLICIES,
+  });
+  logger.debug("Merge Policy parsed from env var OK");
+  mergePolicies.forEach((p, i) => logger.debug("Merge Policy #%d => %o", i, p));
 
   const gatewayConfig: SATPGatewayConfig = {
     gid: {
@@ -64,8 +75,11 @@ export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
     enableOpenAPI: env?.SATP_ENABLE_OPEN_API === "true",
     validationOptions: JSON.parse(env?.SATP_VALIDATION_OPTIONS || "{}"),
     privacyPolicies: JSON.parse(env?.SATP_PRIVACY_POLICIES || "[]"),
-    mergePolicies: JSON.parse(env?.SATP_MERGE_POLICIES || "[]"),
+    mergePolicies,
   };
+
+  // IMergePolicyValue
+  // SATP_MERGE_POLICIES => { "valid": "something"}
 
   const gateway = new SATPGateway(gatewayConfig);
   try {
@@ -77,6 +91,29 @@ export async function launchGateway(env?: NodeJS.ProcessEnv): Promise<void> {
     await gateway.shutdown();
     process.exit(-1);
   }
+}
+
+export function parseSatpMergePoliciesEnv(opts: {
+  readonly envVarValue?: Readonly<string>;
+}): Array<IMergePolicyValue> {
+  if (!opts) {
+    return [];
+  }
+  if (!opts.envVarValue) {
+    return [];
+  }
+  if (typeof opts.envVarValue !== "string") {
+    return [];
+  }
+  // If the JSON is invalid this will crash
+  const pojo = JSON.parse(opts.envVarValue) as unknown;
+
+  // now we have to ensure that pojo is indeed an Array<IMergePolicyValue>
+
+  if (!isMergePolicyValueArray(pojo)) {
+    throw new TypeError("env.SATP_MERGE_POLICIES invalid: " + opts.envVarValue);
+  }
+  return pojo;
 }
 
 if (require.main === module) {
