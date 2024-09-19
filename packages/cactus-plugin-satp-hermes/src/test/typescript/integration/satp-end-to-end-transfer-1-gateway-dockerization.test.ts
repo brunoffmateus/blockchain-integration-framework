@@ -63,11 +63,13 @@ import {
 } from "../../../main/typescript/generated/gateway-client/typescript-axios";
 import SATPWrapperContract from "../../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
 import { TransactRequest, Asset } from "../../../main/typescript";
-import { SupportedChain } from "../../../main/typescript/core/types";
+import {
+  Address,
+  GatewayIdentity,
+  SupportedChain,
+} from "../../../main/typescript/core/types";
 import FabricSATPInteraction from "../../../test/typescript/fabric/satp-erc20-interact.json";
 import BesuSATPInteraction from "../../solidity/satp-erc20-interact.json";
-
-import { jsonc } from "jsonc";
 
 const logLevel: LogLevelDesc = "DEBUG";
 const log = LoggerProvider.getOrCreate({
@@ -945,54 +947,46 @@ beforeAll(async () => {
   expect(responseApprove.success).toBeTruthy();
   log.info("Approved 100 tokens to SATPWrapperContract");
 });
+
 describe("SATPGateway sending a token from Besu to Fabric", () => {
   it("should realize a transfer", async () => {
-    //setup satp gateway
-    // log file and paths
-    // run existence check
+    const gatewayIdentity = {
+      id: "mockID",
+      name: "CustomGateway",
+      version: [
+        {
+          Core: "v02",
+          Architecture: "v02",
+          Crash: "v02",
+        },
+      ],
+      supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
+      proofID: "mockProofID10",
+      address: "http://localhost" as Address,
+    } as GatewayIdentity;
 
-    // const bridgesConfig = [besuConfig, fabricConfig];
+    const jsonObject = {
+      gid: gatewayIdentity,
+      logLevel: "DEBUG",
+      counterPartyGateways: [], //only knows itself
+      environment: "development",
+      enableOpenAPI: true,
+      // bridgesConfig: [besuConfig, fabricConfig],
+    };
 
     const configDir = path.join(__dirname, "config");
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
     }
-    const besuConfigPath = path.join(configDir, "besu-config.jsonc");
-    const besuConfigStringified = jsonc.stringify(besuConfig);
-    fs.writeFileSync(besuConfigPath, besuConfigStringified);
-    const besuBungeeConfigPath = path.join(
-      configDir,
-      "besu-bungee-config.jsonc",
-    );
-    const besuBungeeConfigStringified = jsonc.stringify(
-      besuConfig.bungeeOptions,
-    );
-    fs.writeFileSync(besuBungeeConfigPath, besuBungeeConfigStringified);
-    const fabricConfigPath = path.join(configDir, "fabric-config.jsonc");
-    const fabricConfigStringified = jsonc.stringify(fabricConfig);
-    fs.writeFileSync(fabricConfigPath, fabricConfigStringified);
-    const fabricBungeeConfigPath = path.join(
-      configDir,
-      "fabric-bungee-config.jsonc",
-    );
-    const fabricBungeeConfigStringified = jsonc.stringify(
-      fabricConfig.bungeeOptions,
-    );
-    fs.writeFileSync(fabricBungeeConfigPath, fabricBungeeConfigStringified);
+    const configFile = path.join(configDir, "config.json");
+    fs.writeFileSync(configFile, JSON.stringify(jsonObject, null, 2));
+
+    expect(fs.existsSync(configFile)).toBe(true);
 
     gatewayRunner = new SATPGatewayRunner({
       logLevel,
       emitContainerLogs: true,
-      envVars: [
-        "SATP_GATEWAY_ID=mockID",
-        "SATP_GATEWAY_NAME=CustomGateway",
-        "SATP_SUPPORTED_DLTS=FabricSATPGateway,BesuSATPGateway",
-        "SATP_GATEWAY_ADDRESS=http://localhost",
-        "SATP_PROOF_ID=mockProofID10",
-        "SATP_COUNTER_PARTY_GATEWAYS=[]",
-      ],
-      besuConfigPath,
-      fabricConfigPath,
+      configFile,
     });
     await gatewayRunner.start();
 
@@ -1010,7 +1004,6 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       channelName: fabricChannelName,
     };
     const req: TransactRequest = {
-      mode: "FIXME" as any,
       contextID: "mockContext",
       fromDLTNetworkID: SupportedChain.BESU,
       toDLTNetworkID: SupportedChain.FABRIC,

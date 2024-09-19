@@ -10,8 +10,6 @@ import {
   DEFAULT_PORT_GATEWAY_CLIENT,
   DEFAULT_PORT_GATEWAY_SERVER,
 } from "../../../main/typescript/core/constants";
-import path from "path";
-import fs from "fs-extra";
 
 const testCase = "Instantiate SATP Gateway Runner";
 const logLevel: LogLevelDesc = "TRACE";
@@ -41,26 +39,6 @@ describe(testCase, () => {
   });
 
   test(testCase, async () => {
-    // const configDir = path.join(__dirname, "../integration/config");
-    // if (!fs.existsSync(configDir)) {
-    //   fs.mkdirSync(configDir, { recursive: true });
-    // }
-    // const besuConfigPath = path.join(configDir, "besu-config.jsonc");
-    // gatewayRunnerOptions.besuConfigPath = besuConfigPath;
-
-    // console.log("Reading from file in test:", besuConfigPath);
-    // const besuConfigFile = fs.readFileSync(besuConfigPath, "utf8");
-    // const parsedBesu: BesuConfig = jsonc.parse(besuConfigFile) as BesuConfig;
-
-    // const fabricConfigPath = path.join(configDir, "fabric-config.jsonc");
-    // gatewayRunnerOptions.fabricConfigPath = fabricConfigPath;
-
-    // console.log("Reading from file in test:", fabricConfigPath);
-    // const fabricConfigFile = fs.readFileSync(fabricConfigPath, "utf8");
-    // const parsedFabric: FabricConfig = jsonc.parse(
-    //   fabricConfigFile,
-    // ) as FabricConfig;
-
     gatewayRunner = new SATPGatewayRunner(gatewayRunnerOptions);
 
     await gatewayRunner.start();

@@ -19,8 +19,7 @@ export interface ISATPGatewayRunnerConstructorOptions {
   envVars?: string[];
   logLevel?: LogLevelDesc;
   emitContainerLogs?: boolean;
-  besuConfigPath?: string;
-  fabricConfigPath?: string;
+  configFile?: string;
   envFile?: string;
 }
 
@@ -41,6 +40,7 @@ export const SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS = Object.freeze({
   ],
 });
 
+// TODO - log the image and version
 export const SATP_GATEWAY_RUNNER_OPTIONS_JOI_SCHEMA: Joi.Schema =
   Joi.object().keys({
     containerImageVersion: Joi.string().min(1).required(),
@@ -70,6 +70,7 @@ export class SATPGatewayRunner implements ITestLedger {
   public readonly envVars: string[];
   public readonly emitContainerLogs: boolean;
   public readonly envFile?: string;
+  public readonly configFile?: string;
 
   private readonly log: Logger;
   private container: Container | undefined;
@@ -95,9 +96,7 @@ export class SATPGatewayRunner implements ITestLedger {
       options.apiPort || SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS.apiPort;
     this.envVars =
       options.envVars || SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS.envVars;
-    // FIXME(peter)
-    // this.besuConfigPath = options.besuConfigPath;
-    // this.fabricConfigPath = options.fabricConfigPath;
+    this.configFile = options.configFile;
     this.envFile = options.envFile;
 
     this.emitContainerLogs = Bools.isBooleanStrict(options.emitContainerLogs)
@@ -160,7 +159,8 @@ export class SATPGatewayRunner implements ITestLedger {
     }
     const docker = new Docker();
 
-    omitPull = true;
+    omitPull = true; //TODO: remove!!
+
     if (!omitPull) {
       this.log.debug(`Pulling container image ${imageFqn} ...`);
       await Containers.pullImage(imageFqn, {}, "DEBUG");
@@ -173,20 +173,14 @@ export class SATPGatewayRunner implements ITestLedger {
         Binds: [],
       };
 
-      // // If besuConfigPath is provided, add it to the binds
-      // if (this.besuConfigPath) {
-      //   const containerPath = "/besu-config.jsonc";
-      //   hostConfig.Binds!.push(`${this.besuConfigPath}:${containerPath}:ro`);
-      // }
-      // // If fabricConfigPath is provided, add it to the binds
-      // if (this.fabricConfigPath) {
-      //   const containerPath = "/fabric-config.jsonc";
-      //   hostConfig.Binds!.push(`${this.fabricConfigPath}:${containerPath}:ro`);
+      // if (this.envFile) {
+      //   const containerPath = "/opt/cacti/satp-hermes/.env.example";
+      //   hostConfig.Binds!.push(`${this.envFile}:${containerPath}:ro`);
       // }
 
-      if (this.envFile) {
-        const containerPath = "/opt/cacti/satp-hermes/.env.example";
-        hostConfig.Binds!.push(`${this.envFile}:${containerPath}:ro`);
+      if (this.configFile) {
+        const containerPath = "/opt/cacti/satp-hermes/config.json";
+        hostConfig.Binds!.push(`${this.configFile}:${containerPath}:ro`);
       }
 
       const eventEmitter: EventEmitter = docker.run(
