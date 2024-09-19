@@ -1,5 +1,4 @@
 import {
-  Secp256k1Keys,
   Logger,
   Checks,
   LoggerProvider,
@@ -16,7 +15,6 @@ import {
   IsObject,
   IsString,
   Contains,
-  ValidatorOptions,
 } from "class-validator";
 
 import {
@@ -58,19 +56,14 @@ import {
 } from "./gol/satp-bridges-manager";
 import bodyParser from "body-parser";
 import cors from "cors";
-import dotenv from "dotenv";
-import { IPrivacyPolicyValue } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/view-creation/privacy-policies";
 import {
-  MergePolicyOpts,
-  PrivacyPolicyOpts,
-} from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/generated/openapi/typescript-axios";
-import { IMergePolicyValue } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/view-merging/merge-policies";
-import { ISignerKeyPairs } from "@hyperledger/cactus-common/src/main/typescript/signer-key-pairs";
+  Secp256k1Keys,
+  ISignerKeyPairs,
+} from "@hyperledger/cactus-common/src/main/typescript/signer-key-pairs";
 import { BesuConfig, FabricConfig } from "./types/blockchain-interaction";
 
 import * as OAS from "../json/openapi-blo-bundled.json";
-import { jsonc } from "jsonc";
-import fs from "fs-extra";
+
 import {
   ConnectionProfile,
   DefaultEventHandlerStrategy,
@@ -86,7 +79,6 @@ import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory
 import SATPWrapperContract from "../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
 import SATPContract from "../../test/solidity/generated/satp-erc20.sol/SATPContract.json";
 import { FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2 } from "@hyperledger/cactus-test-tooling";
-import { boolean } from "yargs";
 import { Config } from "node-ssh";
 
 export class SATPGateway implements IPluginWebService, ICactusPlugin {
@@ -344,9 +336,9 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
   }
 
   private static processGatewayOpenAPIPort(): number {
-    const port = Number(process.env.SATP_GATEWAY_API_PORT);
-    if (process.env.SATP_GATEWAY_API_PORT && !isNaN(Number(port))) {
-      return parseInt(process.env.SATP_GATEWAY_API_PORT);
+    const port = Number(process.env.SATP_GATEWAY_OPEN_API_PORT);
+    if (process.env.SATP_GATEWAY_OPEN_API_PORT && !isNaN(Number(port))) {
+      return parseInt(process.env.SATP_GATEWAY_OPEN_API_PORT);
     }
     return DEFAULT_PORT_GATEWAY_API;
   }
@@ -474,119 +466,6 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     return true;
   }
 
-  private static processValidationOptions(): ValidatorOptions {
-    if (process.env.SATP_VALIDATION_OPTIONS) {
-      try {
-        const envValidationOptions = JSON.parse(
-          process.env.SATP_VALIDATION_OPTIONS,
-        ) as ValidatorOptions;
-
-        if (
-          typeof envValidationOptions.skipMissingProperties !== "boolean" &&
-          envValidationOptions.skipMissingProperties !== undefined
-        ) {
-          throw new Error(
-            "skipMissingProperties must be a boolean if provided",
-          );
-        } else {
-          return envValidationOptions;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_VALIDATION_OPTIONS: ${error}. Using default.`,
-        );
-      }
-    }
-    return {};
-  }
-
-  private static processPrivacyPolicies(): IPrivacyPolicyValue[] {
-    if (process.env.SATP_PRIVACY_POLICIES) {
-      try {
-        const parsedPolicies = JSON.parse(
-          process.env.SATP_PRIVACY_POLICIES,
-        ) as IPrivacyPolicyValue[];
-
-        const validPolicies = (
-          eachPolicy: unknown,
-        ): eachPolicy is IPrivacyPolicyValue => {
-          if (!eachPolicy) {
-            return false;
-          }
-          const policy = eachPolicy as Record<string, unknown>;
-          return (
-            "policy" in policy &&
-            "policyHash" in policy &&
-            typeof policy.policy === "string" &&
-            typeof policy.policyHash === "string" &&
-            (policy.policy === PrivacyPolicyOpts.PruneState ||
-              policy.policy === PrivacyPolicyOpts.SingleTransaction)
-          );
-        };
-
-        if (
-          !Array.isArray(parsedPolicies) ||
-          !parsedPolicies.every(validPolicies)
-        ) {
-          throw new Error(
-            "SATP_PRIVACY_POLICIES must be an array of valid privacy policies",
-          );
-        } else {
-          return parsedPolicies;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_PRIVACY_POLICIES: ${error.message}. Using default.`,
-        );
-      }
-    }
-    return [];
-  }
-
-  private static processMergePolicies(): IMergePolicyValue[] {
-    if (process.env.SATP_MERGE_POLICIES) {
-      try {
-        const parsedPolicies = JSON.parse(
-          process.env.SATP_MERGE_POLICIES,
-        ) as IMergePolicyValue[];
-
-        const validPolicies = (
-          eachPolicy: unknown,
-        ): eachPolicy is IMergePolicyValue => {
-          if (!eachPolicy) {
-            return false;
-          }
-          const policy = eachPolicy as Record<string, unknown>;
-          return (
-            "policy" in policy &&
-            "policyHash" in policy &&
-            typeof policy.policy === "string" &&
-            typeof policy.policyHash === "string" &&
-            (policy.policy === MergePolicyOpts.PruneState ||
-              policy.policy === MergePolicyOpts.PruneStateFromView ||
-              policy.policy === MergePolicyOpts.NONE)
-          );
-        };
-
-        if (
-          !Array.isArray(parsedPolicies) ||
-          !parsedPolicies.every(validPolicies)
-        ) {
-          throw new Error(
-            "SATP_MERGE_POLICIES must be an array of valid merge policies if provided",
-          );
-        } else {
-          return parsedPolicies;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_MERGE_POLICIES: ${error.message}. Using default.`,
-        );
-      }
-    }
-    return [];
-  }
-
   static ProcessGatewayCoordinatorConfig(
     pluginOptions: SATPGatewayConfig,
   ): SATPGatewayConfig {
@@ -613,15 +492,15 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     }
 
     if (!pluginOptions.validationOptions) {
-      pluginOptions.validationOptions = this.processValidationOptions();
+      pluginOptions.validationOptions = {};
     }
 
     if (!pluginOptions.privacyPolicies) {
-      pluginOptions.privacyPolicies = this.processPrivacyPolicies();
+      pluginOptions.privacyPolicies = [];
     }
 
     if (!pluginOptions.mergePolicies) {
-      pluginOptions.mergePolicies = this.processMergePolicies();
+      pluginOptions.mergePolicies = [];
     }
 
     // if (!pluginOptions.bridgesConfig) {
