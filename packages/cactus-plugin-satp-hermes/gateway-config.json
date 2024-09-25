@@ -1,0 +1,298 @@
+{
+    "gid": {
+        "id": "gatewayID",
+        "name": "gatewayName",
+        "version": [
+            {
+                "Core": "v02",
+                "Architecture": "v02",
+                "Crash": "v02"
+            }
+        ],
+        "supportedDLTs": [ "FabricSATPGateway", "BesuSATPGateway"],
+        "proofID": "mockProofID",
+        "address": "http://localhost",
+        "gatewayServerPort": 3010,
+        "gatewayClientPort": 3011,
+        "gatewayOpenAPIPort": 4010
+    },
+    "logLevel": "DEBUG",
+    "counterPartyGateways": [
+        {
+            "id": "counterPartyID1",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey1",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "BesuSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 3000,
+            "gatewayClientPort": 3001,
+            "gatewayOpenAPIPort": 40001
+        },
+        {
+            "id": "counterPartyID2",
+            "name": "mockName",
+            "address": "http://localhost",
+            "pubkey": "mockPubkey2",
+            "version": [
+                {
+                    "Core": "v02",
+                    "Architecture": "v02",
+                    "Crash": "v02"
+                }
+            ],
+            "supportedDLTs": [ "FabricSATPGateway"],
+            "proofID": "mockProofID",
+            "gatewayServerPort": 5001,
+            "gatewayClientPort": 5002,
+            "gatewayOpenAPIPort": 6001
+        }
+    ],
+    "keyPair": {
+        "publicKey": "8425bcdf01b8341c059a3454aea8cf21f0982b800bc9c8b70be805accd374246b1bcb7f533a1e16850a0ecbfc938e4e5d99ba75bbd1c49d5aca5f7367839a0b8",
+        "privateKey": "65cbbeebcbe8dc1163995fe990706bf6ef474e51b5cb9a768a2f4376012899e0"
+    },
+    "environment": "development",
+    "enableOpenAPI": true,
+    "bridgesConfig": [
+        {
+            "network": "Fabric",
+            "signingCredential": {
+                "keychainId": "mockKeychainId",
+                "keychainRef": "string1",
+                "type": "X.509", 
+                "vaultTransitKey": { 
+                    "keyName": "mockKeyName",
+                    "token": "mockToken"
+                },
+                "webSocketKey": {
+                    "sessionId": "mockSessionId",
+                    "signature": "mockSignature"
+                }
+            },
+            "channelName": "mockChannelName",
+            "contractName": "mockContractName",
+            "options": {
+                "instanceId": "mockInstanceId",
+                "peerBinary": "/fabric-samples/bin/peer",
+                "dockerBinary": "/usr/local/bin/docker",
+                "goBinary": "/usr/local/go/bin/go",
+                "pluginRegistryOptions": {
+                    "logLevel": "INFO",
+                    "plugins": [
+                        {
+                            "keyChainOptions": {
+                                "instanceId": "mockInstanceId",
+                                "keychainId": "mockKeychainId",
+                                "logLevel": "INFO",
+                                "backend": [
+                                    {
+                                        "keychainEntry": "mockKeychainEntry",
+                                        "keychainEntryValue": "mockKeychainEntryValue"
+                                    },
+                                    {
+                                        "keychainEntry": "mockKeychainEntry2",
+                                        "keychainEntryValue": "mockKeychainEntryValue2"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "cliContainerEnv": {
+                    "CORE_PEER_ADDRESS": "mockCORE_PEER_ADDRESS",
+                    "CORE_PEER_LOCALMSPID": "mockCORE_PEER_LOCALMSPID",
+                    "CORE_PEER_TLS_ROOTCERT_FILE": "mockCORE_PEER_TLS_ROOTCERT_FILE",
+                    "CORE_PEER_MSPCONFIGPATH": "mockCORE_PEER_MSPCONFIGPATH",
+                    "CORE_PEER_TLS_ENABLED": "mockCORE_PEER_TLS_ENABLED",
+                    "CORE_PEER_TLS_CLIENTAUTHREQUIRED": "mockCORE_PEER_TLS_CLIENTAUTHREQUIRED",
+                    "CORE_PEER_TLS_CLIENTROOTCAS_FILES": "mockCORE_PEER_TLS_CLIENTROOTCAS_FILES",
+                    "CORE_PEER_TLS_CLIENTCERT_FILE": "mockCORE_PEER_TLS_CLIENTCERT"
+                },
+                "sshConfig": {
+                    "host": "mockHost",
+                    "port": 22,
+                    "username": "mockUsername",
+                    "privateKey": "mockPrivateKey"
+                },
+                "logLevel": "INFO",
+                "connectionProfile": {
+                    "name": "mockName",
+                    "version": "mockVersion",
+                    "organizations": {
+                        "mockOrg": "mockOrg"
+                    },
+                    "orderers": {
+                        "orderer.example.com": {
+                            "url": "peer0.org1.example.com",
+                            "grpcOptions": {
+                              "ssl-target-name-override": "orderer.example.com"
+                            },
+                            "tlsCACerts": {
+                              "pem": "mockPem"
+                            }
+                        }
+                    },
+                    "channels": {
+                        "mychannel": {
+                            "orderers": [
+                                "orderer.example.com"
+                            ],
+                            "peers": {
+                                "peer0.org1.example.com": {},
+                                "peer0.org2.example.com": {}
+                            }
+                        }
+                    },
+                    "peers": {
+                        "peer0.org1.example.com": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        }
+                    },
+                    "certificateAuthorities": {
+                        "ca.org1.example.com": {
+                            "url": "https://localhost:7054"
+                        }
+                    },
+                    "x-type": "mock-x-type",
+                    "description": "mockDescription",
+                    "client": {
+                        "organization": "mockClientOrg"
+                    }
+                },
+                "discoveryOptions": {
+                    "enabled": true,
+                    "asLocalhost": true
+                },
+                "eventHandlerOptions": {
+                    "strategy": "NETWORK_SCOPE_ALLFORTX",
+                    "commitTimeout": 300
+                }
+            },
+            "bungeeOptions": {
+                "keyPair": {
+                    "privateKey": "mockPrivateKey",
+                    "publicKey": "mockPublicKey"
+                },
+                "instanceId": "mockInstanceId",
+                "pluginRegistryOptions": {
+                    "logLevel": "INFO",
+                    "plugins": [
+                        {
+                            "keyChainOptions": {
+                                "instanceId": "mockInstanceId",
+                                "keychainId": "mockKeychainId",
+                                "logLevel": "INFO",
+                                "backend": [
+                                    {
+                                        "keychainEntry": "mockKeychainEntry",
+                                        "keychainEntryValue": "mockKeychainEntryValue"
+                                    },
+                                    {
+                                        "keychainEntry": "mockKeychainEntry2",
+                                        "keychainEntryValue": "mockKeychainEntryValue2"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "network": "Besu",
+            "keychainId": "mockKeychainId",
+            "signingCredential": {
+                "ethAccount": "mockEthAccount",
+                "secret": "privateKeyMock",
+                "type": "PRIVATE_HEX_KEY"
+            },
+            "contractName": "mockContractName",
+            "contractAddress": "mockContractAddress",
+            "options": {
+                "instanceId": "mockInstanceId",
+                "rpcApiHttpHost": "http://localhost",
+                "rpcApiWsHost": "ws://localhost",
+                "pluginRegistryOptions": {
+                    "logLevel": "INFO",
+                    "plugins": [
+                        {
+                            "keyChainOptions": {
+                                "instanceId": "mockInstanceId",
+                                "keychainId": "mockKeychainId",
+                                "logLevel": "INFO",
+                                "backend": [
+                                    {
+                                        "keychainEntry": "mockKeychainEntry",
+                                        "keychainEntryValue": "mockKeychainEntryValue"
+                                    },
+                                    {
+                                        "keychainEntry": "mockKeychainEntry2",
+                                        "keychainEntryValue": "mockKeychainEntryValue2"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "keyChainOptions": {
+                                "instanceId": "mockInstanceId",
+                                "keychainId": "mockKeychainId",
+                                "logLevel": "INFO",
+                                "backend": [
+                                    {
+                                        "keychainEntry": "mockKeychainEntry",
+                                        "keychainEntryValue": "mockKeychainEntryValue"
+                                    },
+                                    {
+                                        "keychainEntry": "mockKeychainEntry2",
+                                        "keychainEntryValue": "mockKeychainEntryValue2"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "bungeeOptions": {
+                "keyPair": {
+                    "privateKey": "mockPrivateKey",
+                    "publicKey": "mockPublicKey"
+                },
+                "instanceId": "mockInstanceId",
+                "pluginRegistryOptions": {
+                    "logLevel": "INFO",
+                    "plugins": [
+                        {
+                            "keyChainOptions": {
+                                "instanceId": "mockInstanceId",
+                                "keychainId": "mockKeychainId",
+                                "logLevel": "INFO",
+                                "backend": [
+                                    {
+                                        "keychainEntry": "mockKeychainEntry",
+                                        "keychainEntryValue": "mockKeychainEntryValue"
+                                    },
+                                    {
+                                        "keychainEntry": "mockKeychainEntry2",
+                                        "keychainEntryValue": "mockKeychainEntryValue2"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            "gas": 99999999999999
+        }
+    ]
+}

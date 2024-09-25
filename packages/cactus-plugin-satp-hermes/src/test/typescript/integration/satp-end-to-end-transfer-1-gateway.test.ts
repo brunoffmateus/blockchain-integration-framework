@@ -21,6 +21,7 @@ import {
   PluginLedgerConnectorFabric,
   DefaultApi as FabricApi,
   FabricContractInvocationType,
+  ConnectionProfile,
 } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 import http, { Server } from "http";
 import fs from "fs-extra";
@@ -186,10 +187,12 @@ beforeAll(async () => {
 
   {
     // setup fabric ledger
-    const connectionProfile = await fabricLedger.getConnectionProfileOrg1();
+    const connectionProfile: ConnectionProfile =
+      await fabricLedger.getConnectionProfileOrg1();
     expect(connectionProfile).not.toBeUndefined();
 
-    const bridgeProfile = await fabricLedger.getConnectionProfileOrgX("org2");
+    const bridgeProfile: ConnectionProfile =
+      await fabricLedger.getConnectionProfileOrgX("org2");
     expect(bridgeProfile).not.toBeUndefined();
 
     const enrollAdminOut = await fabricLedger.enrollAdmin();

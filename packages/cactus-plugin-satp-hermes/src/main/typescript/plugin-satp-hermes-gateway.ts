@@ -6,7 +6,6 @@ import {
   ILoggerOptions,
   JsObjectSigner,
   IJsObjectSignerOptions,
-  LogLevelDesc,
 } from "@hyperledger/cactus-common";
 import { v4 as uuidv4 } from "uuid";
 
@@ -16,7 +15,6 @@ import {
   IsObject,
   IsString,
   Contains,
-  ValidatorOptions,
 } from "class-validator";
 
 import {
@@ -24,8 +22,6 @@ import {
   GatewayIdentity,
   ShutdownHook,
   SupportedChain,
-  Address,
-  DraftVersions,
 } from "./core/types";
 import {
   GatewayOrchestrator,
@@ -36,7 +32,6 @@ import express, { Express } from "express";
 import http from "http";
 import {
   DEFAULT_PORT_GATEWAY_API,
-  DEFAULT_PORT_GATEWAY_CLIENT,
   DEFAULT_PORT_GATEWAY_SERVER,
   SATP_VERSION,
 } from "./core/constants";
@@ -58,36 +53,8 @@ import {
 } from "./gol/satp-bridges-manager";
 import bodyParser from "body-parser";
 import cors from "cors";
-import dotenv from "dotenv";
-import { IPrivacyPolicyValue } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/view-creation/privacy-policies";
-import {
-  MergePolicyOpts,
-  PrivacyPolicyOpts,
-} from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/generated/openapi/typescript-axios";
-import { IMergePolicyValue } from "@hyperledger/cactus-plugin-bungee-hermes/dist/lib/main/typescript/view-merging/merge-policies";
-import { ISignerKeyPairs } from "@hyperledger/cactus-common/src/main/typescript/signer-key-pairs";
-import { BesuConfig, FabricConfig } from "./types/blockchain-interaction";
 
 import * as OAS from "../json/openapi-blo-bundled.json";
-import { jsonc } from "jsonc";
-import fs from "fs-extra";
-import {
-  ConnectionProfile,
-  DefaultEventHandlerStrategy,
-  IPluginLedgerConnectorFabricOptions,
-} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
-import { IPluginBungeeHermesOptions } from "@hyperledger/cactus-plugin-bungee-hermes";
-import {
-  IPluginLedgerConnectorBesuOptions,
-  Web3SigningCredentialType,
-} from "@hyperledger/cactus-plugin-ledger-connector-besu";
-import { PluginRegistry } from "@hyperledger/cactus-core";
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
-import SATPWrapperContract from "../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
-import SATPContract from "../../test/solidity/generated/satp-erc20.sol/SATPContract.json";
-import { FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2 } from "@hyperledger/cactus-test-tooling";
-import { boolean } from "yargs";
-import { Config } from "node-ssh";
 
 export class SATPGateway implements IPluginWebService, ICactusPlugin {
   // todo more checks; example port from config is between 3000 and 9000
@@ -205,11 +172,6 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     this.OAPIServerEnabled = this.config.enableOpenAPI ?? true;
 
     this.OAS = OAS;
-    // const specPath = path.join(__dirname, "../json/openapi-blo-bundled.json");
-    // this.OAS = JSON.parse(fs.readFileSync(specPath, "utf8"));
-    // if (!this.OAS) {
-    //   this.logger.warn("Error loading OAS");
-    // }
   }
 
   /* ICactus Plugin methods */
@@ -293,648 +255,58 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     return this.config.gid!;
   }
 
-  /* Gateway configuration helpers */
-
-  private static processGatewayId(): string {
-    return process.env.SATP_GATEWAY_ID || uuidv4();
-  }
-
-  private static processGatewayName(): string {
-    return process.env.SATP_GATEWAY_NAME || uuidv4();
-  }
-
-  private static processGatewayVersion(): DraftVersions[] {
-    return [
-      {
-        Core: process.env.SATP_GATEWAY_VERSION_CORE || SATP_VERSION,
-        Architecture:
-          process.env.SATP_GATEWAY_VERSION_ARCHITECTURE || SATP_VERSION,
-        Crash: process.env.SATP_GATEWAY_VERSION_CRASH || SATP_VERSION,
-      },
-    ];
-  }
-
-  private static processGatewaySupportedDLTs(): SupportedChain[] {
-    if (process.env.SATP_SUPPORTED_DLTS) {
-      return process.env.SATP_SUPPORTED_DLTS.split(",").filter((dlt) =>
-        Object.values(SupportedChain).includes(dlt as SupportedChain),
-      ) as SupportedChain[];
-    }
-    return [];
-  }
-
-  private static processGatewayProofID(): string {
-    return process.env.SATP_PROOF_ID || uuidv4();
-  }
-
-  private static processGatewayServerPort(): number {
-    const port = Number(process.env.SATP_GATEWAY_SERVER_PORT);
-    if (process.env.SATP_GATEWAY_SERVER_PORT && !isNaN(Number(port))) {
-      return parseInt(process.env.SATP_GATEWAY_SERVER_PORT);
-    }
-    return DEFAULT_PORT_GATEWAY_SERVER;
-  }
-
-  private static processGatewayClientPort(): number {
-    const port = Number(process.env.SATP_GATEWAY_CLIENT_PORT);
-    if (process.env.SATP_GATEWAY_CLIENT_PORT && !isNaN(Number(port))) {
-      return parseInt(process.env.SATP_GATEWAY_CLIENT_PORT);
-    }
-    return DEFAULT_PORT_GATEWAY_CLIENT;
-  }
-
-  private static processGatewayOpenAPIPort(): number {
-    const port = Number(process.env.SATP_GATEWAY_API_PORT);
-    if (process.env.SATP_GATEWAY_API_PORT && !isNaN(Number(port))) {
-      return parseInt(process.env.SATP_GATEWAY_API_PORT);
-    }
-    return DEFAULT_PORT_GATEWAY_API;
-  }
-
-  private static processGatewayAddress(): Address {
-    return (process.env.SATP_GATEWAY_ADDRESS as Address) || `http://localhost`;
-  }
-
-  private static processGatewayIdentity(
-    pluginOptions: SATPGatewayConfig,
-  ): GatewayIdentity {
-    const gid = pluginOptions.gid;
-    return {
-      id: gid?.id || this.processGatewayId(),
-      pubKey: bufArray2HexStr(pluginOptions.keyPair!.publicKey),
-      name: gid?.name || this.processGatewayName(),
-      version: gid?.version || this.processGatewayVersion(),
-      supportedDLTs: gid?.supportedDLTs || this.processGatewaySupportedDLTs(),
-      proofID: gid?.proofID || this.processGatewayProofID(),
-      gatewayServerPort:
-        gid?.gatewayServerPort || this.processGatewayServerPort(),
-      gatewayClientPort:
-        gid?.gatewayClientPort || this.processGatewayClientPort(),
-      gatewayOpenAPIPort: this.processGatewayOpenAPIPort(),
-      address: gid?.address || this.processGatewayAddress(),
-    };
-  }
-
-  private static processCounterPartyGateways(): GatewayIdentity[] {
-    if (process.env.SATP_COUNTER_PARTY_GATEWAYS) {
-      try {
-        const parsedGateways = JSON.parse(
-          process.env.SATP_COUNTER_PARTY_GATEWAYS,
-        ) as GatewayIdentity[];
-
-        const validGateway = (gateway: unknown): gateway is GatewayIdentity => {
-          if (!gateway) {
-            return false;
-          }
-          const gw = gateway as Record<string, unknown>;
-          if (
-            !("id" in gw) ||
-            !("version" in gw) ||
-            !("supportedDLTs" in gw) ||
-            typeof gw.id !== "string" ||
-            typeof gw.version !== "string" ||
-            typeof gw.supportedDLTs !== "string"
-          ) {
-            return false;
-          }
-          const [Core, Architecture, Crash] = gw.version.split(",");
-          if (!Core || !Architecture || !Crash) {
-            return false;
-          }
-          const dlts = gw.supportedDLTs.split(",") as SupportedChain[];
-          if (
-            !dlts.every((dlt) => Object.values(SupportedChain).includes(dlt)) ||
-            dlts.length === 0
-          ) {
-            return false;
-          }
-          // validate optional fields if provided
-          if (
-            ("name" in gw && typeof gw.name !== "string") ||
-            ("proofID" in gw && typeof gw.proofID !== "string") ||
-            ("gatewayServerPort" in gw &&
-              (typeof gw.gatewayServerPort !== "string" ||
-                isNaN(Number(gw.gatewayServerPort)))) ||
-            ("gatewayClientPort" in gw &&
-              (typeof gw.gatewayClientPort !== "string" ||
-                isNaN(Number(gw.gatewayClientPort)))) ||
-            ("address" in gw && typeof gw.address !== "string")
-          ) {
-            return false;
-          }
-          return true;
-        };
-
-        if (
-          !Array.isArray(parsedGateways) ||
-          !parsedGateways.every(validGateway)
-        ) {
-          throw new Error(
-            "SATP_COUNTER_PARTY_GATEWAYS must be an array of valid gateway identities",
-          );
-        } else {
-          return parsedGateways;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_COUNTER_PARTY_GATEWAYS: ${error.message}. Using default.`,
-        );
-      }
-    }
-    return [];
-  }
-
-  private static processLogLevel(): LogLevelDesc {
-    return (
-      (process.env.SATP_LOG_LEVEL?.toUpperCase() as LogLevelDesc) || "DEBUG"
-    );
-  }
-
-  private static processKeyPair(): ISignerKeyPairs {
-    if (process.env.SATP_PUBLIC_KEY && process.env.SATP_PRIVATE_KEY) {
-      return {
-        privateKey: Buffer.from(process.env.SATP_PRIVATE_KEY, "hex"),
-        publicKey: Buffer.from(process.env.SATP_PUBLIC_KEY, "hex"),
-      };
-    }
-    return Secp256k1Keys.generateKeyPairsBuffer();
-  }
-
-  private static processEnvironment(): "development" | "production" {
-    return (
-      (process.env.SATP_NODE_ENV as "development" | "production") ||
-      "development"
-    );
-  }
-
-  private static processEnableOpenAPI(): boolean {
-    if (process.env.SATP_ENABLE_OPEN_API === "false") {
-      return false;
-    }
-    return true;
-  }
-
-  private static processValidationOptions(): ValidatorOptions {
-    if (process.env.SATP_VALIDATION_OPTIONS) {
-      try {
-        const envValidationOptions = JSON.parse(
-          process.env.SATP_VALIDATION_OPTIONS,
-        ) as ValidatorOptions;
-
-        if (
-          typeof envValidationOptions.skipMissingProperties !== "boolean" &&
-          envValidationOptions.skipMissingProperties !== undefined
-        ) {
-          throw new Error(
-            "skipMissingProperties must be a boolean if provided",
-          );
-        } else {
-          return envValidationOptions;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_VALIDATION_OPTIONS: ${error}. Using default.`,
-        );
-      }
-    }
-    return {};
-  }
-
-  private static processPrivacyPolicies(): IPrivacyPolicyValue[] {
-    if (process.env.SATP_PRIVACY_POLICIES) {
-      try {
-        const parsedPolicies = JSON.parse(
-          process.env.SATP_PRIVACY_POLICIES,
-        ) as IPrivacyPolicyValue[];
-
-        const validPolicies = (
-          eachPolicy: unknown,
-        ): eachPolicy is IPrivacyPolicyValue => {
-          if (!eachPolicy) {
-            return false;
-          }
-          const policy = eachPolicy as Record<string, unknown>;
-          return (
-            "policy" in policy &&
-            "policyHash" in policy &&
-            typeof policy.policy === "string" &&
-            typeof policy.policyHash === "string" &&
-            (policy.policy === PrivacyPolicyOpts.PruneState ||
-              policy.policy === PrivacyPolicyOpts.SingleTransaction)
-          );
-        };
-
-        if (
-          !Array.isArray(parsedPolicies) ||
-          !parsedPolicies.every(validPolicies)
-        ) {
-          throw new Error(
-            "SATP_PRIVACY_POLICIES must be an array of valid privacy policies",
-          );
-        } else {
-          return parsedPolicies;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_PRIVACY_POLICIES: ${error.message}. Using default.`,
-        );
-      }
-    }
-    return [];
-  }
-
-  private static processMergePolicies(): IMergePolicyValue[] {
-    if (process.env.SATP_MERGE_POLICIES) {
-      try {
-        const parsedPolicies = JSON.parse(
-          process.env.SATP_MERGE_POLICIES,
-        ) as IMergePolicyValue[];
-
-        const validPolicies = (
-          eachPolicy: unknown,
-        ): eachPolicy is IMergePolicyValue => {
-          if (!eachPolicy) {
-            return false;
-          }
-          const policy = eachPolicy as Record<string, unknown>;
-          return (
-            "policy" in policy &&
-            "policyHash" in policy &&
-            typeof policy.policy === "string" &&
-            typeof policy.policyHash === "string" &&
-            (policy.policy === MergePolicyOpts.PruneState ||
-              policy.policy === MergePolicyOpts.PruneStateFromView ||
-              policy.policy === MergePolicyOpts.NONE)
-          );
-        };
-
-        if (
-          !Array.isArray(parsedPolicies) ||
-          !parsedPolicies.every(validPolicies)
-        ) {
-          throw new Error(
-            "SATP_MERGE_POLICIES must be an array of valid merge policies if provided",
-          );
-        } else {
-          return parsedPolicies;
-        }
-      } catch (error) {
-        console.warn(
-          `Failed to parse SATP_MERGE_POLICIES: ${error.message}. Using default.`,
-        );
-      }
-    }
-    return [];
-  }
-
   static ProcessGatewayCoordinatorConfig(
     pluginOptions: SATPGatewayConfig,
   ): SATPGatewayConfig {
     if (!pluginOptions.keyPair) {
-      pluginOptions.keyPair = this.processKeyPair();
+      console.log("Generating Key Pair...");
+      pluginOptions.keyPair = Secp256k1Keys.generateKeyPairsBuffer();
     }
 
-    pluginOptions.gid = this.processGatewayIdentity(pluginOptions);
+    if (!pluginOptions.gid) {
+      pluginOptions.gid = {
+        id: uuidv4(),
+        version: [
+          {
+            Core: SATP_VERSION,
+            Architecture: SATP_VERSION,
+            Crash: SATP_VERSION,
+          },
+        ],
+        supportedDLTs: [],
+      };
+    }
 
     if (!pluginOptions.counterPartyGateways) {
-      pluginOptions.counterPartyGateways = this.processCounterPartyGateways();
+      pluginOptions.counterPartyGateways = [];
     }
 
     if (!pluginOptions.logLevel) {
-      pluginOptions.logLevel = this.processLogLevel();
+      pluginOptions.logLevel = "DEBUG";
     }
 
     if (!pluginOptions.environment) {
-      pluginOptions.environment = this.processEnvironment();
+      pluginOptions.environment = "development";
     }
 
     if (!pluginOptions.enableOpenAPI) {
-      pluginOptions.enableOpenAPI = this.processEnableOpenAPI();
+      pluginOptions.enableOpenAPI = false;
     }
 
     if (!pluginOptions.validationOptions) {
-      pluginOptions.validationOptions = this.processValidationOptions();
+      pluginOptions.validationOptions = {};
     }
 
     if (!pluginOptions.privacyPolicies) {
-      pluginOptions.privacyPolicies = this.processPrivacyPolicies();
+      pluginOptions.privacyPolicies = [];
     }
 
     if (!pluginOptions.mergePolicies) {
-      pluginOptions.mergePolicies = this.processMergePolicies();
+      pluginOptions.mergePolicies = [];
     }
 
-    // if (!pluginOptions.bridgesConfig) {
-    //   const configPath = "/bridges-config.jsonc";
-    //   try {
-    //     console.log("Reading bridgesConfig from:", configPath);
-    //     const configFile = fs.readFileSync(configPath, "utf8");
-    //     const parsed = jsonc.parse(configFile) as NetworkConfig[]; // not working
-    //     console.log("typeof parsed");
-    //     console.log(typeof parsed);
-    //     console.log("jsonc.parse(configFile) as NetworkConfig[]");
-    //     console.log(parsed);
-
-    //     const bridgesConfig: NetworkConfig[] = parsed;
-
-    //     pluginOptions.bridgesConfig = bridgesConfig;
-    //     console.log("pluginOptions.bridgesConfig");
-    //     console.log(pluginOptions.bridgesConfig);
-    //   } catch (error) {
-    //     if (
-    //       error instanceof Error &&
-    //       "code" in error &&
-    //       error.code === "ENOENT"
-    //     ) {
-    //       console.warn(
-    //         `Besu config file not found at ${configPath}. Using empty configuration.`,
-    //       );
-    //       pluginOptions.bridgesConfig = [];
-    //     } else {
-    //       console.error(
-    //         `Error reading or parsing bridge config file at ${configPath}:`,
-    //         error,
-    //       );
-    //       throw new Error(
-    //         `Failed to read or parse bridge config file at ${configPath}: ${error instanceof Error ? error.message : "Unknown error"}`,
-    //       );
-    //     }
-    //   }
-    // }
-
-    // if (!pluginOptions.bridgesConfig) {
-    //   const besuConfigPath = "/besu-config.jsonc";
-    //   const fabricConfigPath = "/fabric-config.jsonc";
-    //   let besuConfig: BesuConfig | undefined;
-    //   let fabricConfig: FabricConfig | undefined;
-
-    //   try {
-    //     // Try to read and parse Besu config
-    //     console.log("Reading besuConfig from:", besuConfigPath);
-    //     console.log(fs.existsSync(besuConfigPath));
-    //     const besuConfigFile = fs.readFileSync(besuConfigPath, "utf8");
-    //     const parsedBesuConfig = jsonc.parse(besuConfigFile) as BesuConfig;
-    //     besuConfig = this.getBesuConfig(parsedBesuConfig);
-    //     console.log(typeof besuConfig);
-
-    //     // Try to read and parse Fabric config
-    //     console.log("Reading fabricConfig from:", fabricConfigPath);
-    //     console.log(fs.existsSync(fabricConfigPath));
-    //     const fabricConfigFile = fs.readFileSync(fabricConfigPath, "utf8");
-    //     const parsedFabricConfig = jsonc.parse(
-    //       fabricConfigFile,
-    //     ) as FabricConfig;
-    //     fabricConfig = this.getFabricConfig(parsedFabricConfig);
-    //     console.log(typeof fabricConfig);
-
-    //     pluginOptions.bridgesConfig = [besuConfig, fabricConfig];
-    //   } catch (error) {
-    //     if (
-    //       error instanceof Error &&
-    //       "code" in error &&
-    //       error.code === "ENOENT"
-    //     ) {
-    //       if (!besuConfig) {
-    //         console.warn(`Besu config file not found at ${besuConfigPath}.`);
-    //       }
-    //       if (!fabricConfig) {
-    //         console.warn(
-    //           `Fabric config file not found at ${fabricConfigPath}.`,
-    //         );
-    //       }
-    //       pluginOptions.bridgesConfig = [];
-    //     } else {
-    //       console.error(`Error reading or parsing bridge config file:`, error);
-    //       throw new Error(
-    //         `Failed to read or parse bridge config file: ${error instanceof Error ? error.message : "Unknown error"}`
-    //       );
-    //     }
-    //   }
-    // }
-
     if (!pluginOptions.bridgesConfig) {
-      // besu config vars:
-      let besuConfig: BesuConfig | undefined;
-      let fabricConfig: FabricConfig | undefined;
-      const bungeeBesuId = process.env.BESU_BUNGEE_ID;
-
-      const keychainEntryValue = process.env.BESU_OPTS_ENTRY_VALUE;
-      const keychainEntryKey = process.env.BESU_OPTS_ENTRY_KEY;
-      const besuKeychainPlugin1Id = process.env.BESU_OPTS_PLUGIN1_ID;
-      const besuKeychainPlugin1KeychainId =
-        process.env.BESU_OPTS_PLUGIN1_KEYCHAIN_ID;
-      const besuKeychainPlugin2Id = process.env.BESU_OPTS_PLUGIN2_ID;
-      const besuKeychainPlugin2KeychainId =
-        process.env.BESU_OPTS_PLUGIN2_KEYCHAIN_ID;
-
-      const erc20TokenContract = process.env.ERC20_TOKEN_CONTRACT;
-      const contractNameWrapper = process.env.WRAPPER_CONTRACT_NAME;
-
-      const besuOptionsInstanceID = process.env.BESU_OPTS_ID;
-      const besuOptionsHttpHost = process.env.BESU_OPTS_HTTP_HOST;
-      const besuOptionsWsHost = process.env.BESU_OPTS_WS_HOST;
-      const besuKeychainId = process.env.BESU_KEYCHAIN_ID;
-      const besuEthAccount = process.env.BESU_CREDENTIAL_ETH_ACCOUNT;
-      const besuSecret = process.env.BESU_CREDENTIAL_SECRET;
-      const besuType = process.env.BESU_CREDENTIAL_TYPE;
-      const besuContractName = process.env.BESU_CONTRACT_NAME;
-      const besuContractAddress = process.env.BESU_CONTRACT_ADDRESS;
-      const besuGas = process.env.BESU_GAS;
-
-      // fabric config vars:
-      const fabricBungeeId = process.env.FABRIC_BUNGEE_ID;
-
-      const fabricKeychainId = process.env.FABRIC_KEYCHAIN_ID;
-      const fabricCredentialKeychainRef =
-        process.env.FABRIC_CREDENTIAL_KEYCHAIN_REF;
-
-      const fabricOptsId = process.env.FABRIC_OPTS_ID;
-      const fabricOptsDockerBinary = process.env.FABRIC_OPTS_DOCKER_BINARY;
-      const fabricOptsPeerBinary = process.env.FABRIC_OPTS_PEER_BINARY;
-      const fabricOptsGoBinary = process.env.FABRIC_OPTS_GO_BINARY;
-
-      const keychainInstanceIdBridge =
-        process.env.FABRIC_KEYCHAIN_INSTANCE_ID_BRIDGE;
-      const keychainIdBridge = process.env.FABRIC_KEYCHAIN_ID_BRIDG;
-      const keychainEntryKeyBridge =
-        process.env.FABRIC_KEYCHAIN_ENTRY_KEY_BRIDGE;
-      const keychainEntryValueBridge =
-        process.env.FABRIC_KEYCHAIN_ENTRY_VALUE_BRIDGE;
-
-      const fabricStrategy = process.env.FABRIC_STRATEGY;
-      const fabricTimeout = process.env.FABRIC_TIMEOUT;
-
-      const discoveryOptsEnabled = process.env.FABRIC_STRATEGY;
-      const discoveryOptsAsLocalhost = process.env.DISCOVERY_OPTS_AS_LOCALHOST;
-      const sshConfig = process.env.SSH_CONFIG;
-      const bridgeProfile = process.env.BRIDGE_PROFILE;
-      const fabricConfigChannel = process.env.FABRIC_CONFIG_CHANNEL;
-      const fabricConfigContract = process.env.FABRIC_CONFIG_CONTRACT;
-
-      let logLevel: LogLevelDesc;
-      if (process.env.LOG_LEVEL !== undefined) {
-        logLevel = process.env.LOG_LEVEL as LogLevelDesc;
-      } else {
-        logLevel = "DEBUG";
-      }
-
-      if (
-        bungeeBesuId !== undefined &&
-        keychainEntryValue !== undefined &&
-        keychainEntryKey !== undefined &&
-        besuKeychainPlugin1Id !== undefined &&
-        besuKeychainPlugin1KeychainId !== undefined &&
-        besuKeychainPlugin2Id !== undefined &&
-        besuKeychainPlugin2KeychainId !== undefined &&
-        erc20TokenContract !== undefined &&
-        contractNameWrapper !== undefined &&
-        besuOptionsInstanceID !== undefined &&
-        besuOptionsHttpHost !== undefined &&
-        besuOptionsWsHost !== undefined &&
-        besuKeychainId !== undefined &&
-        besuEthAccount !== undefined &&
-        besuSecret !== undefined &&
-        besuType !== undefined &&
-        besuContractName !== undefined &&
-        besuContractAddress !== undefined &&
-        besuGas !== undefined
-      ) {
-        const pluginBungeeBesuOptions: IPluginBungeeHermesOptions = {
-          keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
-          instanceId: bungeeBesuId,
-          pluginRegistry: new PluginRegistry(),
-          logLevel,
-        };
-
-        const keychainPlugin1 = new PluginKeychainMemory({
-          instanceId: uuidv4(),
-          keychainId: uuidv4(),
-          backend: new Map([[keychainEntryKey, keychainEntryValue]]),
-          logLevel,
-        });
-        const keychainPlugin2 = new PluginKeychainMemory({
-          instanceId: uuidv4(),
-          keychainId: uuidv4(),
-          backend: new Map([[keychainEntryKey, keychainEntryValue]]),
-          logLevel,
-        });
-        keychainPlugin1.set(erc20TokenContract, JSON.stringify(SATPContract));
-        keychainPlugin2.set(
-          contractNameWrapper,
-          JSON.stringify(SATPWrapperContract),
-        );
-        const pluginRegistry = new PluginRegistry({
-          plugins: [keychainPlugin1, keychainPlugin2],
-        });
-
-        const besuOptions: IPluginLedgerConnectorBesuOptions = {
-          instanceId: besuOptionsInstanceID,
-          rpcApiHttpHost: besuOptionsHttpHost,
-          rpcApiWsHost: besuOptionsWsHost,
-          pluginRegistry,
-          logLevel,
-        };
-
-        besuConfig = {
-          network: SupportedChain.BESU,
-          keychainId: besuKeychainId,
-          signingCredential: {
-            ethAccount: besuEthAccount,
-            secret: besuSecret,
-            type: besuType as Web3SigningCredentialType,
-          },
-          contractName: besuContractName,
-          contractAddress: besuContractAddress,
-          options: besuOptions,
-          bungeeOptions: pluginBungeeBesuOptions,
-          gas: parseInt(besuGas),
-        };
-      }
-
-      if (
-        fabricBungeeId !== undefined &&
-        fabricOptsId !== undefined &&
-        fabricOptsDockerBinary !== undefined &&
-        fabricOptsPeerBinary !== undefined &&
-        fabricOptsGoBinary !== undefined &&
-        keychainInstanceIdBridge !== undefined &&
-        keychainIdBridge !== undefined &&
-        keychainEntryKeyBridge !== undefined &&
-        keychainEntryValueBridge !== undefined &&
-        fabricStrategy !== undefined &&
-        fabricTimeout !== undefined &&
-        discoveryOptsEnabled !== undefined &&
-        discoveryOptsAsLocalhost !== undefined &&
-        sshConfig !== undefined &&
-        bridgeProfile !== undefined &&
-        fabricConfigChannel !== undefined &&
-        fabricKeychainId !== undefined &&
-        fabricCredentialKeychainRef !== undefined &&
-        fabricConfigContract !== undefined
-      ) {
-        const pluginBungeeFabricOptions: IPluginBungeeHermesOptions = {
-          keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
-          instanceId: fabricBungeeId,
-          pluginRegistry: new PluginRegistry(),
-          logLevel,
-        };
-
-        const keychainPluginBridge = new PluginKeychainMemory({
-          instanceId: keychainInstanceIdBridge,
-          keychainId: keychainIdBridge,
-          logLevel,
-          backend: new Map([
-            [keychainEntryKeyBridge, keychainEntryValueBridge],
-            ["some-other-entry-key", "some-other-entry-value"],
-          ]),
-        });
-        const pluginRegistryBridge = new PluginRegistry({
-          plugins: [keychainPluginBridge],
-        });
-
-        const fabricOptions: IPluginLedgerConnectorFabricOptions = {
-          instanceId: fabricOptsId,
-          dockerBinary: fabricOptsDockerBinary,
-          peerBinary: fabricOptsPeerBinary,
-          goBinary: fabricOptsGoBinary,
-          pluginRegistry: pluginRegistryBridge,
-          cliContainerEnv: FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
-          sshConfig: JSON.parse(sshConfig) as Config,
-          logLevel,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          connectionProfile: bridgeProfile as any as ConnectionProfile,
-          discoveryOptions: {
-            enabled: discoveryOptsEnabled.toLowerCase() === "true",
-            asLocalhost: discoveryOptsAsLocalhost.toLowerCase() === "true",
-          },
-          eventHandlerOptions: {
-            strategy: fabricStrategy as DefaultEventHandlerStrategy,
-            commitTimeout: parseInt(fabricTimeout),
-          },
-        };
-
-        const bridgeFabricSigningCredential = {
-          keychainId: keychainIdBridge,
-          keychainRef: keychainEntryKeyBridge,
-        };
-        fabricConfig = {
-          network: SupportedChain.FABRIC,
-          signingCredential: bridgeFabricSigningCredential,
-          channelName: fabricConfigChannel,
-          contractName: fabricConfigContract,
-          options: fabricOptions,
-          bungeeOptions: pluginBungeeFabricOptions,
-        } as FabricConfig;
-      }
-      if (besuConfig && fabricConfig) {
-        pluginOptions.bridgesConfig = [besuConfig, fabricConfig];
-      } else if (besuConfig) {
-        pluginOptions.bridgesConfig = [besuConfig];
-      } else if (fabricConfig) {
-        pluginOptions.bridgesConfig = [fabricConfig];
-      } else {
-        pluginOptions.bridgesConfig = [];
-      }
+      pluginOptions.bridgesConfig = [];
     }
 
     return pluginOptions;

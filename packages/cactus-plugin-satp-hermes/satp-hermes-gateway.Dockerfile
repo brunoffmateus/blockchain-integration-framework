@@ -12,6 +12,7 @@ RUN mkdir -p /opt/cacti/satp-hermes/log/
 COPY ./dist/bundle/ncc/ ${APP_DIR}
 COPY ./satp-hermes-gateway.Dockerfile.healthcheck.mjs ${APP_DIR}
 COPY ./.env.example /.env.example
+COPY ./gateway-config.json /gateway-config.json
 COPY ./src/knex/ ${APP_DIR}/src/knex/
 COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ./supervisord.conf /etc/supervisord.conf
@@ -27,7 +28,7 @@ ENTRYPOINT ["/usr/bin/supervisord"]
 CMD ["--configuration", "/etc/supervisord.conf", "--nodaemon"]
 
 
-HEALTHCHECK --interval=5s --timeout=1s --start-period=1s --retries=5 CMD [ "node", "./satp-hermes-gateway.Dockerfile.healthcheck.mjs", "http", "localhost", "3011" ]
+HEALTHCHECK --interval=5s --timeout=1s --start-period=1s --retries=5 CMD [ "node", "./satp-hermes-gateway.Dockerfile.healthcheck.mjs", "http", "localhost", "4010" ]
 
 ENV TZ=Etc/UTC
 ENV NODE_ENV=production
