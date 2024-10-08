@@ -1,3 +1,4 @@
+import { randomUUID as uuidv4 } from "node:crypto";
 import "jest-extended";
 
 import {
@@ -7,7 +8,7 @@ import {
   Secp256k1Keys,
   Servers,
 } from "@hyperledger/cactus-common";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as internalIpV4 } from "internal-ip";
 
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
@@ -173,6 +174,12 @@ beforeAll(async () => {
       await Containers.logDiagnostics({ logLevel });
       fail("Pruning didn't throw OK");
     });
+
+  const lanIp = await internalIpV4();
+  if (!lanIp) {
+    throw new Error(`LAN IP falsy. internal-ip package failed.`);
+  }
+
   {
     besuLedger = new BesuTestLedger({
       logLevel,
@@ -766,7 +773,11 @@ beforeAll(async () => {
   {
     //setup besu ledger
     rpcApiHttpHost = await besuLedger.getRpcApiHttpHost();
+    rpcApiHttpHost = rpcApiHttpHost.replace("127.0.0.1", lanIp);
+
     rpcApiWsHost = await besuLedger.getRpcApiWsHost();
+    rpcApiWsHost = rpcApiWsHost.replace("127.0.0.1", lanIp);
+
     console.log("test - rpcApiHttpHost:");
     console.log(rpcApiHttpHost);
     console.log("test - rpcApiWsHost:");
@@ -974,6 +985,8 @@ beforeAll(async () => {
 });
 describe("SATPGateway sending a token from Besu to Fabric", () => {
   it("should realize a transfer", async () => {
+    const address: Address = `http://localhost`;
+
     // gateway setup:
     const gatewayIdentity = {
       id: "mockID",
@@ -987,7 +1000,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       ],
       supportedDLTs: [SupportedChain.FABRIC, SupportedChain.BESU],
       proofID: "mockProofID10",
-      address: "http://localhost" as Address,
+      address,
       gatewayClientPort: DEFAULT_PORT_GATEWAY_CLIENT,
       gatewayServerPort: DEFAULT_PORT_GATEWAY_SERVER,
       gatewayOpenAPIPort: DEFAULT_PORT_GATEWAY_API,
@@ -1191,7 +1204,6 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       destinyAsset,
     };
 
-    const address = gatewayIdentity.address!;
     const port = await gatewayRunner.getApiHostPort();
 
     console.log("address:");

@@ -11042,6 +11042,7 @@ __metadata:
     grpc-tools: "npm:1.12.4"
     grpc_tools_node_protoc_ts: "npm:5.3.3"
     hardhat: "npm:2.22.5"
+    internal-ip: "npm:6.2.0"
     jsonc: "npm:2.0.0"
     knex: "npm:2.4.0"
     kubo-rpc-client: "npm:3.0.1"
