@@ -78,10 +78,10 @@ export class TransactEndpointV1 implements IWebServiceEndpoint {
     const reqBody: TransactRequest = req.body;
     this.log.debug("reqBody: ", reqBody);
     try {
-      const result = await this.options.dispatcher.Transact(reqBody);
+      const result = await this.options.dispatcher.Transact(reqBody); // failing
       res.json(result);
     } catch (ex) {
-      const errorMsg = `${reqTag} ${fnTag} Failed to transact:`;
+      const errorMsg = `${reqTag} ${fnTag} Failed to transact:`; // prints this
       handleRestEndpointException({ errorMsg, log: this.log, error: ex, res });
     }
   }

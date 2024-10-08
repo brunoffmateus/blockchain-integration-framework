@@ -216,6 +216,9 @@ export class Stage0SATPHandler implements SATPHandler {
         this.sessions.delete(session.getSessionId());
       }
 
+      this.Log.debug(
+        `${fnTag}, await this.clientService.wrapToken(session)...`,
+      );
       await this.clientService.wrapToken(session);
 
       const message = await this.clientService.preSATPTransferRequest(session);

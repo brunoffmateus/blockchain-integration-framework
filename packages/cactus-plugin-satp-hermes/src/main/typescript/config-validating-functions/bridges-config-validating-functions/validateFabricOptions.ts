@@ -247,7 +247,7 @@ export function validateFabricOptions(
     username: options.sshConfig.username,
   };
 
-  return {
+  const fabricOptions: IPluginLedgerConnectorFabricOptions = {
     instanceId: options.instanceId,
     peerBinary: options.peerBinary,
     dockerBinary: options.dockerBinary,
@@ -269,4 +269,34 @@ export function validateFabricOptions(
     ),
     logLevel: options.logLevel,
   };
+
+  console.log("FabricOptions:");
+  console.log(`- instanceId: ${fabricOptions.instanceId}`);
+  console.log(`- peerBinary: ${fabricOptions.peerBinary}`);
+  console.log(`- dockerBinary: ${fabricOptions.dockerBinary}`);
+  console.log(`- goBinary: ${fabricOptions.goBinary}`);
+  console.log(`- cliContainerGoPath: ${fabricOptions.cliContainerGoPath}`);
+  console.log(`- cliContainerEnv: ${fabricOptions.cliContainerEnv}`);
+  console.log(
+    `- sshConfig: ${JSON.stringify(fabricOptions.sshConfig, null, 2)}`,
+  );
+  console.log(`- sshDebugOn: ${fabricOptions.sshDebugOn}`);
+  console.log(
+    `- connectionProfile: ${JSON.stringify(fabricOptions.connectionProfile, null, 2)}`,
+  );
+  console.log(
+    `- discoveryOptions: ${JSON.stringify(fabricOptions.discoveryOptions, null, 2)}`,
+  );
+  console.log(
+    `- eventHandlerOptions: ${JSON.stringify(fabricOptions.eventHandlerOptions, null, 2)}`,
+  );
+  console.log(`- supportedIdentity: ${fabricOptions.supportedIdentity}`);
+  console.log(
+    `- vaultConfig: ${JSON.stringify(fabricOptions.vaultConfig, null, 2)}`,
+  );
+  console.log(
+    `- webSocketConfig: ${JSON.stringify(fabricOptions.webSocketConfig, null, 2)}`,
+  );
+
+  return fabricOptions;
 }

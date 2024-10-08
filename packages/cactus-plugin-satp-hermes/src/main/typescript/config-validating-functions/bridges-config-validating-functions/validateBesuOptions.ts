@@ -43,7 +43,7 @@ export function validateBesuOptions(
     );
   }
 
-  return {
+  const besuOptions: IPluginLedgerConnectorBesuOptions = {
     instanceId: options.instanceId,
     rpcApiHttpHost: options.rpcApiHttpHost,
     rpcApiWsHost: options.rpcApiWsHost,
@@ -53,4 +53,12 @@ export function validateBesuOptions(
     ),
     logLevel: options.logLevel,
   };
+
+  console.log("BesuOptions:");
+  console.log(`- instanceId: ${besuOptions.instanceId}`);
+  console.log(`- rpcApiHttpHost: ${besuOptions.rpcApiHttpHost}`);
+  console.log(`- rpcApiWsHost: ${besuOptions.rpcApiWsHost}`);
+  console.log(`- logLevel: ${options.logLevel}`);
+
+  return besuOptions;
 }

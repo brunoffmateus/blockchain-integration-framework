@@ -172,14 +172,18 @@ export class PluginLedgerConnectorBesu
     Checks.truthy(options.pluginRegistry, `${fnTag} options.pluginRegistry`);
     Checks.truthy(options.instanceId, `${fnTag} options.instanceId`);
 
-    this.logLevel = this.options.logLevel || "INFO";
+    this.logLevel = this.options.logLevel || "DEBUG";
     const label = this.className;
     this.log = LoggerProvider.getOrCreate({ level: this.logLevel, label });
 
+    this.log.info(
+      `${fnTag} - options.rpcApiWsHost: ${this.options.rpcApiWsHost}`,
+    );
     this.web3Provider = new Web3.providers.WebsocketProvider(
       this.options.rpcApiWsHost,
     );
     this.web3 = new Web3(this.web3Provider);
+    this.log.info(`${fnTag} - options.instanceId: ${this.options.instanceId}`);
     this.instanceId = options.instanceId;
     this.pluginRegistry = options.pluginRegistry;
     this.prometheusExporter =
@@ -449,14 +453,18 @@ export class PluginLedgerConnectorBesu
     let contractInstance: Contract;
 
     if (req.keychainId != undefined) {
+      this.log.info(`${fnTag} - getting Id...`);
       const networkId = await this.web3.eth.net.getId();
+      this.log.info(`${fnTag} - findOneByKeychainId...`);
       const keychainPlugin = this.pluginRegistry.findOneByKeychainId(
         req.keychainId,
       );
+      this.log.info(`${fnTag} - Checks.truthy - req.keychainId`);
       Checks.truthy(
         keychainPlugin,
         `${fnTag} keychain for ID:"${req.keychainId}"`,
       );
+      this.log.info(`${fnTag} - found ${req.keychainId}`);
       if (!keychainPlugin.has(contractName)) {
         throw new Error(
           `${fnTag} Cannot create an instance of the contract because the contractName and the contractName of the JSON doesn't match`,
@@ -505,11 +513,13 @@ export class PluginLedgerConnectorBesu
       );
 
       this.contracts[contractName] = contract;
+      this.log.info(`${fnTag} - contract instance created and saved`);
     } else if (
       req.keychainId == undefined &&
       req.contractAbi == undefined &&
       req.contractAddress == undefined
     ) {
+      this.log.info(`${fnTag} - req.keychainId = undefined`);
       throw new Error(
         `${fnTag} Cannot invoke a contract without contract instance, the keychainId param is needed`,
       );
@@ -517,6 +527,7 @@ export class PluginLedgerConnectorBesu
 
     contractInstance = this.contracts[contractName];
     if (req.contractAbi != undefined) {
+      this.log.info(`${fnTag} - req.contractAbi != undefined`);
       let abi;
       if (typeof req.contractAbi === "string") {
         abi = JSON.parse(req.contractAbi);
@@ -528,6 +539,7 @@ export class PluginLedgerConnectorBesu
       contractInstance = new this.web3.eth.Contract(abi, contractAddress);
     }
 
+    this.log.info(`${fnTag} - isSafeToCallContractMethod - ${req.methodName}?`);
     const isSafeToCall = await this.isSafeToCallContractMethod(
       contractInstance,
       req.methodName,
@@ -542,6 +554,7 @@ export class PluginLedgerConnectorBesu
     Checks.truthy(methodRef, `${fnTag} YourContract.${req.methodName}`);
     const method: ContractSendMethod = methodRef(...req.params);
 
+    this.log.info(`${fnTag} - invocations type checking...`);
     if (req.invocationType === EthContractInvocationType.Call) {
       let callOutput;
       let success = false;
@@ -593,6 +606,9 @@ export class PluginLedgerConnectorBesu
       }
       return { success, callOutput };
     } else if (req.invocationType === EthContractInvocationType.Send) {
+      this.log.info(
+        `${fnTag} - invocations type: ${EthContractInvocationType.Send}`,
+      );
       if (isWeb3SigningCredentialNone(req.signingCredential)) {
         throw new Error(`${fnTag} Cannot deploy contract with pre-signed TX`);
       }
@@ -620,6 +636,19 @@ export class PluginLedgerConnectorBesu
         },
         privateTransactionConfig: req.privateTransactionConfig,
       };
+      this.log.info(`
+        ${fnTag}
+        Transaction Request Details:
+        - Transaction Config: ${JSON.stringify(transactionConfig, null, 2)}
+        - Web3 Signing Credential: ${JSON.stringify(web3SigningCredential, null, 2)}
+        - Consistency Strategy:
+          - Block Confirmations: ${txReq.consistencyStrategy.blockConfirmations}
+          - Receipt Type: ${txReq.consistencyStrategy.receiptType}
+          - Timeout (ms): ${txReq.consistencyStrategy.timeoutMs}
+        - Private Transaction Config: ${JSON.stringify(req.privateTransactionConfig, null, 2)}
+        `);
+
+      this.log.info(`${fnTag} - await this.transact(txReq)...`);
       const out = await this.transact(txReq);
       const success = out.transactionReceipt.status;
       const data = { success, out };
@@ -650,6 +679,7 @@ export class PluginLedgerConnectorBesu
       logLevel: this.logLevel,
       web3: this.web3,
     };
+    this.log.info(`trying - transactV1Impl(ctx, req)...`);
     const runTransactionResponse = transactV1Impl(ctx, req);
     return runTransactionResponse;
   }

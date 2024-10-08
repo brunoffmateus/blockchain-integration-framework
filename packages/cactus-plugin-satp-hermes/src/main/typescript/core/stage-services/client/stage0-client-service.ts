@@ -315,9 +315,14 @@ export class Stage0ClientService extends SATPService {
       );
 
       sessionData.senderWrapAssertionClaim = new WrapAssertionClaim();
+
+      this.Log.debug(sessionData.senderWrapAssertionClaim === undefined); // false
+      //bridge.wrapAsset fails after this log!
+      this.Log.debug(`${fnTag}, bridge.wrapAsset...`);
       sessionData.senderWrapAssertionClaim.receipt =
         await bridge.wrapAsset(token);
 
+      this.Log.debug(`${fnTag}, signing...`);
       sessionData.senderWrapAssertionClaim.signature = bufArray2HexStr(
         sign(this.Signer, sessionData.senderWrapAssertionClaim.receipt),
       );

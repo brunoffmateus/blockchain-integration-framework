@@ -93,10 +93,12 @@ export function createPluginRegistry(
   pluginRegistryOptions?: PluginRegistryOptionsJSON,
   logLevel?: LogLevelDesc,
 ): PluginRegistry {
+  console.log("creating pluginResgistry...");
   if (
     pluginRegistryOptions === undefined ||
     pluginRegistryOptions.plugins === undefined
   ) {
+    console.log("returning default pluginResgistry");
     return new PluginRegistry();
   }
 
@@ -106,6 +108,11 @@ export function createPluginRegistry(
     pluginJSON.backend?.forEach((entry) => {
       entryValuesArray.push([entry.keychainEntry, entry.keychainEntryValue]);
     });
+    console.log(`- instanceId: ${pluginJSON.instanceId}`);
+    console.log(`- keychainId: ${pluginJSON.keychainId}`);
+    console.log(
+      `- entryValuesArray: ${JSON.stringify(entryValuesArray, null, 2)}`,
+    );
     const backend: Map<string, string> = new Map(entryValuesArray);
     const newPluginKeychainMemory = new PluginKeychainMemory({
       instanceId: pluginJSON.instanceId,
@@ -115,21 +122,29 @@ export function createPluginRegistry(
     });
 
     if (pluginJSON.erc20TokenContract) {
+      console.log(
+        `- setting erc20TokenContract: ${pluginJSON.erc20TokenContract}`,
+      );
       newPluginKeychainMemory.set(
         pluginJSON.erc20TokenContract,
         JSON.stringify(SATPContract),
       );
     }
     if (pluginJSON.contractNameWrapper) {
+      console.log(
+        `- setting contractNameWrapper: ${pluginJSON.contractNameWrapper}`,
+      );
       newPluginKeychainMemory.set(
         pluginJSON.contractNameWrapper,
         JSON.stringify(SATPWrapperContract),
       );
     }
 
+    console.log(`- pushing pluginKeychainMemory...`);
     plugins.push(newPluginKeychainMemory);
   });
 
+  console.log(`plugins length: ${plugins.length}`);
   return new PluginRegistry({
     plugins: plugins,
   });

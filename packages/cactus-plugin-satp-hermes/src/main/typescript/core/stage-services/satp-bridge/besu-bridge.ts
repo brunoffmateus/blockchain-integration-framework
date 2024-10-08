@@ -46,7 +46,8 @@ export class BesuBridge implements NetworkBridge {
     this.options = besuConfig.options;
     const label = BesuBridge.CLASS_NAME;
 
-    level = level || "INFO";
+    // level = level || "INFO";
+    level = "DEBUG";
     this.log = LoggerProvider.getOrCreate({ label, level });
 
     this.connector = new PluginLedgerConnectorBesu(besuConfig.options);
@@ -67,12 +68,31 @@ export class BesuBridge implements NetworkBridge {
       `${fnTag}, Wrapping Asset: {${asset.tokenId}, ${asset.owner}, ${asset.contractAddress}, ${asset.tokenType}}`,
     );
 
+    this.log.debug(`
+      ${fnTag}
+      Invoking contract with the following details:
+      - Contract Name: ${this.config.contractName}
+      - Keychain ID: ${this.config.keychainId}
+      - Invocation Type: ${EthContractInvocationType.Send}
+      - Method Name: "wrap"
+      - Parameters:
+        - Asset Contract Address: ${asset.contractAddress}
+        - Token Type: ${asset.tokenType}
+        - Token ID: ${asset.tokenId}
+        - Owner: ${asset.owner}
+        - Ontology: ${asset.ontology}
+      - Signing Credential: ${JSON.stringify(this.config.signingCredential)}
+      - Gas: ${this.config.gas}
+      `);
+
     if (asset.ontology === undefined) {
       throw new OntologyError(fnTag);
     }
 
+    this.log.debug(`${fnTag}, getting interactionList...`);
     const interactions = this.interactionList(asset.ontology);
 
+    this.log.debug(`${fnTag}, invoking contract...`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
       keychainId: this.config.keychainId,
@@ -89,9 +109,12 @@ export class BesuBridge implements NetworkBridge {
       gas: this.config.gas,
     })) as BesuResponse;
 
+    this.log.debug(`${fnTag}, was response successfull?`);
     if (!response.success) {
+      this.log.debug(`${fnTag}, response was not successfull`);
       throw new TransactionError(fnTag);
     }
+    this.log.debug(`${fnTag}, response was successfull`);
 
     return {
       transactionId: response.out.transactionReceipt.transactionHash ?? "",
