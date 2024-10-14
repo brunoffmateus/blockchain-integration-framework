@@ -89,10 +89,8 @@ export class BesuBridge implements NetworkBridge {
       throw new OntologyError(fnTag);
     }
 
-    this.log.debug(`${fnTag}, getting interactionList...`);
     const interactions = this.interactionList(asset.ontology);
 
-    this.log.debug(`${fnTag}, invoking contract...`);
     const response = (await this.connector.invokeContract({
       contractName: this.config.contractName,
       keychainId: this.config.keychainId,
@@ -109,12 +107,9 @@ export class BesuBridge implements NetworkBridge {
       gas: this.config.gas,
     })) as BesuResponse;
 
-    this.log.debug(`${fnTag}, was response successfull?`);
     if (!response.success) {
-      this.log.debug(`${fnTag}, response was not successfull`);
       throw new TransactionError(fnTag);
     }
-    this.log.debug(`${fnTag}, response was successfull`);
 
     return {
       transactionId: response.out.transactionReceipt.transactionHash ?? "",

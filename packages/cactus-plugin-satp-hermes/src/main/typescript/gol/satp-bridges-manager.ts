@@ -60,7 +60,6 @@ export class SATPBridgesManager {
         default:
           throw new Error(`Unsupported network: ${bridgeConfig.network}`);
       }
-
       this.log.debug(`Bridge type: ${bridge.constructor.name}`);
 
       const config: SATPBridgeConfig = {

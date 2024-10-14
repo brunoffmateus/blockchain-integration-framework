@@ -116,41 +116,43 @@ export class SATPGatewayRunner implements ITestLedger {
   }
 
   public async getServerHost(): Promise<string> {
-    const containerInfo = await this.getContainerInfo();
-    const hostPort = await Containers.getPublicPort(
-      this.serverPort,
-      containerInfo,
-    );
+    const hostPort = this.getHostPort(this.serverPort);
+    this.log.debug(`getServerHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
 
   public async getClientHost(): Promise<string> {
-    const containerInfo = await this.getContainerInfo();
-    const hostPort = await Containers.getPublicPort(
-      this.clientPort,
-      containerInfo,
-    );
+    const hostPort = this.getHostPort(this.clientPort);
+    this.log.debug(`getClientHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
 
   public async getApiHost(): Promise<string> {
-    const containerInfo = await this.getContainerInfo();
-    const hostPort = await Containers.getPublicPort(
-      this.apiPort,
-      containerInfo,
-    );
+    const hostPort = this.getHostPort(this.apiPort);
     this.log.debug(`getApiHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
-  public async getApiHostPort(): Promise<number> {
-    const containerInfo = await this.getContainerInfo();
-    return await Containers.getPublicPort(this.apiPort, containerInfo);
+
+  public async getHostPort(configuredPort: number): Promise<number> {
+    if (this.container) {
+      const containerInfo = await this.getContainerInfo();
+      if (containerInfo.HostConfig.NetworkMode === "host") {
+        // When using host network mode, return the configured port
+        return configuredPort;
+      } else {
+        // For other network modes, use the existing logic
+        return await Containers.getPublicPort(configuredPort, containerInfo);
+      }
+    } else {
+      throw new Error("Container not started");
+    }
   }
 
   private createDockerHostConfig(): Docker.HostConfig {
     const hostConfig: Docker.HostConfig = {
       PublishAllPorts: true,
       Binds: [],
+      NetworkMode: "host",
     };
 
     if (this.configFile) {
@@ -185,6 +187,7 @@ export class SATPGatewayRunner implements ITestLedger {
     }
     const docker = new Docker();
 
+    omitPull = true;
     if (!omitPull) {
       this.log.debug(`Pulling container image ${imageFqn} ...`);
       await Containers.pullImage(imageFqn, {}, "DEBUG");

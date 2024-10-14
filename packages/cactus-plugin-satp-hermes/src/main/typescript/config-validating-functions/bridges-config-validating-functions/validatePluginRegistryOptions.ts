@@ -4,7 +4,7 @@ import { PluginRegistry } from "@hyperledger/cactus-core";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import SATPContract from "../../../../test/solidity/generated/satp-erc20.sol/SATPContract.json";
 import SATPWrapperContract from "../../../../solidity/generated/satp-wrapper.sol/SATPWrapperContract.json";
-import { ICactusPlugin } from "@hyperledger/cactus-core-api";
+// import Web3 from "web3";
 
 export interface KeychainBackendEntry {
   keychainEntry: string;
@@ -102,8 +102,8 @@ export function createPluginRegistry(
     return new PluginRegistry();
   }
 
-  const plugins: ICactusPlugin[] = [];
-  pluginRegistryOptions.plugins.forEach((pluginJSON) => {
+  const plugins: PluginKeychainMemory[] = [];
+  pluginRegistryOptions.plugins.forEach(async (pluginJSON) => {
     const entryValuesArray: KeyValuePair[] = [];
     pluginJSON.backend?.forEach((entry) => {
       entryValuesArray.push([entry.keychainEntry, entry.keychainEntryValue]);
@@ -125,16 +125,49 @@ export function createPluginRegistry(
       console.log(
         `- setting erc20TokenContract: ${pluginJSON.erc20TokenContract}`,
       );
-      newPluginKeychainMemory.set(
+      // // forge compiler outputs a different JSON object than the one we want
+      // const erc20TokenContractObject = {
+      //   contactName: pluginJSON.erc20TokenContract,
+      //   abi: SATPContract.abi,
+      //   bytecode: Web3.utils.utf8ToHex(SATPContract.bytecode.object),
+      // };
+      // newPluginKeychainMemory.set(
+      //   pluginJSON.erc20TokenContract,
+      //   JSON.stringify(erc20TokenContractObject),
+      // );
+
+      await newPluginKeychainMemory.set(
         pluginJSON.erc20TokenContract,
         JSON.stringify(SATPContract),
       );
+
+      // const contractStr = JSON.stringify(SATPContract);
+      // const contractJSON = JSON.parse(contractStr);
+      // const networkInfo = { address: contractAddress }; // in besuOptions
+      // const networkId = await this.connector.web3.eth.net.getId(); // is it possible to add this in BesuBridge???
+      // const network = { [networkId]: networkInfo };
+      // contractJSON.networks = network; // with this we won't enter the if - i think
+
+      // await newPluginKeychainMemory.set(
+      //   pluginJSON.erc20TokenContract,
+      //   JSON.stringify(contractJSON),
+      // );
     }
     if (pluginJSON.contractNameWrapper) {
       console.log(
         `- setting contractNameWrapper: ${pluginJSON.contractNameWrapper}`,
       );
-      newPluginKeychainMemory.set(
+      // // forge compiler outputs a different JSON object than the one we want
+      // const wrapperContractObject = {
+      //   contactName: pluginJSON.contractNameWrapper,
+      //   abi: SATPWrapperContract.abi,
+      //   bytecode: Web3.utils.utf8ToHex(SATPWrapperContract.bytecode.object),
+      // };
+      // newPluginKeychainMemory.set(
+      //   pluginJSON.contractNameWrapper,
+      //   JSON.stringify(wrapperContractObject),
+      // );
+      await newPluginKeychainMemory.set(
         pluginJSON.contractNameWrapper,
         JSON.stringify(SATPWrapperContract),
       );

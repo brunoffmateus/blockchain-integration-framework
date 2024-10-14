@@ -23,11 +23,6 @@ export class SATPBridgeManager implements BridgeManager {
   public async wrapAsset(asset: Asset): Promise<string> {
     const fnTag = `${this.className}#wrap()`;
 
-    this.log.debug(
-      `${fnTag}, typeof this.config.network: ${this.config.network.constructor.name}`,
-    );
-
-    this.log.debug(`${fnTag}, await this.config.network.wrapAsset(asset)...`);
     const response = await this.config.network.wrapAsset(asset);
 
     if (response.transactionId == undefined) {

@@ -773,10 +773,10 @@ beforeAll(async () => {
   {
     //setup besu ledger
     rpcApiHttpHost = await besuLedger.getRpcApiHttpHost();
-    rpcApiHttpHost = rpcApiHttpHost.replace("127.0.0.1", lanIp);
+    // rpcApiHttpHost = rpcApiHttpHost.replace("127.0.0.1", lanIp);
 
     rpcApiWsHost = await besuLedger.getRpcApiWsHost();
-    rpcApiWsHost = rpcApiWsHost.replace("127.0.0.1", lanIp);
+    // rpcApiWsHost = rpcApiWsHost.replace("127.0.0.1", lanIp);
 
     console.log("test - rpcApiHttpHost:");
     console.log(rpcApiHttpHost);
@@ -792,9 +792,6 @@ beforeAll(async () => {
     besuKeyPair = {
       privateKey: besuLedger.getGenesisAccountPrivKey(),
     };
-
-    erc20TokenContract = "SATPContract";
-    contractNameWrapper = "SATPWrapperContract";
 
     besuOptionsKeychainEntryValue = besuKeyPair.privateKey;
     besuOptionsKeychainEntryKey = uuidv4();
@@ -818,6 +815,9 @@ beforeAll(async () => {
       ]),
       logLevel,
     });
+
+    erc20TokenContract = "SATPContract";
+    contractNameWrapper = "SATPWrapperContract";
 
     keychainPlugin1.set(erc20TokenContract, JSON.stringify(SATPContract));
     keychainPlugin2.set(
@@ -1166,9 +1166,8 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
 
     // gatewayRunner setup:
     const gatewayRunnerOptions: ISATPGatewayRunnerConstructorOptions = {
-      containerImageVersion: "08-10",
-      containerImageName:
-        "ghcr.io/brunoffmateus/cactus-plugin-satp-hermes-satp-hermes-gateway",
+      containerImageVersion: "latest",
+      containerImageName: "cactus-plugin-satp-hermes-satp-hermes-gateway",
       logLevel,
       emitContainerLogs: true,
       configFile,
@@ -1204,7 +1203,7 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
       destinyAsset,
     };
 
-    const port = await gatewayRunner.getApiHostPort();
+    const port = await gatewayRunner.getHostPort(DEFAULT_PORT_GATEWAY_API);
 
     console.log("address:");
     console.log(address);
@@ -1242,7 +1241,10 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     });
     expect(responseBalanceOwner).toBeTruthy();
     expect(responseBalanceOwner.success).toBeTruthy();
-    expect(responseBalanceOwner.callOutput).toBe("0");
+    console.log(
+      `Balance Besu Owner Account: ${responseBalanceOwner.callOutput}`, //prints 100
+    );
+    expect(responseBalanceOwner.callOutput).toBe("0"); //receives 100
     log.info("Amount was transfer correctly from the Owner account");
 
     const responseBalanceBridge = await testing_connector.invokeContract({
@@ -1260,6 +1262,9 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     });
     expect(responseBalanceBridge).toBeTruthy();
     expect(responseBalanceBridge.success).toBeTruthy();
+    console.log(
+      `Balance Besu Bridge Account: ${responseBalanceBridge.callOutput}`,
+    );
     expect(responseBalanceBridge.callOutput).toBe("0");
     log.info("Amount was transfer correctly to the Wrapper account");
 
@@ -1277,6 +1282,9 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     expect(responseBalance1.status).toBeLessThan(300);
     expect(responseBalance1.data).not.toBeUndefined();
     expect(responseBalance1.data.functionOutput).toBe("0");
+    console.log(
+      `Balance Fabric Bridge Account: ${responseBalance1.data.functionOutput}`,
+    );
     log.info("Amount was transfer correctly from the Bridge account");
 
     const responseBalance2 = await apiClient.runTransactionV1({
@@ -1292,6 +1300,9 @@ describe("SATPGateway sending a token from Besu to Fabric", () => {
     expect(responseBalance2.status).toBeLessThan(300);
     expect(responseBalance2.data).not.toBeUndefined();
     expect(responseBalance2.data.functionOutput).toBe("1");
+    console.log(
+      `Balance Fabric Owner Account: ${responseBalance2.data.functionOutput}`,
+    );
     log.info("Amount was transfer correctly to the Owner account");
   });
 });
