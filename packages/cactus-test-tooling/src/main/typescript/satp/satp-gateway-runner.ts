@@ -25,7 +25,7 @@ export interface ISATPGatewayRunnerConstructorOptions {
 }
 
 export const SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS = Object.freeze({
-  containerImageVersion: "03-10",
+  containerImageVersion: "16-10",
   containerImageName:
     "ghcr.io/brunoffmateus/cactus-plugin-satp-hermes-satp-hermes-gateway",
   serverPort: 3010,
@@ -33,7 +33,6 @@ export const SATP_GATEWAY_RUNNER_DEFAULT_OPTIONS = Object.freeze({
   apiPort: 4010,
 });
 
-// TODO - log the image and version
 export const SATP_GATEWAY_RUNNER_OPTIONS_JOI_SCHEMA: Joi.Schema =
   Joi.object().keys({
     containerImageVersion: Joi.string().min(1).required(),
@@ -116,19 +115,19 @@ export class SATPGatewayRunner implements ITestLedger {
   }
 
   public async getServerHost(): Promise<string> {
-    const hostPort = this.getHostPort(this.serverPort);
+    const hostPort = await this.getHostPort(this.serverPort);
     this.log.debug(`getServerHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
 
   public async getClientHost(): Promise<string> {
-    const hostPort = this.getHostPort(this.clientPort);
+    const hostPort = await this.getHostPort(this.clientPort);
     this.log.debug(`getClientHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
 
   public async getApiHost(): Promise<string> {
-    const hostPort = this.getHostPort(this.apiPort);
+    const hostPort = await this.getHostPort(this.apiPort);
     this.log.debug(`getApiHost: ${hostPort}`);
     return `http://localhost:${hostPort}`;
   }
@@ -187,13 +186,13 @@ export class SATPGatewayRunner implements ITestLedger {
     }
     const docker = new Docker();
 
-    omitPull = true;
     if (!omitPull) {
       this.log.debug(`Pulling container image ${imageFqn} ...`);
       await Containers.pullImage(imageFqn, {}, "DEBUG");
       this.log.debug(`Pulled ${imageFqn} OK. Starting container...`);
     }
 
+    this.log.debug(`Starting container with image: ${imageFqn}...`);
     return new Promise<Container>((resolve, reject) => {
       const hostConfig: Docker.HostConfig = this.createDockerHostConfig();
 
@@ -203,19 +202,9 @@ export class SATPGatewayRunner implements ITestLedger {
         [],
         {
           ExposedPorts: {
-            "3010/tcp": {}, // SERVER_PORT
-            "3011/tcp": {}, // CLIENT_PORT
-            "4010/tcp": {}, // API_PORT
-          },
-          Healthcheck: {
-            Test: [
-              "CMD-SHELL",
-              `curl -f http://localhost:4010/api/v1/@hyperledger/cactus-plugin-satp-hermes/healthcheck`,
-            ],
-            Interval: 5000000000, // 5 seconds
-            Timeout: 1000000000, // 1 second
-            Retries: 5,
-            StartPeriod: 1000000000, // 1 second
+            [`${this.serverPort}/tcp`]: {}, // SERVER_PORT
+            [`${this.clientPort}/tcp`]: {}, // CLIENT_PORT
+            [`${this.apiPort}/tcp`]: {}, // API_PORT
           },
           HostConfig: hostConfig,
         },

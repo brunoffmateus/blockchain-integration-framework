@@ -18,8 +18,9 @@ describe(testCase, () => {
   let gatewayRunner: SATPGatewayRunner;
 
   const gatewayRunnerOptions: ISATPGatewayRunnerConstructorOptions = {
-    containerImageVersion: "latest",
-    containerImageName: "cactus-plugin-satp-hermes-satp-hermes-gateway",
+    containerImageVersion: "18-10",
+    containerImageName:
+      "ghcr.io/brunoffmateus/cactus-plugin-satp-hermes-satp-hermes-gateway",
     serverPort: DEFAULT_PORT_GATEWAY_SERVER,
     clientPort: DEFAULT_PORT_GATEWAY_CLIENT,
     apiPort: DEFAULT_PORT_GATEWAY_API,

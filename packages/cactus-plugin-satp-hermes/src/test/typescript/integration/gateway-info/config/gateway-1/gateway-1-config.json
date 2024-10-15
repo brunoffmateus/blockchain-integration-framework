@@ -1,0 +1,106 @@
+{
+  "gid": {
+    "id": "mockID-1",
+    "name": "CustomGateway",
+    "version": [
+      {
+        "Core": "v02",
+        "Architecture": "v02",
+        "Crash": "v02"
+      }
+    ],
+    "supportedDLTs": [
+      "BesuSATPGateway"
+    ],
+    "proofID": "mockProofID10",
+    "address": "http://localhost",
+    "gatewayClientPort": 3011,
+    "gatewayServerPort": 3010,
+    "gatewayOpenAPIPort": 4010
+  },
+  "logLevel": "DEBUG",
+  "keyPair": {
+    "privateKey": "9a60a113b7114e91fef4b8969aed5ddcbbf49046331a4703ab32a466b628fb97",
+    "publicKey": "031c60b9fdefa8b69359e44effd2f82e7f328468ac5555a44d5dbadac0b40d5ef1"
+  },
+  "counterPartyGateways": [
+    {
+      "id": "mockID-2",
+      "name": "CustomGateway",
+      "pubKey": "02e746800323df736edd14bd4b5c908bada8fe72d63d904fe406ef5e6a72c01e4b",
+      "version": [
+        {
+          "Core": "v02",
+          "Architecture": "v02",
+          "Crash": "v02"
+        }
+      ],
+      "supportedDLTs": [
+        "FabricSATPGateway"
+      ],
+      "proofID": "mockProofID11",
+      "address": "http://localhost",
+      "gatewayServerPort": 3110,
+      "gatewayClientPort": 3111,
+      "gatewayOpenAPIPort": 4110
+    }
+  ],
+  "environment": "development",
+  "enableOpenAPI": true,
+  "bridgesConfig": [
+    {
+      "network": "BesuSATPGateway",
+      "keychainId": "c2cd3ef5-0f9e-4136-ab6a-541141de8d60",
+      "signingCredential": {
+        "ethAccount": "0x0775Ef84Fc9351d7C18155c069aC10840C21efb6",
+        "secret": "0x934c9ec0e322272a0885f29afa4202e7fb956ffaeb3a06b86cfc17860af49c7e",
+        "type": "PRIVATE_KEY_HEX"
+      },
+      "contractName": "SATPWrapperContract",
+      "contractAddress": "0xC895D8D65204c73E168DfFC00B9AB2AdE9CBb650",
+      "gas": 999999999999999,
+      "options": {
+        "instanceId": "e7812f2c-45d7-40d3-8964-79ec5bf11c46",
+        "rpcApiHttpHost": "http://127.0.0.1:32769",
+        "rpcApiWsHost": "ws://127.0.0.1:32770",
+        "pluginRegistryOptions": {
+          "plugins": [
+            {
+              "instanceId": "fde7e643-df5c-4b81-8e6f-fc9f4d2ef68e",
+              "keychainId": "16a1cd42-f2f6-4e2a-b0f2-d403716d17fe",
+              "logLevel": "DEBUG",
+              "backend": [
+                {
+                  "keychainEntry": "016b1d45-48fe-4aa0-a020-56ec8f880cbf",
+                  "keychainEntryValue": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+                }
+              ],
+              "erc20TokenContract": "SATPContract"
+            },
+            {
+              "instanceId": "feb8dd53-5345-4961-91b7-a036ead24d83",
+              "keychainId": "c2cd3ef5-0f9e-4136-ab6a-541141de8d60",
+              "logLevel": "DEBUG",
+              "backend": [
+                {
+                  "keychainEntry": "016b1d45-48fe-4aa0-a020-56ec8f880cbf",
+                  "keychainEntryValue": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+                }
+              ],
+              "contractNameWrapper": "SATPWrapperContract"
+            }
+          ]
+        },
+        "logLevel": "DEBUG"
+      },
+      "bungeeOptions": {
+        "keyPair": {
+          "privateKey": "6cb7d058652bd5902009f4b37a0a0275a6bed7d12c418bccf4ce42f1255be47e",
+          "publicKey": "020b3d47ec336fd7c7599f1b7b0ba9c23f63862e34485375780872d46e86ae6b06"
+        },
+        "instanceId": "38ed2db5-7fcd-45e5-b9ee-311e3c10636a",
+        "logLevel": "DEBUG"
+      }
+    }
+  ]
+}

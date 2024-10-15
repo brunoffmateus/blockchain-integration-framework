@@ -71,15 +71,6 @@ export function validateSatpBridgesConfig(opts: {
         fabricAssets: config.fabricAssets,
       };
 
-      console.log("pushing fabricConfig:");
-      console.log(`- network: ${fabricConfig.network}`);
-      console.log(
-        `- signingCredential: ${fabricConfig.signingCredential.keychainId} ${fabricConfig.signingCredential.keychainRef}`,
-      );
-      console.log(`- channelName: ${fabricConfig.channelName}`);
-      console.log(`- contractName: ${fabricConfig.contractName}`);
-      console.log(`- fabricAssets: ${fabricConfig.fabricAssets}`);
-
       bridgesConfigParsed.push(fabricConfig);
     } else if (isBesuConfigJSON(config)) {
       console.log("Validating BesuConfig BungeeOptions...");
@@ -100,15 +91,6 @@ export function validateSatpBridgesConfig(opts: {
         bungeeOptions: bungeeOptions,
         besuAssets: config.besuAssets,
       };
-
-      console.log("pushing besuConfig:");
-      console.log(`- network: ${besuConfig.network}`);
-      console.log(`- keychainId: ${besuConfig.keychainId}`);
-      console.log(`- signingCredential: ${besuConfig.signingCredential.type}`);
-      console.log(`- contractName: ${besuConfig.contractName}`);
-      console.log(`- contractAddress: ${besuConfig.contractAddress}`);
-      console.log(`- gas: ${besuConfig.gas}`);
-      console.log(`- besuAssets: ${besuConfig.besuAssets}`);
 
       bridgesConfigParsed.push(besuConfig);
     }
