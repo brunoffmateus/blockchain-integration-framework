@@ -1,10 +1,17 @@
-import { Logger } from "@hyperledger/cactus-common";
+import { Logger, LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   AdminApi,
   TransactionApi,
 } from "../../main/typescript/generated/gateway-client/typescript-axios/api";
 import { Configuration } from "../../main/typescript/generated/gateway-client/typescript-axios";
-//import { Api } from "@bufbuild/protobuf";
+import fs from "fs-extra";
+import path from "path";
+import { expect } from "@jest/globals";
+import { GatewayIdentity } from "../../main/typescript/core/types";
+
+export { BesuTestEnvironment } from "./environments/besu-test-environment";
+export { EthereumTestEnvironment } from "./environments/ethereum-test-environment";
+export { FabricTestEnvironment } from "./environments/fabric-test-environment";
 
 export function createClient(
   type: "AdminApi",
@@ -35,4 +42,62 @@ export function createClient(
   } else {
     throw new Error("Invalid api type");
   }
+}
+
+// Sets up the configuration and logging files for the SATP Gateway
+export function setupGatewayDockerFiles(
+  gatewayIdentity: GatewayIdentity,
+  logLevel: LogLevelDesc,
+  counterPartyGateways: GatewayIdentity[],
+  bridgesConfig: Record<string, unknown>[],
+  fileContext?: string,
+  gatewayKeyPair?: {
+    privateKey: string;
+    publicKey: string;
+  },
+): {
+  configFile: string;
+  outputLogFile: string;
+  errorLogFile: string;
+} {
+  const jsonObject = {
+    gid: gatewayIdentity,
+    logLevel,
+    counterPartyGateways,
+    environment: "development",
+    enableOpenAPI: true,
+    bridgesConfig,
+    gatewayKeyPair,
+  };
+  // Create a timestamp for the files if no context provided
+  const context =
+    fileContext ||
+    new Date().toISOString().replace(/:/g, "-").replace(/\..+/, "");
+
+  // creates the configuration file for the gateway setup
+  const configDir = path.join(__dirname, `gateway-info/config`);
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+  const configFile = path.join(configDir, `gateway-config-${context}.json`);
+  fs.writeFileSync(configFile, JSON.stringify(jsonObject, null, 2));
+  expect(fs.existsSync(configFile)).toBe(true);
+
+  // creates the files for logging the output and error:
+  const logDir = path.join(__dirname, `gateway-info/logs`);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  const outputLogFile = path.join(logDir, `gateway-logs-output-${context}.log`);
+  const errorLogFile = path.join(logDir, `gateway-logs-error-${context}.log`);
+  fs.writeFileSync(outputLogFile, "");
+  fs.writeFileSync(errorLogFile, "");
+  expect(fs.existsSync(outputLogFile)).toBe(true);
+  expect(fs.existsSync(errorLogFile)).toBe(true);
+
+  return {
+    configFile,
+    outputLogFile,
+    errorLogFile,
+  };
 }
