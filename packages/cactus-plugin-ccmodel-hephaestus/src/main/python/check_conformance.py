@@ -11,13 +11,6 @@ import json
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 from pm4py.objects.petri_net.utils import petri_utils
 
-#chage path if necessary
-path = os.getcwd()
-csv_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/csv"
-csv_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/csv"
-json_dir_src = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/test/json"
-json_dir_lib = path + "/packages/cactus-plugin-ccmodel-hephaestus/dist/lib/test/json"
-
 ##################################################################
 
 def import_csv_original(file_path):
@@ -101,17 +94,15 @@ def unserialize_model(model):
         (source, target) = get_from_to_arc(arc)
         
         # source is a place, target is a transition
-        if get_place(net.places, source) != None: 
+        if get_place(net.places, source) != None:
             place = get_place(net.places, source)
             transition = get_transition(net.transitions, target)
             petri_utils.add_arc_from_to(place, transition, net)
-        
         # target is a place, source is a transition
         elif get_place(net.places, target) != None:
             transition = get_transition(net.transitions, source)
             place = get_place(net.places, target)
             petri_utils.add_arc_from_to(transition, place, net)
-        
         # target and source are both a transition or a place - cannot happen
         else:
             print("arcs cannot have the same type in source and target")
@@ -160,13 +151,13 @@ def unserialize_and_check_conformance(ccLog):
     if len(non_conforming_activities) != 0:
         print("NON-CONFORMANCE:")
         print(non_conforming_activities)
-        print(file)
+        print(os.path.basename(log_file_path))
         return
 
     if len(all_activities) == len(conforming_activities):
         print("FULL CONFORMANCE:")
         print(conforming_activities)
-        print(file)
+        print(os.path.basename(log_file_path))
         return
 
     # If there were no skips in the case, then all the conforming activities 
@@ -180,45 +171,36 @@ def unserialize_and_check_conformance(ccLog):
     if ignore_skips == True:
         print("PARTIAL CONFORMANCE:")
         print(conforming_activities)
-        print(file)
+        print(os.path.basename(log_file_path))
     else:
         print("SKIPPED ACTIVITY:")
         print(skipped_activities)
-        print(file)
+        print(os.path.basename(log_file_path))
 
 ##################################################################
 
 def main():
-    file_csv = file + ".csv"
-    file_json = file + ".json"
-
-    file_path_csv_src = os.path.join(csv_dir_src, file_csv)
-    file_path_json_src = os.path.join(json_dir_src, file_json)
-    file_path_csv_lib = os.path.join(csv_dir_lib, file_csv)
-    file_path_json_lib = os.path.join(json_dir_lib, file_json)
+    if not os.path.exists(log_file_path):
+        print(f"File '{log_file_path}' does not exist")
+        exit(1)
+        
+    file_extension = os.path.splitext(log_file_path)[1].lower()
     
-    if (os.path.exists(file_path_json_src)):
-        ccLog = import_json_original(file_path_json_src)
+    if file_extension == '.csv':
+        ccLog = import_csv_original(log_file_path)
         unserialize_and_check_conformance(ccLog)
-    elif (os.path.exists(file_path_csv_src)):
-        ccLog = import_csv_original(file_path_csv_src)
-        unserialize_and_check_conformance(ccLog)
-    elif (os.path.exists(file_path_json_lib)):
-        ccLog = import_json_original(file_path_json_lib)
-        unserialize_and_check_conformance(ccLog)
-    elif (os.path.exists(file_path_csv_lib)):
-        ccLog = import_csv_original(file_path_csv_lib)
+    elif file_extension == '.json':
+        ccLog = import_json_original(log_file_path)
         unserialize_and_check_conformance(ccLog)
     else:
-        print(f"File '{file}' does not exist")
-        print(file_path_json)
+        print(f"Unsupported file type: {file_extension}")
         exit(1)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python3 check_conformance.py file_with_new_logs serialized_ccmodel")
+        print("Usage: python3 check_conformance.py path_to_log_file serialized_ccmodel")
         exit(1)
     
-    file = sys.argv[1]
+    log_file_path = sys.argv[1]
     serialized_ccmodel = sys.argv[2]
     main()
