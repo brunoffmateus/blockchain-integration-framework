@@ -50,6 +50,7 @@ import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
+import { ProcessMiningAlgorithm } from "../../../main/typescript/ccmodel-adapter";
 
 const log: Logger = LoggerProvider.getOrCreate({
   label: "cross-chain-model-serialization.test",
@@ -262,7 +263,9 @@ describe("Test cross-chain model serialization", () => {
 
     expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
-    const model = await hephaestus.createModel();
+    const model = await hephaestus.createModel(
+      ProcessMiningAlgorithm.Inductive,
+    );
 
     expect(model).toBeTruthy();
     expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet))
