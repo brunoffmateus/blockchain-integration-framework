@@ -27,6 +27,20 @@ def import_json_original(file_path):
 
 ##################################################################
 
+# feed the file
+# pnml_file = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/main/typescript/pm4py-adapter/process_models/pnml/petri_output.pnml"
+
+def unserialize_and_check_conformance_file(ccLog):
+    net, initial_marking, final_marking = pm4py.read_pnml(pnml_file)
+    # pm4py.view_petri_net(net, initial_marking, final_marking)
+
+    # check  conformance:
+    print("\n----diagnostics:")
+    diagnostics = pm4py.conformance_diagnostics_alignments(ccLog, net, initial_marking, final_marking)
+    print(diagnostics)
+
+##################################################################
+
 def divide_model(model):
     split_model = model.split(';')
     return split_model[0], split_model[1], split_model[2], split_model[3], split_model[4]

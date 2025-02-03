@@ -28,7 +28,11 @@ import {
   CrossChainEvent,
   CrossChainEventLog,
 } from "./models/cross-chain-event";
-import { createModelPM4PY, checkConformancePM4PY } from "./ccmodel-adapter";
+import {
+  createModelPM4PY,
+  checkConformancePM4PY,
+  ProcessMiningAlgorithm,
+} from "./ccmodel-adapter";
 
 export interface IWebAppOptions {
   port: number;
@@ -84,7 +88,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private readonly targetLedger: LedgerType;
   private startMonitoring: number | null = null;
   private isModeling: boolean;
-  private ccLogsDir: string;
+  private readonly ccLogsDir: string;
+  private miningAlgorithm: ProcessMiningAlgorithm;
 
   constructor(public readonly options: IPluginCcModelHephaestusOptions) {
     const startTime = new Date();
@@ -121,6 +126,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     //todo should allow different models to be instantiated
     this.crossChainModel = new CrossChainModel();
+    this.miningAlgorithm = ProcessMiningAlgorithm.Alpha;
 
     this.isModeling = true;
 
@@ -436,7 +442,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
   private async updateCcStateAndCheckConformance(
     ccEvent: CrossChainEvent,
-    model: string,
+    ccModel: string,
   ): Promise<void> {
     const assetState: AssetState = {
       assetID: ccEvent.parameters[0],
@@ -445,7 +451,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       lastStateUpdate: new Date(),
     };
     const ledgerHasMethod = this.addAssetToCcState(ccEvent, assetState);
-    await this.checkConformance(model, ledgerHasMethod);
+    await this.checkConformance(ccModel, ledgerHasMethod);
   }
 
   private addAssetToCcState(
@@ -779,10 +785,19 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     });
   }
 
-  public async createModel(): Promise<string> {
+  private defineProcessMiningAlgorithm(
+    miningAlgorithm: ProcessMiningAlgorithm,
+  ): void {
+    this.miningAlgorithm = miningAlgorithm;
+  }
+
+  public async createModel(
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Alpha,
+  ): Promise<string> {
     const logPath = await this.persistCrossChainLogJson();
     await this.aggregateCcTx();
-    const petriNet = createModelPM4PY(logPath);
+    this.defineProcessMiningAlgorithm(miningAlgorithm);
+    const petriNet = createModelPM4PY(logPath, this.miningAlgorithm);
     this.ccModel.setType(CrossChainModelType.PetriNet);
     this.saveModel(CrossChainModelType.PetriNet, petriNet);
     this.setLedgerMethods();
