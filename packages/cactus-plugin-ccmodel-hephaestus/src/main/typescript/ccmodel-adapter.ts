@@ -2,11 +2,36 @@ import { execSync } from "child_process";
 
 import path from "path";
 
-export function createModelPM4PY(logPath: string): string {
+export enum ProcessMiningAlgorithm {
+  Alpha,
+  Heuristics,
+  Inductive,
+}
+
+export function createModelPM4PY(
+  logPath: string,
+  miningAlgorithm: ProcessMiningAlgorithm,
+): string {
   const createModelScript = path.join(__dirname, "../python/create_model.py");
-  const command = `python3 ${createModelScript} ${logPath}`;
+  let command = `python3 ${createModelScript} ${logPath}`;
 
   try {
+    switch (miningAlgorithm) {
+      case ProcessMiningAlgorithm.Alpha:
+        command += " alpha";
+        break;
+      case ProcessMiningAlgorithm.Heuristics:
+        command += " heuristics";
+        break;
+      case ProcessMiningAlgorithm.Inductive:
+        command += " inductive";
+        break;
+      default:
+        throw new Error("Unsupported mining algorithm");
+    }
+
+    console.log("COMMAND: " + command);
+
     const startTime = new Date();
     const serializedCCModel = execSync(command).toString("utf-8");
     const finalTime = new Date();
