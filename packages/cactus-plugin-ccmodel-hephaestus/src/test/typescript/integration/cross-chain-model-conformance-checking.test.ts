@@ -49,7 +49,6 @@ import { Account } from "web3-core";
 import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.json";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
-import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
 import { ProcessMiningAlgorithm } from "../../../main/typescript/ccmodel-adapter";
 
 const log: Logger = LoggerProvider.getOrCreate({
@@ -265,15 +264,16 @@ describe("Test cross-chain model serialization and conformance checking", () => 
     expect(hephaestus.numberEventsLog).toEqual(totalTxs);
 
     // works
-    // const model = await hephaestus.createModel(ProcessMiningAlgorithm.Inductive);
+    // const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
+    const miningAlgorithm = ProcessMiningAlgorithm.Heuristics;
 
     // doesn't work
-    const model = await hephaestus.createModel(ProcessMiningAlgorithm.Alpha);
-    // const model = await hephaestus.createModel(ProcessMiningAlgorithm.Heuristics);
+    // const miningAlgorithm = ProcessMiningAlgorithm.AlphaPlus;
 
+    const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet))
-      .toBeTruthy;
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
+    console.log(hephaestus.getModel(miningAlgorithm));
 
     hephaestus.setIsModeling(false);
   });
