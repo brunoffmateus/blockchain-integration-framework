@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "build": "npm run tsc && npm run postbuild",
-    "postbuild": "copyfiles -u 4 \"src/main/typescript/pm4py-adapter/*.py\" dist/lib/main/typescript/pm4py-adapter",
+    "postbuild": "copyfiles -u 3 \"src/main/python/*.py\" dist/lib/main/python", 
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
     "webpack": "npm-run-all webpack:dev webpack:prod",

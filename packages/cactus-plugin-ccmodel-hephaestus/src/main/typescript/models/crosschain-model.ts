@@ -1,12 +1,13 @@
 import { LedgerType } from "@hyperledger/cactus-core-api";
 import { v4 as uuidv4 } from "uuid";
+import { ProcessMiningAlgorithm } from "../ccmodel-adapter";
 
 export class CrossChainModel {
-  private modelType: CrossChainModelType | undefined;
+  private modelType: ProcessMiningAlgorithm | undefined;
   private crossChainTransactions:
     | Map<string, CrossChainTransactionSchema>
     | undefined;
-  private models = new Map<CrossChainModelType, string>();
+  private models = new Map<ProcessMiningAlgorithm, string>();
   private id: string;
   private lastAggregationDate: Date;
   private crossChainState: Map<
@@ -33,11 +34,11 @@ export class CrossChainModel {
     return this.lastAggregationDate;
   }
 
-  get ccModelType(): CrossChainModelType | undefined {
+  get ccModelType(): ProcessMiningAlgorithm | undefined {
     return this.modelType;
   }
 
-  public setType(modelType: CrossChainModelType): void {
+  public setType(modelType: ProcessMiningAlgorithm): void {
     this.modelType = modelType;
   }
 
@@ -45,11 +46,11 @@ export class CrossChainModel {
     this.lastAggregationDate = date;
   }
 
-  public saveModel(type: CrossChainModelType, model: string): void {
+  public saveModel(type: ProcessMiningAlgorithm, model: string): void {
     this.models.set(type, model);
   }
 
-  public getModel(type: CrossChainModelType): string | undefined {
+  public getModel(type: ProcessMiningAlgorithm): string | undefined {
     if (this.models.has(type)) {
       return this.models.get(type);
     }
@@ -166,11 +167,6 @@ export class CrossChainModel {
     }
     return ccState;
   }
-}
-
-export enum CrossChainModelType {
-  PetriNet,
-  ProcessTree,
 }
 
 export type CrossChainTransactionSchema = {

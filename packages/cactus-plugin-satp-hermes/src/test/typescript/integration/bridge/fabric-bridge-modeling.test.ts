@@ -42,8 +42,8 @@ import { AddressInfo } from "net";
 
 import {
   CcModelHephaestus,
-  CrossChainModelType,
   IPluginCcModelHephaestusOptions,
+  ProcessMiningAlgorithm,
 } from "@hyperledger/cactus-plugin-ccmodel-hephaestus";
 import { LedgerType } from "@hyperledger/cactus-core-api";
 
@@ -891,10 +891,10 @@ describe("Fabric Bridge Test", () => {
   });
 
   it("Should create the Cross-Chain Model and stop bridge modeling", async () => {
-    const model = await hephaestus.createModel();
+    const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
+    const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet))
-      .toBeTruthy;
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
     hephaestus.setIsModeling(false);
   });
 

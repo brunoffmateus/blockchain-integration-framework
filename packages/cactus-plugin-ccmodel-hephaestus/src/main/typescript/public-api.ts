@@ -5,7 +5,7 @@ export {
 } from "./plugin-ccmodel-hephaestus";
 
 export { PluginFactoryWebService } from "./plugin-factory-ccmodel-hephaestus";
-export { CrossChainModelType } from "./models/crosschain-model";
+export { ProcessMiningAlgorithm } from "./ccmodel-adapter";
 
 import { IPluginFactoryOptions } from "@hyperledger/cactus-core-api";
 import { PluginFactoryWebService } from "./plugin-factory-ccmodel-hephaestus";
