@@ -40,7 +40,6 @@ export interface IWebAppOptions {
 }
 import {
   CrossChainModel,
-  CrossChainModelType,
   CrossChainTransactionSchema,
   AssetState,
 } from "./models/crosschain-model";
@@ -69,6 +68,7 @@ export interface IPluginCcModelHephaestusOptions extends ICactusPluginOptions {
   sourceLedger: LedgerType;
   targetLedger: LedgerType;
   ccLogsDir?: string;
+  ccModelDir?: string;
 }
 
 export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
@@ -90,6 +90,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private startMonitoring: number | null = null;
   private isModeling: boolean;
   private readonly ccLogsDir: string;
+  private readonly ccModelDir: string;
   private miningAlgorithm: ProcessMiningAlgorithm;
 
   constructor(public readonly options: IPluginCcModelHephaestusOptions) {
@@ -127,7 +128,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     //todo should allow different models to be instantiated
     this.crossChainModel = new CrossChainModel();
-    this.miningAlgorithm = ProcessMiningAlgorithm.Alpha;
+    this.miningAlgorithm = ProcessMiningAlgorithm.AlphaPlus;
 
     this.isModeling = true;
 
@@ -139,6 +140,13 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     if (!fs.existsSync(this.ccLogsDir)) {
       fs.mkdirSync(path.join(this.ccLogsDir, "csv"), { recursive: true });
       fs.mkdirSync(path.join(this.ccLogsDir, "json"), { recursive: true });
+    }
+
+    this.ccModelDir =
+      options.ccModelDir || path.join(__dirname, "..", "..", "test", "ccModel");
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(this.ccModelDir)) {
+      fs.mkdirSync(this.ccModelDir, { recursive: true });
     }
 
     const finalTime = new Date();
@@ -190,6 +198,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   public setCaseId(id: string): void {
     this.unmodeledEventLog.purgeLogs();
     this.caseID = id;
+  }
+
+  private setProcessMiningAlgorithm(
+    miningAlgorithm: ProcessMiningAlgorithm,
+  ): void {
+    this.miningAlgorithm = miningAlgorithm;
   }
 
   public async onPluginInit(): Promise<unknown> {
@@ -313,8 +327,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
             receipt,
             this.isModeling,
           );
-          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
-
+          const model = this.getModel(this.miningAlgorithm);
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
@@ -364,7 +377,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
             receipt,
             this.isModeling,
           );
-          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
+          const model = this.getModel(this.miningAlgorithm);
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
@@ -413,7 +426,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
             receipt,
             this.isModeling,
           );
-          const model = this.ccModel.getModel(CrossChainModelType.PetriNet);
+          const model = this.getModel(this.miningAlgorithm);
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
@@ -764,13 +777,13 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     }
   }
 
-  // Receives a serialized model and saves it
-  public saveModel(modelType: CrossChainModelType, model: string): void {
-    this.crossChainModel.saveModel(modelType, model);
+  // Receives a model file path and saves it in regards to the ProcessMiningAlgorithm used
+  public saveModel(modelType: ProcessMiningAlgorithm, modelPath: string): void {
+    this.crossChainModel.saveModel(modelType, modelPath);
   }
 
-  // Gets the saved serialized model with the specified CrossChainModelType
-  public getModel(modelType: CrossChainModelType): string | undefined {
+  // Gets the model with the specified ProcessMiningAlgorithm
+  public getModel(modelType: ProcessMiningAlgorithm): string | undefined {
     return this.crossChainModel.getModel(modelType);
   }
 
@@ -786,35 +799,30 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     });
   }
 
-  private defineProcessMiningAlgorithm(
-    miningAlgorithm: ProcessMiningAlgorithm,
-  ): void {
-    this.miningAlgorithm = miningAlgorithm;
-  }
-
   public async createModel(
-    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Alpha,
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.AlphaPlus,
   ): Promise<string> {
     const logPath = await this.persistCrossChainLogJson();
     await this.aggregateCcTx();
-    this.defineProcessMiningAlgorithm(miningAlgorithm);
-    const petriNet = createModelPM4PY(logPath, this.miningAlgorithm);
-    this.ccModel.setType(CrossChainModelType.PetriNet);
-    this.saveModel(CrossChainModelType.PetriNet, petriNet);
+    this.setProcessMiningAlgorithm(miningAlgorithm);
+    const ccModelFile = createModelPM4PY(
+      logPath,
+      this.ccModelDir,
+      this.miningAlgorithm,
+    ).trim();
+    this.ccModel.setType(this.miningAlgorithm);
+    this.saveModel(this.miningAlgorithm, ccModelFile);
     this.setLedgerMethods();
-    return petriNet;
+    return ccModelFile;
   }
 
   // creates a file with unmodeled logs and performs a conformance check
   private async checkConformance(
-    serializedCCModel: string,
+    ccModel: string,
     ledgerHasMethod: boolean,
   ): Promise<string> {
     const logPath = await this.persistUnmodeledEventLog();
-    const conformanceDetails = checkConformancePM4PY(
-      logPath,
-      serializedCCModel,
-    );
+    const conformanceDetails = checkConformancePM4PY(logPath, ccModel);
     return this.filterLogsByConformance(conformanceDetails, ledgerHasMethod);
   }
 
@@ -852,7 +860,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
         this.crossChainLog.addCrossChainEvent(event);
       });
       this.unmodeledEventLog.purgeLogs();
-      this.createModel();
+      this.createModel(this.miningAlgorithm);
     }
     console.log(details);
     return diagnosis;
