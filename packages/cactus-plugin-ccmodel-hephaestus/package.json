@@ -1,6 +1,6 @@
 {
   "name": "@hyperledger/cactus-plugin-ccmodel-hephaestus",
-  "version": "2.1.0",
+  "version": "2.0.0-rc.7",
   "description": "A web service plugin that provides management capabilities on cross-chain transactions visualization.",
   "keywords": [
     "Hyperledger",
@@ -9,19 +9,19 @@
     "Blockchain",
     "Distributed Ledger Technology"
   ],
-  "homepage": "https://github.com/hyperledger/cacti#readme",
+  "homepage": "https://github.com/hyperledger/cactus#readme",
   "bugs": {
-    "url": "https://github.com/hyperledger/cacti/issues"
+    "url": "https://github.com/hyperledger/cactus/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hyperledger/cacti.git"
+    "url": "git+https://github.com/hyperledger/cactus.git"
   },
   "license": "Apache-2.0",
   "author": {
     "name": "Hyperledger Cactus Contributors",
-    "email": "cacti@lists.hyperledger.org",
-    "url": "https://www.hyperledger.org/use/cacti"
+    "email": "cactus@lists.hyperledger.org",
+    "url": "https://www.hyperledger.org/use/cactus"
   },
   "contributors": [
     {
@@ -51,7 +51,7 @@
   ],
   "scripts": {
     "build": "npm run tsc && npm run postbuild",
-    "postbuild": "copyfiles -u 3 \"src/main/python/*.py\" dist/lib/main/python", 
+    "postbuild": "copyfiles -u 3 \"src/main/python/*.py\" dist/lib/main/python",
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
     "webpack": "npm-run-all webpack:dev webpack:prod",
@@ -63,22 +63,22 @@
     "webpack:prod:web": "webpack --env=prod --target=web --config ../../webpack.config.js"
   },
   "dependencies": {
-    "@hyperledger/cactus-common": "2.1.0",
-    "@hyperledger/cactus-core": "2.1.0",
-    "@hyperledger/cactus-core-api": "2.1.0",
-    "@hyperledger/cactus-plugin-ledger-connector-besu": "2.1.0",
-    "@hyperledger/cactus-plugin-ledger-connector-ethereum": "2.1.0",
-    "@hyperledger/cactus-plugin-ledger-connector-fabric": "2.1.0",
-    "express": "4.21.2",
+    "@hyperledger/cactus-common": "2.0.0-rc.7",
+    "@hyperledger/cactus-core": "2.0.0-rc.7",
+    "@hyperledger/cactus-core-api": "2.0.0-rc.7",
+    "@hyperledger/cactus-plugin-ledger-connector-besu": "2.0.0-rc.7",
+    "@hyperledger/cactus-plugin-ledger-connector-ethereum": "2.0.0-rc.7",
+    "@hyperledger/cactus-plugin-ledger-connector-fabric": "2.0.0-rc.7",
+    "express": "4.21.0",
     "run-time-error-cjs": "1.4.0",
     "rxjs": "7.8.1",
     "typescript-optional": "2.0.1",
     "uuid": "10.0.0"
   },
   "devDependencies": {
-    "@hyperledger/cactus-plugin-keychain-memory": "2.1.0",
-    "@hyperledger/cactus-test-geth-ledger": "2.1.0",
-    "@hyperledger/cactus-test-tooling": "2.1.0",
+    "@hyperledger/cactus-plugin-keychain-memory": "2.0.0-rc.7",
+    "@hyperledger/cactus-test-geth-ledger": "2.0.0-rc.7",
+    "@hyperledger/cactus-test-tooling": "2.0.0-rc.7",
     "@types/express": "5.0.0",
     "@types/uuid": "10.0.0",
     "body-parser": "1.20.3",
@@ -91,7 +91,7 @@
     "web3-core": "1.6.1"
   },
   "engines": {
-    "node": ">=18",
+    "node": ">=10",
     "npm": ">=6"
   },
   "publishConfig": {
