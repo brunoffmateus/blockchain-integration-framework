@@ -106,6 +106,16 @@ export class BLODispatcher {
     return BLODispatcher.CLASS_NAME;
   }
 
+  public async pauseBridges(): Promise<void> {
+    await this.bridgeManager.pauseBridges();
+  }
+  public async unpauseBridges(): Promise<void> {
+    await this.bridgeManager.unpauseBridges();
+  }
+  public async bridgesArePaused(): Promise<void> {
+    await this.bridgeManager.bridgesArePaused();
+  }
+
   public async getOrCreateWebServices(): Promise<IWebServiceEndpoint[]> {
     const fnTag = `${BLODispatcher.CLASS_NAME}#getOrCreateWebServices()`;
     this.logger.info(

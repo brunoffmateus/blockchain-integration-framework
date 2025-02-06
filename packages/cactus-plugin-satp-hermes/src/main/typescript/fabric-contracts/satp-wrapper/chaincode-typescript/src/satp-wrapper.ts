@@ -33,6 +33,7 @@ export class SATPContractWrapper
   @Transaction()
   public async Initialize(ctx: Context, ownerMSPID: string): Promise<boolean> {
     await ctx.stub.putState("ownerMSPID", Buffer.from(ownerMSPID));
+    await ctx.stub.putState("pausedBridge", Buffer.from("false"));
     return true;
   }
 
@@ -46,6 +47,34 @@ export class SATPContractWrapper
     await ctx.stub.putState("bridgeMSPID", Buffer.from(bridgeMSPID));
     await ctx.stub.putState("bridgeID", Buffer.from(bridgeID));
     return true;
+  }
+
+  @Transaction()
+  public async pause(ctx: Context): Promise<void> {
+    this.checkBridgeNotPaused(ctx);
+    await this.checkPermission(ctx);
+    await ctx.stub.putState("pausedBridge", Buffer.from("true"));
+  }
+  @Transaction()
+  public async unpause(ctx: Context): Promise<void> {
+    this.checkBridgePaused(ctx);
+    await this.checkPermission(ctx);
+    await ctx.stub.putState("pausedBridge", Buffer.from("false"));
+  }
+  @Transaction()
+  @Returns("boolean")
+  public async isPaused(ctx: Context): Promise<boolean> {
+    // Read the paused state from the ledger
+    const pausedState = await ctx.stub.getState("pausedBridge");
+    // Convert stored value to boolean
+    const isPaused = pausedState && pausedState.toString() === "true";
+
+    if (!isPaused) {
+      throw new Error(
+        `wrapper: operation not possible, as the Bridge is not currently paused.`,
+      );
+    }
+    return isPaused;
   }
 
   @Transaction()
@@ -71,6 +100,7 @@ export class SATPContractWrapper
     contractName: string,
     interactions: string,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const valueBytes = await ctx.stub.getState(tokenId);
@@ -125,6 +155,7 @@ export class SATPContractWrapper
   @Transaction()
   @Returns("boolean")
   public async unwrap(ctx: Context, tokenId: string): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -159,6 +190,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -184,6 +216,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -221,6 +254,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -245,6 +279,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -274,6 +309,7 @@ export class SATPContractWrapper
     to: string,
     amount: number,
   ): Promise<boolean> {
+    this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -381,6 +417,26 @@ export class SATPContractWrapper
     ) {
       throw new Error(
         `wrapper: client is not authorized to perform the operation. ${clientMSPID}`,
+      );
+    }
+  }
+
+  private async checkBridgeNotPaused(ctx: Context) {
+    const pausedState = await ctx.stub.getState("pausedBridge");
+    const isPaused = pausedState && pausedState.toString() === "true";
+    if (isPaused) {
+      throw new Error(
+        `wrapper: operation not possible, as the Bridge is currently paused.`,
+      );
+    }
+  }
+
+  private async checkBridgePaused(ctx: Context) {
+    const pausedState = await ctx.stub.getState("pausedBridge");
+    const isPaused = pausedState && pausedState.toString() === "true";
+    if (!isPaused) {
+      throw new Error(
+        `wrapper: operation not possible, as the Bridge is not currently paused.`,
       );
     }
   }

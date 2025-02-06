@@ -110,4 +110,27 @@ export class SATPBridgesManager {
   public addBridge(network: string, bridge: SATPBridgeManager): void {
     this.bridges.set(network, bridge);
   }
+
+  public async pauseBridges(): Promise<void> {
+    await Promise.all(
+      [...this.bridges.values()].map(async (bridge) => {
+        await bridge.pauseBridge();
+      }),
+    );
+  }
+
+  public async unpauseBridges(): Promise<void> {
+    await Promise.all(
+      [...this.bridges.values()].map(async (bridge) => {
+        await bridge.unpauseBridge();
+      }),
+    );
+  }
+  public async bridgesArePaused(): Promise<void> {
+    await Promise.all(
+      [...this.bridges.values()].map(async (bridge) => {
+        await bridge.bridgeIsPaused();
+      }),
+    );
+  }
 }

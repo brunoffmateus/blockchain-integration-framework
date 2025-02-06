@@ -5,6 +5,22 @@ import { Asset } from "./types/asset";
 
 export abstract class BridgeManager {
   /**
+   * pauses the bridge contracts
+   * @returns transaction hash
+   */
+  public abstract pauseBridge(): Promise<string>;
+  /**
+   * unpauses the bridge contracts
+   * @param asset
+   * @returns transaction hash
+   */
+  public abstract unpauseBridge(): Promise<string>;
+  /**
+   * checks if the the bridge contracts are paused
+   * @returns transaction hash
+   */
+  public abstract bridgeIsPaused(): Promise<string>;
+  /**
    * wraps an asset on the wrapper contract
    * @param asset
    * @returns transaction hash

@@ -26,6 +26,48 @@ export class SATPBridgeManager implements BridgeManager {
     return this.config.network.getNetworkType();
   }
 
+  public async pauseBridge(): Promise<string> {
+    const fnTag = `${this.className}#pauseBridge()`;
+    const response = await this.config.network.pauseBridge();
+    if (response.transactionId == undefined) {
+      throw new TransactionIdUndefinedError(fnTag);
+    }
+    const receipt = "";
+    //  this.config.network.getReceipt(
+    //   response.transactionId,
+    // );
+    this.log.info(`${fnTag}, proof of pausing the bridge: ${receipt}`);
+    return receipt;
+  }
+
+  public async unpauseBridge(): Promise<string> {
+    const fnTag = `${this.className}#unpauseBridge()`;
+    const response = await this.config.network.unpauseBridge();
+    if (response.transactionId == undefined) {
+      throw new TransactionIdUndefinedError(fnTag);
+    }
+    const receipt = "";
+    //  this.config.network.getReceipt(
+    //   response.transactionId,
+    // );
+    this.log.info(`${fnTag}, proof of unpausing the bridge: ${receipt}`);
+    return receipt;
+  }
+
+  public async bridgeIsPaused(): Promise<string> {
+    const fnTag = `${this.className}#bridgeIsPaused()`;
+    const response = await this.config.network.bridgeIsPaused();
+    if (response.transactionId == undefined) {
+      throw new TransactionIdUndefinedError(fnTag);
+    }
+    const receipt = "";
+    //  this.config.network.getReceipt(
+    //   response.transactionId,
+    // );
+    this.log.info(`${fnTag}, proof that bridge is paused: ${receipt}`);
+    return receipt;
+  }
+
   public async wrapAsset(asset: Asset): Promise<string> {
     const fnTag = `${this.className}#wrap()`;
 

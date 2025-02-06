@@ -231,6 +231,10 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
     return `@hyperledger/cactus-plugin-satp-hermes`;
   }
 
+  public pauseBridges(): BLODispatcher | undefined {
+    return this.BLODispatcher;
+  }
+
   //for testing
   public getBLODispatcher(): BLODispatcher | undefined {
     return this.BLODispatcher;

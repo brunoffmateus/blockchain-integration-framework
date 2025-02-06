@@ -15,6 +15,12 @@ export abstract class NetworkBridge {
     return this.networkType;
   }
 
+  public abstract pauseBridge(): Promise<TransactionResponse>;
+
+  public abstract unpauseBridge(): Promise<TransactionResponse>;
+
+  public abstract bridgeIsPaused(): Promise<TransactionResponse>;
+
   public abstract wrapAsset(asset: Asset): Promise<TransactionResponse>;
 
   public abstract unwrapAsset(assetId: string): Promise<TransactionResponse>;

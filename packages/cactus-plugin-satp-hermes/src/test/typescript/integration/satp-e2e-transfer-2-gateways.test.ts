@@ -285,8 +285,10 @@ describe("2 SATPGateway sending a token from Besu to Fabric", () => {
     await targetGateway.startup();
 
     const dispatcher = sourceGateway.getBLODispatcher();
-
     expect(dispatcher).toBeTruthy();
+
+    dispatcher?.pauseBridges();
+
     const req = getTransactRequest(
       "mockContext",
       besuEnv,

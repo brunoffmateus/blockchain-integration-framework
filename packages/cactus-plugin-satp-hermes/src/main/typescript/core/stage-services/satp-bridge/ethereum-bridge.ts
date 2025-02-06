@@ -70,6 +70,74 @@ export class EthereumBridge implements NetworkBridge {
     return this.networkType;
   }
 
+  public async unpauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`${EthereumBridge.CLASS_NAME}#unpauseBridge`);
+    const response = (await this.connector.invokeContract({
+      contract: {
+        contractName: this.config.contractName,
+        keychainId: this.config.keychainId,
+      },
+      invocationType: EthContractInvocationType.Send,
+      methodName: "unpause",
+      params: [],
+      web3SigningCredential: this.config.signingCredential,
+    })) as EthereumResponse;
+    if (!response.success) {
+      throw new Error(
+        `${EthereumBridge.CLASS_NAME}#unpauseBridge:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+  public async pauseBridge(): Promise<TransactionResponse> {
+    this.log.debug(`${EthereumBridge.CLASS_NAME}#pauseBridge`);
+    const response = (await this.connector.invokeContract({
+      contract: {
+        contractName: this.config.contractName,
+        keychainId: this.config.keychainId,
+      },
+      invocationType: EthContractInvocationType.Send,
+      methodName: "pause",
+      params: [],
+      web3SigningCredential: this.config.signingCredential,
+    })) as EthereumResponse;
+    if (!response.success) {
+      throw new Error(
+        `${EthereumBridge.CLASS_NAME}#pauseBridge:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+  public async bridgeIsPaused(): Promise<TransactionResponse> {
+    this.log.debug(`${EthereumBridge.CLASS_NAME}#bridgeIsPaused`);
+    const response = (await this.connector.invokeContract({
+      contract: {
+        contractName: this.config.contractName,
+        keychainId: this.config.keychainId,
+      },
+      invocationType: EthContractInvocationType.Send,
+      methodName: "isPaused",
+      params: [],
+      web3SigningCredential: this.config.signingCredential,
+    })) as EthereumResponse;
+
+    if (!response.success) {
+      throw new Error(
+        `${EthereumBridge.CLASS_NAME}#bridgeIsPaused:Transaction failed}`,
+      );
+    }
+    return {
+      transactionId: response.out.transactionReceipt.transactionHash ?? "",
+      transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",
+    };
+  }
+
   public async wrapAsset(asset: EvmAsset): Promise<TransactionResponse> {
     const fnTag = `${EthereumBridge.CLASS_NAME}}#wrapAsset`;
     this.log.debug(
