@@ -133,6 +133,9 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
       networks: options.bridgesConfig ? options.bridgesConfig : [],
     };
 
+    // Here we have the bridgeSSS manager that contains
+    // a map with each bridge manager associated with the network (SupportedChain)
+
     this.bridgesManager = new SATPBridgesManager(bridgesManagerOptions);
 
     if (!this.bridgesManager) {

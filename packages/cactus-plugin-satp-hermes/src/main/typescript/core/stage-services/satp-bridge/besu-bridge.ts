@@ -102,6 +102,9 @@ export class BesuBridge implements NetworkBridge {
         `${BesuBridge.CLASS_NAME}#pauseBridge:Transaction failed}`,
       );
     }
+    // we just need a way to propagate this to every other bridge when sucess happens...
+    // like call a method that syncs all pauses
+
     return {
       transactionId: response.out.transactionReceipt.transactionHash ?? "",
       transactionReceipt: JSON.stringify(response.out.transactionReceipt) ?? "",

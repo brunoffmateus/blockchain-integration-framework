@@ -100,4 +100,11 @@ export class SATPBridgesManager {
   public addBridge(network: string, bridge: SATPBridgeManager): void {
     this.bridges.set(network, bridge);
   }
+
+  // we need something like this:
+  public pauseBridges(): void {
+    this.bridges.forEach((bridge) => {
+      bridge.pauseBridge();
+    });
+  }
 }
