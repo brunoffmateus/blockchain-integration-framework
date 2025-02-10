@@ -53,10 +53,12 @@ import { Account } from "web3-core";
 import express from "express";
 import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
-import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
 import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.json";
-import { CrossChainModelType } from "../../../main/typescript/models/crosschain-model";
+import {
+  CcModelHephaestus,
+  ProcessMiningAlgorithm,
+} from "../../../main/typescript/plugin-ccmodel-hephaestus";
 
 const logLevel: LogLevelDesc = "INFO";
 
@@ -620,10 +622,10 @@ beforeAll(async () => {
     modeledTransactions = 6;
     expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
-    const model = await hephaestus.createModel();
+    const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
+    const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(CrossChainModelType.PetriNet))
-      .toBeTruthy;
+    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
     hephaestus.setIsModeling(false);
   }
 });

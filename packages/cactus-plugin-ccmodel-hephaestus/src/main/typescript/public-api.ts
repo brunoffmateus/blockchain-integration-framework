@@ -2,6 +2,7 @@ export {
   CcModelHephaestus,
   IPluginCcModelHephaestusOptions,
   IWebAppOptions,
+  ProcessMiningAlgorithm,
 } from "./plugin-ccmodel-hephaestus";
 
 export { PluginFactoryWebService } from "./plugin-factory-ccmodel-hephaestus";

@@ -71,6 +71,10 @@ export class BesuBridge implements NetworkBridge {
     return this.networkType;
   }
 
+  public bridgeConnector(): PluginLedgerConnectorBesu {
+    return this.connector;
+  }
+
   public async unpauseBridge(): Promise<TransactionResponse> {
     this.log.debug(`${BesuBridge.CLASS_NAME}#unpauseBridge`);
     const response = (await this.connector.invokeContract({

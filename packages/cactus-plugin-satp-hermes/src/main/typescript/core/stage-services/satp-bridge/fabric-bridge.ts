@@ -60,6 +60,10 @@ export class FabricBridge implements NetworkBridge {
     return this.networkType;
   }
 
+  public bridgeConnector(): PluginLedgerConnectorFabric {
+    return this.connector;
+  }
+
   public async pauseBridge(): Promise<TransactionResponse> {
     this.log.debug(`Pausing Bridge`);
     const response = await this.connector.transact({

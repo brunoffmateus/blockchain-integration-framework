@@ -41,6 +41,10 @@ sudo apt install python3 python3-pip
 ```sh
 pip3 install pm4py pandas
 ```
+3. Graphviz (required for visualizing Petri nets):
+```sh
+sudo apt install graphviz
+```
 
 Know how to use the following plugins of the project:
 

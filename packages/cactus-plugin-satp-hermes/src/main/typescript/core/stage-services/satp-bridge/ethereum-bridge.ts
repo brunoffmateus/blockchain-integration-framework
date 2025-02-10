@@ -70,6 +70,10 @@ export class EthereumBridge implements NetworkBridge {
     return this.networkType;
   }
 
+  public bridgeConnector(): PluginLedgerConnectorEthereum {
+    return this.connector;
+  }
+
   public async unpauseBridge(): Promise<TransactionResponse> {
     this.log.debug(`${EthereumBridge.CLASS_NAME}#unpauseBridge`);
     const response = (await this.connector.invokeContract({

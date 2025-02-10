@@ -1,12 +1,33 @@
 import { execSync } from "child_process";
 
 import path from "path";
+import { ProcessMiningAlgorithm } from "./plugin-ccmodel-hephaestus";
 
-export function createModelPM4PY(logPath: string): string {
+export function createModelPM4PY(
+  logPath: string,
+  ccModelPath: string,
+  miningAlgorithm: ProcessMiningAlgorithm,
+): string {
   const createModelScript = path.join(__dirname, "../python/create_model.py");
-  const command = `python3 ${createModelScript} ${logPath}`;
+  let command = `python3 ${createModelScript} ${logPath} ${ccModelPath}`;
 
   try {
+    switch (miningAlgorithm) {
+      case ProcessMiningAlgorithm.AlphaPlus:
+        command += " alpha_plus";
+        break;
+      case ProcessMiningAlgorithm.Heuristics:
+        command += " heuristics";
+        break;
+      case ProcessMiningAlgorithm.Inductive:
+        command += " inductive";
+        break;
+      default:
+        throw new Error("Unsupported mining algorithm");
+    }
+
+    console.log("Create Model: " + command);
+
     const startTime = new Date();
     const serializedCCModel = execSync(command).toString("utf-8");
     const finalTime = new Date();
@@ -22,15 +43,15 @@ export function createModelPM4PY(logPath: string): string {
 
 export function checkConformancePM4PY(
   logPath: string,
-  serializedCCModel: string,
+  ccModelPath: string,
 ): string {
   const checkConformanceScript = path.join(
     __dirname,
-    "../python/check_conformance.py",
+    "../python/check_conformance_file.py",
   );
-  const command = `python3 ${checkConformanceScript} ${logPath} \'${serializedCCModel}\'`;
+  const command = `python3 ${checkConformanceScript} ${logPath} ${ccModelPath}`;
+  console.log("Check Conformance: " + command);
 
-  // console.log(command);
   try {
     const checkOutput = execSync(command).toString("utf-8");
     return checkOutput;
