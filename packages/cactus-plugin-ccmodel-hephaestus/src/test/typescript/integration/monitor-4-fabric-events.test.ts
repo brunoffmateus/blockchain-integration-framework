@@ -282,12 +282,19 @@ beforeAll(async () => {
     };
   }
   {
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Fabric2, [
+      "CreateAsset",
+      "TransferAsset",
+      "DeleteAsset",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       fabricTxObservable: fabricConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Fabric2,
-      targetLedger: LedgerType.Fabric2,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -297,7 +304,7 @@ beforeAll(async () => {
 });
 
 test("monitor Fabric transactions", async () => {
-  hephaestus.setCaseId("FABRIC_MONITORING");
+  hephaestus.newCaseId("FABRIC_MONITORING");
   hephaestus.monitorTransactions();
 
   const createResFabric = await apiClient.runTransactionV1({

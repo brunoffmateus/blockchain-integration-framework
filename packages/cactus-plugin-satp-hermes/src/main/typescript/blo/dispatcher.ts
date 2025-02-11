@@ -36,6 +36,9 @@ import {
   ILocalLogRepository,
   IRemoteLogRepository,
 } from "../repository/interfaces/repository";
+import { SATPBridgeManager } from "../core/stage-services/satp-bridge/satp-bridge-manager";
+import { Observable } from "rxjs";
+import { NonConformingTx } from "@hyperledger/cactus-plugin-ccmodel-hephaestus/dist/types/main/typescript/plugin-ccmodel-hephaestus";
 
 export interface BLODispatcherOptions {
   logger: Logger;
@@ -48,6 +51,7 @@ export interface BLODispatcherOptions {
   defaultRepository: boolean;
   localRepository: ILocalLogRepository;
   remoteRepository?: IRemoteLogRepository;
+  nonConformedTxObservable?: Observable<NonConformingTx>;
 }
 
 export class BLODispatcher {
@@ -64,6 +68,8 @@ export class BLODispatcher {
   private defaultRepository: boolean;
   private localRepository: ILocalLogRepository;
   private remoteRepository: IRemoteLogRepository | undefined;
+  private nonConformedTxObservable?: Observable<NonConformingTx>;
+  private allowTransactions: boolean = true;
 
   constructor(public readonly options: BLODispatcherOptions) {
     const fnTag = `${BLODispatcher.CLASS_NAME}#constructor()`;
@@ -100,20 +106,86 @@ export class BLODispatcher {
     };
 
     this.manager = new SATPManager(SATPManagerOpts);
+
+    this.nonConformedTxObservable = options.nonConformedTxObservable;
   }
 
   public get className(): string {
     return BLODispatcher.CLASS_NAME;
   }
 
-  public async pauseBridges(): Promise<void> {
-    await this.bridgeManager.pauseBridges();
+  // for testing:
+  public getBridge(network: string): SATPBridgeManager {
+    return this.bridgeManager.getBridge(network);
   }
-  public async unpauseBridges(): Promise<void> {
-    await this.bridgeManager.unpauseBridges();
+
+  public getBridgesList(): string[] {
+    return this.bridgeManager.getBridgesList();
+  }
+
+  public setNonConformingTxObservable(
+    nonConformedTxObservable: Observable<NonConformingTx>,
+  ): void {
+    this.nonConformedTxObservable = nonConformedTxObservable;
+    this.monitorNonConformingTxs();
+  }
+
+  private monitorNonConformingTxs(): void {
+    const fnTag = `${this.className}#monitorNonConformingTxs()`;
+    this.logger.debug(fnTag);
+
+    if (!this.nonConformedTxObservable) {
+      this.logger.debug(
+        `${fnTag}-No Non-conformed Transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+
+    this.nonConformedTxObservable.subscribe({
+      next: async (data: NonConformingTx) => {
+        // Pauses the bridge automatically whenever a new value is received by the observer
+        const receivedTime = new Date().getTime();
+        const paused = await this.pauseBridges();
+        const createdTime = data.timestamp.getTime();
+        const ccEventTime = data.nonConformingEventEvent?.timestamp.getTime();
+        if (ccEventTime) {
+          this.logger.debug(
+            `NON CONFORMITY CAPTURED AT: ${createdTime}. OBSERVER RECEIVED AT: ${receivedTime} | `,
+            `${this.getBridgesList()} | `,
+            `Latency in contract pause: ${paused.getTime() - receivedTime} ms`,
+          );
+        } else {
+          this.logger.debug(
+            `CaseId changed without full transaction being completed...`,
+            `NON CONFORMITY CAPTURED AT: ${createdTime}. OBSERVER RECEIVED AT: ${receivedTime} | `,
+            `${this.getBridgesList()} | `,
+            `Latency in contract pause: ${paused.getTime() - receivedTime} ms`,
+          );
+        }
+      },
+      error: (error: unknown) => {
+        this.logger.error(
+          `${fnTag}- error`,
+          error,
+          `receiving NonConformingTx by observable`,
+          this.nonConformedTxObservable,
+        );
+        throw error;
+      },
+    });
+  }
+
+  public async pauseBridges(): Promise<Date> {
+    this.allowTransactions = false;
+    return await this.bridgeManager.pauseBridges();
+  }
+  public async unpauseBridges(): Promise<Date> {
+    const unpauseTime = await this.bridgeManager.unpauseBridges();
+    this.allowTransactions = true;
+    return unpauseTime;
   }
   public async bridgesArePaused(): Promise<void> {
-    await this.bridgeManager.bridgesArePaused();
+    return await this.bridgeManager.bridgesArePaused();
   }
 
   public async getOrCreateWebServices(): Promise<IWebServiceEndpoint[]> {
@@ -204,7 +276,16 @@ export class BLODispatcher {
     return executeGetStatus(this.level, req, this.manager);
   }
 
-  public async Transact(req: TransactRequest): Promise<TransactResponse> {
+  public async Transact(
+    req: TransactRequest,
+  ): Promise<TransactResponse | null> {
+    if (!this.allowTransactions) {
+      this.logger.info(
+        `Transactions not available at the moment, request canceled: ${req}`,
+      );
+      return null;
+    }
+
     //TODO pre-verify verify input
     this.logger.info(`Transact request: ${req}`);
     const res = await executeTransact(
@@ -213,6 +294,7 @@ export class BLODispatcher {
       this.manager,
       this.orchestrator,
     );
+
     return res;
   }
 

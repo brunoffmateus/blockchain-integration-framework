@@ -24,27 +24,6 @@ def import_json_original(log_file_path):
 
 ##################################################################
 
-# uses alpha+ miner algorithm
-def create_and_serialize_model_alpha_plus(ccLog, path_to_ccmodel_dir):
-    pn, im, fm = pm4py.discover_petri_net_alpha_plus(ccLog)
-    
-    # write petri net in ccModel file:
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    ccmodel_file_name = os.path.join(path_to_ccmodel_dir, f"alpha_plus_ccmodel_{timestamp}.pnml")
-    pm4py.write_pnml(pn, im, fm, ccmodel_file_name)
-    
-    # to view petri net:
-    # pm4py.view_petri_net(pn, im, fm)
-    
-    # to save petri net image:
-    # file_name = f"alpha_plus_miner_PN.png"
-    # pm4py.save_vis_petri_net(pn, im, fm, file_name, format="png")
-    
-    # return str(pn.places) + ";" + str(pn.transitions) + ";" + str(pn.arcs) + ";" + str(im) + ";" + str(fm)
-    return ccmodel_file_name
-
-##################################################################
-
 # uses heuristics miner algorithm
 def create_and_serialize_model_heuristics(ccLog, path_to_ccmodel_dir):
     pn, im, fm = pm4py.discover_petri_net_heuristics(ccLog)
@@ -88,9 +67,7 @@ def create_and_serialize_model_inductive(ccLog, path_to_ccmodel_dir):
 ##################################################################
 
 def create_and_serialize_model(ccLog, mining_process, path_to_ccmodel_dir):
-    if mining_process == "alpha_plus":
-        return create_and_serialize_model_alpha_plus(ccLog, path_to_ccmodel_dir)
-    elif mining_process == "heuristics":
+    if mining_process == "heuristics":
         return create_and_serialize_model_heuristics(ccLog, path_to_ccmodel_dir)
     elif mining_process == "inductive":
         return create_and_serialize_model_inductive(ccLog, path_to_ccmodel_dir)

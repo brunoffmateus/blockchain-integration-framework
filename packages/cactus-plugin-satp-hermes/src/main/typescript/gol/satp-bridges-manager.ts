@@ -111,20 +111,34 @@ export class SATPBridgesManager {
     this.bridges.set(network, bridge);
   }
 
-  public async pauseBridges(): Promise<void> {
+  public async pauseBridges(): Promise<Date> {
+    this.log.debug(
+      `${SATPBridgesManager.CLASS_NAME}: Pausing bridges at: ${new Date().getTime()}`,
+    );
     await Promise.all(
-      [...this.bridges.values()].map(async (bridge) => {
+      [...this.bridges.entries()].map(async ([bridgeId, bridge]) => {
         await bridge.pauseBridge();
+        this.log.debug(
+          `${SATPBridgesManager.CLASS_NAME}: Bridge ${bridgeId} paused at ${new Date().getTime()}.`,
+        );
       }),
     );
+    return new Date();
   }
 
-  public async unpauseBridges(): Promise<void> {
+  public async unpauseBridges(): Promise<Date> {
+    this.log.debug(
+      `${SATPBridgesManager.CLASS_NAME}: Unpausing bridges at: ${new Date().getTime()}`,
+    );
     await Promise.all(
-      [...this.bridges.values()].map(async (bridge) => {
+      [...this.bridges.entries()].map(async ([bridgeId, bridge]) => {
         await bridge.unpauseBridge();
+        this.log.debug(
+          `${SATPBridgesManager.CLASS_NAME}: Bridge ${bridgeId} unpaused at ${new Date().getTime()}.`,
+        );
       }),
     );
+    return new Date();
   }
   public async bridgesArePaused(): Promise<void> {
     await Promise.all(

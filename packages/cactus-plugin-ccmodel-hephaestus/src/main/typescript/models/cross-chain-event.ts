@@ -3,7 +3,7 @@ import { LedgerType } from "@hyperledger/cactus-core-api";
 export type CrossChainEvent = {
   caseID: string;
   receiptID: string;
-  timestamp: string;
+  timestamp: Date;
   blockchainID: LedgerType;
   invocationType: string;
   methodName: string;

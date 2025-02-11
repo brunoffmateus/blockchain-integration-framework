@@ -27,20 +27,6 @@ def import_json_original(file_path):
 
 ##################################################################
 
-# feed the file
-# pnml_file = path + "/packages/cactus-plugin-ccmodel-hephaestus/src/main/typescript/pm4py-adapter/process_models/pnml/petri_output.pnml"
-
-def unserialize_and_check_conformance_file(ccLog):
-    net, initial_marking, final_marking = pm4py.read_pnml(pnml_file)
-    # pm4py.view_petri_net(net, initial_marking, final_marking)
-
-    # check  conformance:
-    print("\n----diagnostics:")
-    diagnostics = pm4py.conformance_diagnostics_alignments(ccLog, net, initial_marking, final_marking)
-    print(diagnostics)
-
-##################################################################
-
 def divide_model(model):
     split_model = model.split(';')
     return split_model[0], split_model[1], split_model[2], split_model[3], split_model[4]
@@ -193,28 +179,91 @@ def unserialize_and_check_conformance(ccLog):
 
 ##################################################################
 
+def unserialize_and_check_conformance_file(ccLog, path_to_ccmodel_file):
+    (net, initial_marking, final_marking) = pm4py.read_pnml(path_to_ccmodel_file)
+    # pm4py.view_petri_net(net, initial_marking, final_marking)
+
+    # check  conformance:
+    diagnostics = pm4py.conformance_diagnostics_alignments(ccLog, net, initial_marking, final_marking)
+    if diagnostics == []:
+        print("No event log provided")
+        return
+
+    alignment = diagnostics[0]["alignment"]
+    conforming_activities = []
+    non_conforming_activities = []
+    skipped_activities = []
+    all_activities = []
+
+    for activity in alignment:
+        if activity[0] == ">>" and activity[1] != None:
+            all_activities.append(activity)
+            skipped_activities.append(activity)
+        elif activity[0] != ">>" and activity[1] == ">>":
+            all_activities.append(activity)
+            non_conforming_activities.append(activity)
+        elif activity[0] != None and activity[1] != None:
+            all_activities.append(activity)
+            conforming_activities.append(activity)
+            
+    # Check for non-confomant behaviour
+    if len(non_conforming_activities) != 0:
+        print("NON-CONFORMANCE:")
+        print(non_conforming_activities)
+        print(os.path.basename(log_file_path))
+        return
+
+    if len(all_activities) == len(conforming_activities):
+        print("FULL CONFORMANCE:")
+        print(conforming_activities)
+        print(os.path.basename(log_file_path))
+        return
+
+    # If there were no skips in the case, then all the conforming activities 
+    # will be the same as the initial activities of the model
+    # If not, then there were skips that cannot be ignored
+    ignore_skips = True
+    for i in range(len(conforming_activities)):
+        if(conforming_activities[i] != all_activities[i]):
+            ignore_skips = False
+
+    if ignore_skips == True:
+        print("PARTIAL CONFORMANCE:")
+        print(conforming_activities)
+        print(os.path.basename(log_file_path))
+    else:
+        print("SKIPPED ACTIVITY:")
+        print(skipped_activities)
+        print(os.path.basename(log_file_path))
+
+##################################################################
+
 def main():
     if not os.path.exists(log_file_path):
-        print(f"File '{log_file_path}' does not exist")
+        print(f"Cross-chain Log file: '{log_file_path}' does not exist")
+        exit(1)
+    
+    if not os.path.exists(path_to_ccmodel_file):
+        print(f"Cross-chain Log file: '{path_to_ccmodel_file}' does not exist")
         exit(1)
         
     file_extension = os.path.splitext(log_file_path)[1].lower()
     
     if file_extension == '.csv':
         ccLog = import_csv_original(log_file_path)
-        unserialize_and_check_conformance(ccLog)
+        unserialize_and_check_conformance_file(ccLog, path_to_ccmodel_file)
     elif file_extension == '.json':
         ccLog = import_json_original(log_file_path)
-        unserialize_and_check_conformance(ccLog)
+        unserialize_and_check_conformance_file(ccLog, path_to_ccmodel_file)
     else:
         print(f"Unsupported file type: {file_extension}")
         exit(1)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python3 check_conformance.py path_to_log_file serialized_ccmodel")
+        print("Usage: python3 check_conformance.py path_to_log_file path_to_ccmodel_file")
         exit(1)
     
     log_file_path = sys.argv[1]
-    serialized_ccmodel = sys.argv[2]
+    path_to_ccmodel_file = sys.argv[2]
     main()
