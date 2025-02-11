@@ -113,7 +113,7 @@ hephaestus = new CcModelHephaestus(hephaestusOptions);
 We set the desired caseID and start monitoring transactions. These are then processed into cross-chain events when received and added to the cross-chain event log:
 
 ```typescript
-hephaestus.setCaseId("Desired_CaseID");
+hephaestus.newCaseId("Desired_CaseID");
 hephaestus.monitorTransactions();
 ```
 
@@ -126,7 +126,7 @@ await hephaestus.createModel();
 After creating a model with the desired event logs, we can turn off modeling so that newly received transactional data will be compared against the model through a conformance check:
 
 ```typescript
-hephaestus.setIsModeling(false);
+hephaestus.stopModeling();
 ```
 
 ## Contributing

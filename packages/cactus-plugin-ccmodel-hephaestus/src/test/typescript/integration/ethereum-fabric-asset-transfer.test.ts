@@ -7,11 +7,7 @@ import {
 } from "@hyperledger/cactus-common";
 import { Server as SocketIoServer } from "socket.io";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import {
-  Configuration,
-  Constants,
-  LedgerType,
-} from "@hyperledger/cactus-core-api";
+import { Configuration, Constants } from "@hyperledger/cactus-core-api";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import { DiscoveryOptions } from "fabric-network";
 import bodyParser from "body-parser";
@@ -411,8 +407,8 @@ beforeAll(async () => {
       logLevel: logLevel,
       ethTxObservable: ethereumConnector.getTxSubjectObservable(),
       fabricTxObservable: fabricConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Ethereum,
-      targetLedger: LedgerType.Fabric2,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -529,7 +525,7 @@ beforeAll(async () => {
   {
     hephaestus.monitorTransactions(0);
 
-    hephaestus.setCaseId("cctx1");
+    hephaestus.newCaseId("cctx1");
 
     const lockResEth1 = await ethereumApiClient.invokeContractV1({
       contract: {
@@ -575,7 +571,7 @@ beforeAll(async () => {
     modeledTransactions = 3;
     expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
-    hephaestus.setCaseId("cctx2");
+    hephaestus.newCaseId("cctx2");
 
     const lockResEth2 = await ethereumApiClient.invokeContractV1({
       contract: {
@@ -625,13 +621,13 @@ beforeAll(async () => {
     const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
     const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
-    hephaestus.setIsModeling(false);
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
+    hephaestus.stopModeling();
   }
 });
 
 test("Tx1 - Unlock after lock", async () => {
-  hephaestus.setCaseId("unmodeled_cctx1");
+  hephaestus.newCaseId("unmodeled_cctx1");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -675,7 +671,7 @@ test("Tx1 - Unlock after lock", async () => {
 });
 
 test("Tx2 - Skip escrow", async () => {
-  hephaestus.setCaseId("unmodeled_cctx2");
+  hephaestus.newCaseId("unmodeled_cctx2");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -696,7 +692,7 @@ test("Tx2 - Skip escrow", async () => {
 });
 
 test("Tx3 - Skip burn", async () => {
-  hephaestus.setCaseId("unmodeled_cctx3");
+  hephaestus.newCaseId("unmodeled_cctx3");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -734,7 +730,7 @@ test("Tx3 - Skip burn", async () => {
 });
 
 test("Tx4 - Double mint", async () => {
-  hephaestus.setCaseId("unmodeled_cctx4");
+  hephaestus.newCaseId("unmodeled_cctx4");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -802,7 +798,7 @@ test("Tx4 - Double mint", async () => {
 });
 
 test("Tx5 - Asset transfer from Fabric to Ethereum", async () => {
-  hephaestus.setCaseId("unmodeled_cctx5");
+  hephaestus.newCaseId("unmodeled_cctx5");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);

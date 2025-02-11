@@ -18,11 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Server as SocketIoServer } from "socket.io";
 import { AddressInfo } from "net";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import {
-  Configuration,
-  Constants,
-  LedgerType,
-} from "@hyperledger/cactus-core-api";
+import { Configuration, Constants } from "@hyperledger/cactus-core-api";
 import {
   IListenOptions,
   Logger,
@@ -49,6 +45,7 @@ import { Account } from "web3-core";
 import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.json";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
+import path from "path";
 
 const log: Logger = LoggerProvider.getOrCreate({
   label: "monitor-4-ethereum-events.test",
@@ -183,8 +180,8 @@ describe("Ethereum contract deploy and invoke while monitoring", () => {
       instanceId: uuidv4(),
       logLevel: testLogLevel,
       ethTxObservable: connector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Ethereum,
-      targetLedger: LedgerType.Ethereum,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -193,7 +190,7 @@ describe("Ethereum contract deploy and invoke while monitoring", () => {
   });
 
   test("monitor Ethereum transactions", async () => {
-    hephaestus.setCaseId("ETHEREUM_MONITORING");
+    hephaestus.newCaseId("ETHEREUM_MONITORING");
     hephaestus.monitorTransactions();
 
     const createResEth = await apiClient.invokeContractV1({

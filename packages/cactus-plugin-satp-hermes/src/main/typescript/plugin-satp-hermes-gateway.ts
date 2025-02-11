@@ -190,6 +190,7 @@ export class SATPGateway implements IPluginWebService, ICactusPlugin {
       defaultRepository: this.defaultRepository,
       localRepository: this.localRepository,
       remoteRepository: this.remoteRepository,
+      hephaestusOptions: this.config.hephaestusOptions,
     };
 
     this.connectedDLTs = this.config.gid!.connectedDLTs;

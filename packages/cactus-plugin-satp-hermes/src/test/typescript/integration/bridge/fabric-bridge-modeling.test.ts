@@ -699,18 +699,27 @@ describe("Fabric Bridge Test", () => {
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
-      fabricTxObservable: fabricBridge.bridgeConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Fabric2,
-      targetLedger: LedgerType.Fabric2,
+      fabricTxObservable: fabricBridge
+        .bridgeConnector()
+        .getTxSubjectObservable(),
+      ccLogsDir: path.join(__dirname, "..", "..", "..", "hephaestus", "ccLogs"),
+      ccModelDir: path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "hephaestus",
+        "ccModel",
+      ),
     };
     hephaestus = new CcModelHephaestus(hephaestusOptions);
     expect(hephaestus).toBeTruthy();
     log.info("hephaestus plugin initialized successfully");
   });
 
-  it("Sould monitor transactions for the Cross-Chain Model", async () => {
+  it("Should monitor transactions for the Cross-Chain Model", async () => {
     hephaestus.monitorTransactions(0);
-    hephaestus.setCaseId("modeling_tx1");
+    hephaestus.newCaseId("modeling_tx1");
 
     const responseWrap = await fabricBridge.wrapAsset({
       tokenId: FABRIC_ASSET_ID,
@@ -900,12 +909,12 @@ describe("Fabric Bridge Test", () => {
     const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
     const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
-    hephaestus.setIsModeling(false);
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
+    hephaestus.stopModeling();
   });
 
   it("Should compare new transactions against the model", async () => {
-    hephaestus.setCaseId("unmodeled_tx");
+    hephaestus.newCaseId("unmodeled_tx");
 
     const responseWrap = await fabricBridge.wrapAsset({
       tokenId: FABRIC_ASSET_ID_UNMODELED,
@@ -1103,7 +1112,7 @@ describe("Fabric Bridge Test", () => {
   });
 
   it("Should check for non-conformant behaviour", async () => {
-    hephaestus.setCaseId("unmodeled_tx");
+    hephaestus.newCaseId("unmodeled_tx");
 
     const responseWrap = await fabricBridge.wrapAsset({
       tokenId: FABRIC_ASSET_ID_UNMODELED2,

@@ -10,12 +10,7 @@ export class CrossChainModel {
   private models = new Map<ProcessMiningAlgorithm, string>();
   private id: string;
   private lastAggregationDate: Date;
-  private crossChainState: Map<
-    string,
-    [AssetState | undefined, AssetState | undefined]
-  >;
-  private sourceLedgerMethods: string[] = [];
-  private targetLedgerMethods: string[] = [];
+  private crossChainState: Map<string, AssetState>;
 
   constructor() {
     this.id = uuidv4();
@@ -24,10 +19,7 @@ export class CrossChainModel {
       CrossChainTransactionSchema
     >();
     this.lastAggregationDate = new Date();
-    this.crossChainState = new Map<
-      string,
-      [AssetState | undefined, AssetState | undefined]
-    >();
+    this.crossChainState = new Map<string, AssetState>();
   }
 
   get lastAggregation(): Date {
@@ -75,94 +67,24 @@ export class CrossChainModel {
     this.crossChainTransactions?.set(key, mapDefintion);
   }
 
-  public setSourceLedgerMethod(methodName: string): void {
-    this.sourceLedgerMethods.push(methodName);
-  }
-
-  public sourceLedgerIncludesMethod(methodName: string): boolean {
-    return this.sourceLedgerMethods.includes(methodName);
-  }
-
-  public setTargetLedgerMethod(methodName: string): void {
-    this.targetLedgerMethods.push(methodName);
-  }
-
-  public targetLedgerIncludesMethod(methodName: string): boolean {
-    return this.targetLedgerMethods.includes(methodName);
-  }
-
-  public setAssetStateSourceLedger(ccTxID: string, details: AssetState): void {
-    const prevState = this.crossChainState.get(ccTxID);
-    if (!prevState) {
-      this.crossChainState.set(ccTxID, [details, undefined]);
-      return;
-    }
-    this.crossChainState.set(ccTxID, [details, prevState[1]]);
-  }
-
-  public setAssetStateTargetLedger(ccTxID: string, details: AssetState): void {
-    const prevState = this.crossChainState.get(ccTxID);
-    if (!prevState) {
-      this.crossChainState.set(ccTxID, [undefined, details]);
-      return;
-    }
-    this.crossChainState.set(ccTxID, [prevState[0], details]);
+  public setAssetState(ccTxID: string, details: AssetState): void {
+    this.crossChainState.set(ccTxID, details);
   }
 
   public getCrossChainState(): string | undefined {
     let ccState: string = "";
-    for (const [
-      ccTxID,
-      [assetStateSource, assetStateTarget],
-    ] of this.crossChainState.entries()) {
-      let txData: string;
-      if (assetStateSource && assetStateTarget) {
-        txData =
-          ccTxID +
-          "\n" +
-          assetStateSource.assetID +
-          ";" +
-          assetStateSource.assetState +
-          ";" +
-          assetStateSource.ledger +
-          ";" +
-          assetStateSource.lastStateUpdate +
-          "\n" +
-          assetStateTarget.assetID +
-          ";" +
-          assetStateTarget.assetState +
-          ";" +
-          assetStateTarget.ledger +
-          ";" +
-          assetStateTarget.lastStateUpdate +
-          "\n";
-      } else if (assetStateSource) {
-        txData =
-          ccTxID +
-          "\n" +
-          assetStateSource.assetID +
-          ";" +
-          assetStateSource.assetState +
-          ";" +
-          assetStateSource.ledger +
-          ";" +
-          assetStateSource.lastStateUpdate +
-          "\n";
-      } else if (assetStateTarget) {
-        txData =
-          ccTxID +
-          "\n" +
-          assetStateTarget.assetID +
-          ";" +
-          assetStateTarget.assetState +
-          ";" +
-          assetStateTarget.ledger +
-          ";" +
-          assetStateTarget.lastStateUpdate +
-          "\n";
-      } else {
-        continue;
-      }
+    for (const [ccTxID, assetState] of this.crossChainState.entries()) {
+      const txData =
+        ccTxID +
+        "\n" +
+        assetState.assetID +
+        ";" +
+        assetState.assetState +
+        ";" +
+        assetState.ledger +
+        ";" +
+        assetState.lastStateUpdate +
+        "\n";
       ccState = ccState + txData + "\n";
     }
     return ccState;

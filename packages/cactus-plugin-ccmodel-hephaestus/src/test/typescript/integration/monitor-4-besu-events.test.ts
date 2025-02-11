@@ -21,7 +21,7 @@ import { Account } from "web3-core";
 
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
-import { LedgerType } from "@hyperledger/cactus-core-api";
+import path from "path";
 
 const logLevel: LogLevelDesc = "INFO";
 
@@ -147,8 +147,8 @@ beforeAll(async () => {
       instanceId: uuidv4(),
       logLevel: logLevel,
       besuTxObservable: connector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Besu2X,
-      targetLedger: LedgerType.Besu2X,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -158,7 +158,7 @@ beforeAll(async () => {
 });
 
 test("monitor Besu transactions", async () => {
-  hephaestus.setCaseId("BESU_MONITORING");
+  hephaestus.newCaseId("BESU_MONITORING");
   hephaestus.monitorTransactions();
 
   const { success: createResBesu } = await connector.invokeContract({

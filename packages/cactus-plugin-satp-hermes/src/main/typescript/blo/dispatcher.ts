@@ -36,6 +36,17 @@ import {
   ILocalLogRepository,
   IRemoteLogRepository,
 } from "../repository/interfaces/repository";
+import {
+  CcModelHephaestus,
+  IPluginCcModelHephaestusOptions,
+  ProcessMiningAlgorithm,
+} from "@hyperledger/cactus-plugin-ccmodel-hephaestus";
+import { PluginLedgerConnectorBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { PluginLedgerConnectorEthereum } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { PluginLedgerConnectorFabric } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { SATPBridgeManager } from "../core/stage-services/satp-bridge/satp-bridge-manager";
+import { Observable } from "rxjs";
+import { NonConformedTx } from "@hyperledger/cactus-plugin-ccmodel-hephaestus/dist/types/main/typescript/plugin-ccmodel-hephaestus";
 
 export interface BLODispatcherOptions {
   logger: Logger;
@@ -48,6 +59,7 @@ export interface BLODispatcherOptions {
   defaultRepository: boolean;
   localRepository: ILocalLogRepository;
   remoteRepository?: IRemoteLogRepository;
+  hephaestusOptions?: IPluginCcModelHephaestusOptions;
 }
 
 export class BLODispatcher {
@@ -64,6 +76,9 @@ export class BLODispatcher {
   private defaultRepository: boolean;
   private localRepository: ILocalLogRepository;
   private remoteRepository: IRemoteLogRepository | undefined;
+  private hephaestus?: CcModelHephaestus;
+  private nonConformedTxObservable?: Observable<NonConformedTx>;
+  private pausedBridges?: boolean;
 
   constructor(public readonly options: BLODispatcherOptions) {
     const fnTag = `${BLODispatcher.CLASS_NAME}#constructor()`;
@@ -100,10 +115,99 @@ export class BLODispatcher {
     };
 
     this.manager = new SATPManager(SATPManagerOpts);
+
+    if (options.hephaestusOptions) {
+      this.hephaestus = new CcModelHephaestus(options.hephaestusOptions);
+      const bridgeList = this.bridgeManager.getBridgesList();
+      bridgeList.forEach((network) => {
+        const bridge = this.bridgeManager.getBridge(network);
+        const connector = bridge.bridgeConnector();
+        if (connector instanceof PluginLedgerConnectorBesu) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setBesuTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        } else if (connector instanceof PluginLedgerConnectorEthereum) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setEthTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        } else if (connector instanceof PluginLedgerConnectorFabric) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setFabricTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        }
+      });
+      this.pausedBridges = false;
+    }
   }
 
   public get className(): string {
     return BLODispatcher.CLASS_NAME;
+  }
+
+  // for testing:
+  public getBridge(network: string): SATPBridgeManager {
+    return this.bridgeManager.getBridge(network);
+  }
+
+  public monitorNonConformedTxs(): void {
+    const fnTag = `${this.className}#monitorNonConformedTxs()`;
+    this.logger.debug(fnTag);
+
+    if (!this.nonConformedTxObservable) {
+      this.logger.debug(
+        `${fnTag}-No Non-conformed Transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+
+    this.nonConformedTxObservable.subscribe({
+      next: async (data: NonConformedTx) => {
+        // Pauses the bridge automatically whenever a new value is received by the observer
+        this.logger.debug(
+          `NON CONFORMITY CAPTURED AT: ${data.timestamp}. OBSERVER RECEIVED AT: ${new Date()}.`,
+        );
+        await this.pauseBridges();
+        this.logger.debug(`BRIDGES PAUSED AT: ${new Date()}.`);
+      },
+      error: (error: unknown) => {
+        this.logger.error(
+          `${fnTag}- error`,
+          error,
+          `receiving NonConformedTx by observable`,
+          this.nonConformedTxObservable,
+        );
+        throw error;
+      },
+    });
+  }
+
+  public startMonitoring(duration: number = -1): void {
+    this.hephaestus?.monitorTransactions(duration);
+  }
+
+  public stopModeling(): void {
+    this.hephaestus?.stopModeling();
+  }
+
+  public async getCCModel(
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Inductive,
+  ): Promise<string> {
+    return (
+      this.hephaestus?.getModel(miningAlgorithm) ||
+      "Hephaestus not active in this Gateway"
+    );
+  }
+
+  public async createModel(
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Inductive,
+  ): Promise<string> {
+    return (
+      this.hephaestus?.createModel(miningAlgorithm) ||
+      "Hephaestus not active in this Gateway"
+    );
   }
 
   public async pauseBridges(): Promise<void> {
@@ -204,7 +308,21 @@ export class BLODispatcher {
     return executeGetStatus(this.level, req, this.manager);
   }
 
-  public async Transact(req: TransactRequest): Promise<TransactResponse> {
+  public async Transact(
+    req: TransactRequest,
+  ): Promise<TransactResponse | null> {
+    this.pausedBridges = await this.checkMisbehaviour();
+    if (this.pausedBridges) {
+      this.logger.info(
+        `Bridges are currently paused, transaction request canceled: ${req}`,
+      );
+      return null;
+    }
+
+    const caseId = `TxId_${new Date().getTime()}`;
+    this.logger.debug(`CaseId: ${caseId}`);
+    this.hephaestus?.newCaseId(caseId);
+
     //TODO pre-verify verify input
     this.logger.info(`Transact request: ${req}`);
     const res = await executeTransact(
@@ -213,7 +331,25 @@ export class BLODispatcher {
       this.manager,
       this.orchestrator,
     );
+
+    await this.checkMisbehaviour();
+
     return res;
+  }
+
+  private async checkMisbehaviour(): Promise<boolean> {
+    if (this.hephaestus && !this.hephaestus.isCurrentlyModeling) {
+      const nonConformedEvents = this.hephaestus.numberEventsNonConformedLog;
+      this.logger.debug(
+        `Number of non conforming events in asset transaction: ${nonConformedEvents}`,
+      );
+      if (nonConformedEvents > 0) {
+        console.log(`pausing bridges: ${this.pausedBridges}`);
+        await this.pauseBridges();
+        return true;
+      }
+    }
+    return false;
   }
 
   public async GetSessionIds(): Promise<string[]> {

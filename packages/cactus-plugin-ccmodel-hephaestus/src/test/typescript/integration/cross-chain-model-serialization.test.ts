@@ -18,11 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Server as SocketIoServer } from "socket.io";
 import { AddressInfo } from "net";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import {
-  Configuration,
-  Constants,
-  LedgerType,
-} from "@hyperledger/cactus-core-api";
+import { Configuration, Constants } from "@hyperledger/cactus-core-api";
 import {
   IListenOptions,
   Logger,
@@ -52,6 +48,7 @@ import {
   CcModelHephaestus,
   ProcessMiningAlgorithm,
 } from "../../../main/typescript/plugin-ccmodel-hephaestus";
+import path from "path";
 
 const log: Logger = LoggerProvider.getOrCreate({
   label: "cross-chain-model-serialization.test",
@@ -186,8 +183,8 @@ describe("Test cross-chain model serialization", () => {
       instanceId: uuidv4(),
       logLevel: testLogLevel,
       ethTxObservable: connector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Ethereum,
-      targetLedger: LedgerType.Ethereum,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -196,7 +193,7 @@ describe("Test cross-chain model serialization", () => {
   });
 
   test("Monitor Ethereum transactions and create cross-chain model", async () => {
-    hephaestus.setCaseId("ETHEREUM_MONITORING");
+    hephaestus.newCaseId("ETHEREUM_MONITORING");
     hephaestus.monitorTransactions();
 
     const numberOfCases = 3;
