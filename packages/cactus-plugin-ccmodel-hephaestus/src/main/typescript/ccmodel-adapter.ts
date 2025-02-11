@@ -13,9 +13,6 @@ export function createModelPM4PY(
 
   try {
     switch (miningAlgorithm) {
-      case ProcessMiningAlgorithm.AlphaPlus:
-        command += " alpha_plus";
-        break;
       case ProcessMiningAlgorithm.Heuristics:
         command += " heuristics";
         break;
@@ -25,8 +22,7 @@ export function createModelPM4PY(
       default:
         throw new Error("Unsupported mining algorithm");
     }
-
-    console.log("Create Model: " + command);
+    // console.log("Create Model: " + command);
 
     const startTime = new Date();
     const serializedCCModel = execSync(command).toString("utf-8");
@@ -50,10 +46,15 @@ export function checkConformancePM4PY(
     "../python/check_conformance_file.py",
   );
   const command = `python3 ${checkConformanceScript} ${logPath} ${ccModelPath}`;
-  console.log("Check Conformance: " + command);
+  // console.log("Check Conformance: " + command);
 
   try {
+    const startTime = new Date();
     const checkOutput = execSync(command).toString("utf-8");
+    const finalTime = new Date();
+    console.log(
+      `CONFORMANCE-CHECK-PM4PY:${finalTime.getTime() - startTime.getTime()}`,
+    );
     return checkOutput;
   } catch (error) {
     console.error(`Error executing ${command}:`, error);

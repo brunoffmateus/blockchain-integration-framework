@@ -21,6 +21,7 @@ import { Account } from "web3-core";
 
 import { CcModelHephaestus } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
+import path from "path";
 import { LedgerType } from "@hyperledger/cactus-core-api";
 
 const logLevel: LogLevelDesc = "INFO";
@@ -143,12 +144,20 @@ beforeAll(async () => {
     log.info("Contract Deployed successfully");
   }
   {
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Besu2X, [
+      "createAsset",
+      "lockAsset",
+      "deleteAsset",
+      "isPresent",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       besuTxObservable: connector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Besu2X,
-      targetLedger: LedgerType.Besu2X,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -158,7 +167,7 @@ beforeAll(async () => {
 });
 
 test("monitor Besu transactions", async () => {
-  hephaestus.setCaseId("BESU_MONITORING");
+  hephaestus.newCaseId("BESU_MONITORING");
   hephaestus.monitorTransactions();
 
   const { success: createResBesu } = await connector.invokeContract({

@@ -30,10 +30,6 @@ import {
 } from "./models/cross-chain-event";
 import { createModelPM4PY, checkConformancePM4PY } from "./ccmodel-adapter";
 
-export interface IWebAppOptions {
-  port: number;
-  hostname: string;
-}
 import {
   CrossChainModel,
   CrossChainTransactionSchema,
@@ -45,35 +41,48 @@ import {
   FabricV2TxReceipt,
 } from "./models/transaction-receipt";
 import { millisecondsLatency } from "./models/utils";
-import { IRunTransactionV1Exchange as RunTransactionV1ExchangeBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
-import { RunTransactionV1Exchange as RunTransactionV1ExchangeEth } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { IRunTransactionV1Exchange } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { RunTransactionV1Exchange } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
 import { IRunTxReqWithTxId } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
-import { Observable } from "rxjs";
+import { ReplaySubject, Observable } from "rxjs";
 import { filter, tap } from "rxjs/operators";
 import { randomUUID } from "crypto";
+import * as Amqp from "amqp-ts";
+
+export interface IChannelOptions {
+  queueId: string;
+  dltTechnology: LedgerType | null;
+  persistMessages: boolean;
+}
 
 export enum ProcessMiningAlgorithm {
-  AlphaPlus,
   Heuristics,
   Inductive,
+}
+
+export interface NonConformingTx {
+  caseID: string;
+  ccEvent?: CrossChainEvent;
+  timestamp: Date;
 }
 
 export interface IPluginCcModelHephaestusOptions extends ICactusPluginOptions {
   connectorRegistry?: PluginRegistry;
   logLevel?: LogLevelDesc;
-  webAppOptions?: IWebAppOptions;
   instanceId: string;
-  ethTxObservable?: Observable<RunTransactionV1ExchangeEth>;
-  besuTxObservable?: Observable<RunTransactionV1ExchangeBesu>;
+  besuTxObservable?: Observable<IRunTransactionV1Exchange>;
+  ethTxObservable?: Observable<RunTransactionV1Exchange>;
   fabricTxObservable?: Observable<IRunTxReqWithTxId>;
-  sourceLedger: LedgerType;
-  targetLedger: LedgerType;
-  ccLogsDir?: string;
-  ccModelDir?: string;
+  methodsToMonitor: Map<LedgerType, string[]>;
+  ccLogsDir: string;
+  ccModelDir: string;
+  eventProvider: string;
+  channelOptions: IChannelOptions;
 }
 
 export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
+  public readonly className = "plugin-ccmodel-hephaestus";
   private readonly log: Logger;
   private readonly instanceId: string;
   private endpoints: IWebServiceEndpoint[] | undefined;
@@ -82,18 +91,25 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
   private nonConformedCrossChainLog: CrossChainEventLog;
   private readonly nonConformedCCTxs: string[];
   private crossChainModel: CrossChainModel;
-  public readonly className = "plugin-ccmodel-hephaestus";
   private caseID: string;
-  private readonly besuTxObservable?: Observable<RunTransactionV1ExchangeBesu>;
-  private readonly ethTxObservable?: Observable<RunTransactionV1ExchangeEth>;
-  private readonly fabricTxObservable?: Observable<IRunTxReqWithTxId>;
-  private readonly sourceLedger: LedgerType;
-  private readonly targetLedger: LedgerType;
+  private besuTxObservable?: Observable<IRunTransactionV1Exchange>;
+  private ethTxObservable?: Observable<RunTransactionV1Exchange>;
+  private fabricTxObservable?: Observable<IRunTxReqWithTxId>;
   private startMonitoring: number | null = null;
-  private isModeling: boolean;
+  private readonly methodsToMonitor: Map<LedgerType, string[]>;
+  private isModeling: boolean = true;
   private readonly ccLogsDir: string;
   private readonly ccModelDir: string;
   private miningAlgorithm: ProcessMiningAlgorithm;
+  private NonConformingTxSubject: ReplaySubject<NonConformingTx> =
+    new ReplaySubject();
+  private readonly eventProvider: string;
+  private amqpConnection: Amqp.Connection;
+  private amqpQueue: Amqp.Queue;
+  private amqpExchange: Amqp.Exchange;
+  private readonly persistMessages: boolean;
+  private readonly queueId: string;
+  private txReceipts: unknown[] = [];
 
   constructor(public readonly options: IPluginCcModelHephaestusOptions) {
     const startTime = new Date();
@@ -125,31 +141,42 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     this.besuTxObservable = options.besuTxObservable;
     this.fabricTxObservable = options.fabricTxObservable;
 
-    this.sourceLedger = options.sourceLedger;
-    this.targetLedger = options.targetLedger;
+    this.methodsToMonitor = options.methodsToMonitor;
 
     //todo should allow different models to be instantiated
     this.crossChainModel = new CrossChainModel();
-    this.miningAlgorithm = ProcessMiningAlgorithm.AlphaPlus;
-
-    this.isModeling = true;
+    this.miningAlgorithm = ProcessMiningAlgorithm.Inductive;
 
     this.nonConformedCCTxs = [];
 
-    this.ccLogsDir =
-      options.ccLogsDir || path.join(__dirname, "..", "..", "test", "ccLogs");
+    this.ccLogsDir = options.ccLogsDir;
     // Create directories if they don't exist
     if (!fs.existsSync(this.ccLogsDir)) {
       fs.mkdirSync(path.join(this.ccLogsDir, "csv"), { recursive: true });
       fs.mkdirSync(path.join(this.ccLogsDir, "json"), { recursive: true });
     }
 
-    this.ccModelDir =
-      options.ccModelDir || path.join(__dirname, "..", "..", "test", "ccModel");
+    this.ccModelDir = options.ccModelDir;
     // Create directory if it doesn't exist
     if (!fs.existsSync(this.ccModelDir)) {
       fs.mkdirSync(this.ccModelDir, { recursive: true });
     }
+
+    this.queueId = options.channelOptions.queueId || "ccmodel-hephaestus";
+    this.persistMessages = options.channelOptions.persistMessages || false;
+    this.eventProvider = options.eventProvider;
+    this.log.debug("Initializing connection to RabbitMQ");
+    this.amqpConnection = new Amqp.Connection(this.eventProvider);
+    this.log.info("Connection to RabbitMQ server initialized");
+    this.amqpExchange = this.amqpConnection.declareExchange(
+      `ccmodel-hephaestus`,
+      "direct",
+      { durable: this.persistMessages },
+    );
+    this.amqpQueue = this.amqpConnection.declareQueue(this.queueId, {
+      durable: this.persistMessages,
+    });
+    this.amqpQueue.bind(this.amqpExchange);
 
     const finalTime = new Date();
     this.log.debug(
@@ -193,11 +220,22 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return this.caseID;
   }
 
-  public setIsModeling(bool: boolean): void {
-    this.isModeling = bool;
+  get isCurrentlyModeling(): boolean {
+    return this.isModeling;
   }
 
-  public setCaseId(id: string): void {
+  private stopModeling(): void {
+    this.isModeling = false;
+  }
+
+  public newCaseId(id: string): void {
+    // need to do conformance checking to see if the last transaction worked okay
+    if (this.numberEventsUnmodeledLog > 0) {
+      this.NonConformingTxSubject.next({
+        caseID: this.caseID,
+        timestamp: new Date(),
+      });
+    }
     this.unmodeledEventLog.purgeLogs();
     this.caseID = id;
   }
@@ -206,6 +244,10 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     miningAlgorithm: ProcessMiningAlgorithm,
   ): void {
     this.miningAlgorithm = miningAlgorithm;
+  }
+
+  public getNonConformingTxSubjectObservable(): Observable<NonConformingTx> {
+    return this.NonConformingTxSubject.asObservable();
   }
 
   public async onPluginInit(): Promise<unknown> {
@@ -245,8 +287,36 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return `@hyperledger/cactus-plugin-ccmodel-hephaestus`;
   }
 
-  private createReceiptFromRunTransactionV1ExchangeBesu(
-    data: RunTransactionV1ExchangeBesu,
+  public setBesuTxObservable(
+    besuTxObservable: Observable<IRunTransactionV1Exchange>,
+  ): void {
+    this.besuTxObservable = besuTxObservable;
+  }
+
+  public setEthTxObservable(
+    ethTxObservable: Observable<RunTransactionV1Exchange>,
+  ): void {
+    this.ethTxObservable = ethTxObservable;
+  }
+
+  public setFabricTxObservable(
+    fabricTxObservable: Observable<IRunTxReqWithTxId>,
+  ): void {
+    this.fabricTxObservable = fabricTxObservable;
+  }
+
+  private isMonitoredMethod(ledger: LedgerType, methodName: string): boolean {
+    if (this.methodsToMonitor.get(ledger)!.includes(methodName)) {
+      return true;
+    }
+    this.log.info(
+      `Skipping monitoring for method ${methodName} in ledger ${ledger}.`,
+    );
+    return false;
+  }
+
+  private createReceiptFromIRunTransactionV1Exchange(
+    data: IRunTransactionV1Exchange,
   ): BesuV2TxReceipt {
     return {
       caseID: this.caseID,
@@ -262,8 +332,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
   }
 
-  private createReceiptFromRunTransactionV1ExchangeEth(
-    data: RunTransactionV1ExchangeEth,
+  private createReceiptFromRunTransactionV1Exchange(
+    data: RunTransactionV1Exchange,
   ): EthereumTxReceipt {
     return {
       caseID: this.caseID,
@@ -296,13 +366,19 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     };
   }
 
-  private watchRunTransactionV1ExchangeBesu(duration: number = 0): void {
-    const fnTag = `${this.className}#watchRunTransactionV1ExchangeBesu()`;
+  private watchIRunTransactionV1Exchange(duration: number = 0): void {
+    const fnTag = `${this.className}#watchIRunTransactionV1Exchange()`;
     this.log.debug(fnTag);
 
     if (!this.besuTxObservable) {
       this.log.debug(
         `${fnTag}-No Besu transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+    if (!this.methodsToMonitor.has(LedgerType.Besu2X)) {
+      this.log.info(
+        `No methods to monitor in ledger ${LedgerType.Besu2X}, monitoring skipped.`,
       );
       return;
     }
@@ -319,12 +395,20 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           : tap(),
       )
       .subscribe({
-        next: async (data: RunTransactionV1ExchangeBesu) => {
+        next: async (data: IRunTransactionV1Exchange) => {
           // Handle the data whenever a new value is received by the observer:
           // this includes creating the receipt, then the cross-chain event
           // and check its conformance to the model, if the model is already defined
-          const receipt =
-            this.createReceiptFromRunTransactionV1ExchangeBesu(data);
+          const dataReceivedTime = new Date();
+          if (
+            !this.isMonitoredMethod(LedgerType.Besu2X, data.request.methodName)
+          ) {
+            this.log.info(
+              `Skipping monitoring for method: ${data.request.methodName} in ledger ${LedgerType.Besu2X}`,
+            );
+            return;
+          }
+          const receipt = this.createReceiptFromIRunTransactionV1Exchange(data);
           const ccEvent = this.createCrossChainEventFromBesuReceipt(
             receipt,
             this.isModeling,
@@ -333,12 +417,18 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
+          this.log.info(
+            `EVAL-${fnTag}\n` +
+              `Transaction was created at: ${data.timestamp.getTime()}\n` +
+              `Data was received at: ${dataReceivedTime.getTime()}\n` +
+              `Latency ${millisecondsLatency(dataReceivedTime)} ms`,
+          );
         },
         error: (error: unknown) => {
           this.log.error(
             `${fnTag}- error`,
             error,
-            `receiving RunTransactionV1ExchangeBesu by Besu transaction observable`,
+            `receiving IRunTransactionV1Exchange by Besu transaction observable`,
             this.besuTxObservable,
           );
           throw error;
@@ -346,13 +436,19 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
-  private watchRunTransactionV1ExchangeEth(duration: number = 0): void {
-    const fnTag = `${this.className}#watchRunTransactionV1ExchangeEth()`;
+  private watchRunTransactionV1Exchange(duration: number = 0): void {
+    const fnTag = `${this.className}#watchRunTransactionV1Exchange()`;
     this.log.debug(fnTag);
 
     if (!this.ethTxObservable) {
       this.log.debug(
         `${fnTag}-No Ethereum transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+    if (!this.methodsToMonitor.has(LedgerType.Ethereum)) {
+      this.log.info(
+        `No methods to monitor in ledger ${LedgerType.Ethereum}, monitoring skipped.`,
       );
       return;
     }
@@ -369,12 +465,23 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           : tap(),
       )
       .subscribe({
-        next: async (data: RunTransactionV1ExchangeEth) => {
+        next: async (data: RunTransactionV1Exchange) => {
           // Handle the data whenever a new value is received by the observer
           // this includes creating the receipt, then the cross-chain event
           // and check its conformance to the model, if the model is already defined
-          const receipt =
-            this.createReceiptFromRunTransactionV1ExchangeEth(data);
+          const dataReceivedTime = new Date();
+          if (
+            !this.isMonitoredMethod(
+              LedgerType.Ethereum,
+              data.request.methodName,
+            )
+          ) {
+            this.log.info(
+              `Skipping monitoring for method: ${data.request.methodName} in ledger ${LedgerType.Ethereum}`,
+            );
+            return;
+          }
+          const receipt = this.createReceiptFromRunTransactionV1Exchange(data);
           const ccEvent = this.createCrossChainEventFromEthReceipt(
             receipt,
             this.isModeling,
@@ -383,12 +490,18 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
+          this.log.info(
+            `EVAL-${fnTag}\n` +
+              `Transaction was created at: ${data.timestamp.getTime()}\n` +
+              `Data was received at: ${dataReceivedTime.getTime()}\n` +
+              `Latency ${millisecondsLatency(dataReceivedTime)} ms`,
+          );
         },
         error: (error: unknown) => {
           this.log.error(
             `${fnTag}- error`,
             error,
-            `receiving RunTransactionV1ExchangeEth by Ethereum transaction observable`,
+            `receiving RunTransactionV1Exchange by Ethereum transaction observable`,
             this.ethTxObservable,
           );
           throw error;
@@ -403,6 +516,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     if (!this.fabricTxObservable) {
       this.log.debug(
         `${fnTag}-No Fabric transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+    if (!this.methodsToMonitor.has(LedgerType.Fabric2)) {
+      this.log.info(
+        `No methods to monitor in ledger ${LedgerType.Fabric2}, monitoring skipped.`,
       );
       return;
     }
@@ -423,6 +542,15 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           // Handle the data whenever a new value is received by the observer
           // this includes creating the receipt, then the cross-chain event
           // and check its conformance to the model, if the model is already defined
+          const dataReceivedTime = new Date();
+          if (
+            !this.isMonitoredMethod(LedgerType.Fabric2, data.request.methodName)
+          ) {
+            this.log.info(
+              `Skipping monitoring for method: ${data.request.methodName} in ledger ${LedgerType.Fabric2}`,
+            );
+            return;
+          }
           const receipt = this.createReceiptFromRunTxReqWithTxId(data);
           const ccEvent = this.createCrossChainEventFromFabricReceipt(
             receipt,
@@ -432,6 +560,12 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
           if (!this.isModeling && model && this.numberEventsUnmodeledLog != 0) {
             this.updateCcStateAndCheckConformance(ccEvent, model);
           }
+          this.log.info(
+            `EVAL-${fnTag}\n` +
+              `Transaction was created at: ${data.timestamp.getTime()}\n` +
+              `Data was received at: ${dataReceivedTime.getTime()}\n` +
+              `Latency ${millisecondsLatency(dataReceivedTime)} ms`,
+          );
         },
         error: (error: unknown) => {
           this.log.error(
@@ -445,13 +579,33 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       });
   }
 
+  public pollTxReceipts(): Promise<void> {
+    const fnTag = `${this.className}#pollTxReceipts()`;
+    this.log.debug(fnTag);
+    return this.amqpQueue.activateConsumer(
+      (message: {
+        getContent: () => unknown;
+        content: { toString: () => unknown };
+        ack: () => void;
+      }) => {
+        const messageContent = message.getContent();
+        this.log.debug(
+          `Received message from ${this.queueId}: ${message.content.toString()}`,
+        );
+        this.txReceipts.push(messageContent);
+        message.ack();
+      },
+      { noAck: false },
+    );
+  }
+
   public monitorTransactions(duration: number = -1): void {
     const fnTag = `${this.className}#monitorTransactions()`;
     this.log.debug(fnTag);
 
     this.startMonitoring = Date.now();
-    this.watchRunTransactionV1ExchangeBesu(duration);
-    this.watchRunTransactionV1ExchangeEth(duration);
+    this.watchIRunTransactionV1Exchange(duration);
+    this.watchRunTransactionV1Exchange(duration);
     this.watchRunTxReqWithTxId(duration);
     return;
   }
@@ -466,28 +620,15 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       ledger: ccEvent.blockchainID,
       lastStateUpdate: new Date(),
     };
-    const ledgerHasMethod = this.addAssetToCcState(ccEvent, assetState);
-    await this.checkConformance(ccModel, ledgerHasMethod);
+    this.addAssetToCcState(ccEvent, assetState);
+    await this.checkConformance(ccEvent, ccModel);
   }
 
   private addAssetToCcState(
     ccEvent: CrossChainEvent,
     assetState: AssetState,
-  ): boolean {
-    if (
-      this.sourceLedger == ccEvent.blockchainID &&
-      this.ccModel.sourceLedgerIncludesMethod(ccEvent.methodName)
-    ) {
-      this.ccModel.setAssetStateSourceLedger(this.caseID, assetState);
-      return true;
-    } else if (
-      this.targetLedger == ccEvent.blockchainID &&
-      this.ccModel.targetLedgerIncludesMethod(ccEvent.methodName)
-    ) {
-      this.ccModel.setAssetStateTargetLedger(this.caseID, assetState);
-      return true;
-    }
-    return false;
+  ): void {
+    this.ccModel.setAssetState(this.caseID, assetState);
   }
 
   private createCrossChainEventFromBesuReceipt(
@@ -501,7 +642,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       invocationType: besuReceipt.invocationType,
       methodName: besuReceipt.methodName,
       parameters: besuReceipt.parameters,
-      timestamp: besuReceipt.timestamp.toISOString(),
+      timestamp: besuReceipt.timestamp,
       identity: besuReceipt.from,
       cost: besuReceipt.gasUsed,
       carbonFootprint: CarbonFootPrintConstants(besuReceipt.blockchainID),
@@ -536,7 +677,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       invocationType: ethReceipt.invocationType,
       methodName: ethReceipt.methodName,
       parameters: ethReceipt.parameters,
-      timestamp: ethReceipt.timestamp.toISOString(),
+      timestamp: ethReceipt.timestamp,
       identity: ethReceipt.from,
       cost: calculateGasPriceEth(
         ethReceipt.gasUsed as number,
@@ -574,7 +715,7 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
       invocationType: fabricReceipt.invocationType,
       methodName: fabricReceipt.methodName,
       parameters: fabricReceipt.parameters,
-      timestamp: fabricReceipt.timestamp.toISOString(),
+      timestamp: fabricReceipt.timestamp,
       identity: fabricReceipt.signingCredentials.keychainRef,
       cost: fabricReceipt.cost || 0,
       carbonFootprint: CarbonFootPrintConstants(fabricReceipt.blockchainID),
@@ -789,20 +930,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     return this.crossChainModel.getModel(modelType);
   }
 
-  public setLedgerMethods(): void {
-    const logEntries = this.crossChainLog.logEntries;
-    logEntries.forEach((event) => {
-      if (this.sourceLedger == event.blockchainID) {
-        this.ccModel.setSourceLedgerMethod(event.methodName);
-      }
-      if (this.targetLedger == event.blockchainID) {
-        this.ccModel.setTargetLedgerMethod(event.methodName);
-      }
-    });
-  }
-
   public async createModel(
-    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.AlphaPlus,
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Inductive,
   ): Promise<string> {
     const logPath = await this.persistCrossChainLogJson();
     await this.aggregateCcTx();
@@ -814,23 +943,23 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
     ).trim();
     this.ccModel.setType(this.miningAlgorithm);
     this.saveModel(this.miningAlgorithm, ccModelFile);
-    this.setLedgerMethods();
+    this.stopModeling();
     return ccModelFile;
   }
 
   // creates a file with unmodeled logs and performs a conformance check
   private async checkConformance(
+    ccEvent: CrossChainEvent,
     ccModel: string,
-    ledgerHasMethod: boolean,
   ): Promise<string> {
     const logPath = await this.persistUnmodeledEventLog();
     const conformanceDetails = checkConformancePM4PY(logPath, ccModel);
-    return this.filterLogsByConformance(conformanceDetails, ledgerHasMethod);
+    return this.filterLogsByConformance(ccEvent, conformanceDetails);
   }
 
   private filterLogsByConformance(
+    ccEvent: CrossChainEvent,
     conformanceDetails: string | undefined,
-    ledgerHasMethod: boolean,
   ): string {
     const fnTag = `${this.className}#filterLogsByConformance()`;
     if (!conformanceDetails) {
@@ -842,9 +971,14 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
 
     if (
       diagnosis.includes("NON-CONFORMANCE") ||
-      diagnosis.includes("SKIPPED ACTIVITY") ||
-      !ledgerHasMethod
+      diagnosis.includes("SKIPPED ACTIVITY")
     ) {
+      // create NonConformingTx for bridge pausing
+      this.NonConformingTxSubject.next({
+        caseID: this.caseID,
+        ccEvent,
+        timestamp: new Date(),
+      });
       this.nonConformedCCTxs.push(this.caseID);
       this.unmodeledEventLog.logEntries.forEach((event) => {
         this.nonConformedCrossChainLog.addCrossChainEvent(event);
@@ -862,9 +996,8 @@ export class CcModelHephaestus implements ICactusPlugin, IPluginWebService {
         this.crossChainLog.addCrossChainEvent(event);
       });
       this.unmodeledEventLog.purgeLogs();
-      this.createModel(this.miningAlgorithm);
     }
-    console.log(details);
+    this.log.info(details);
     return diagnosis;
   }
 }

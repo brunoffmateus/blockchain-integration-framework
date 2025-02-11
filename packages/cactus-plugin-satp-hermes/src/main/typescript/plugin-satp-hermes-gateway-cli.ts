@@ -17,6 +17,7 @@ import { validateSatpBridgesConfig } from "./config-validating-functions/validat
 import path from "path";
 import { validateSatpEnableCrashRecovery } from "./config-validating-functions/validateSatpEnableCrashRecovery";
 import { validateKnexRepositoryConfig } from "./config-validating-functions/validateKnexRepositoryConfig";
+import { validateHephaestusOptions } from "./config-validating-functions/validateHephaestusOptions";
 
 export async function launchGateway(): Promise<void> {
   const logger = LoggerProvider.getOrCreate({
@@ -134,6 +135,12 @@ export async function launchGateway(): Promise<void> {
   });
   logger.debug("SATP Enable Crash Recovery is valid.");
 
+  logger.debug("Validating SATP HephaestusOptions...");
+  const hephaestusOptions = validateHephaestusOptions({
+    configValue: config.hephaestusOptions,
+  });
+  logger.debug("Valid SATP HephaestusOptions");
+
   logger.debug("SATP Bridges Config is valid.");
 
   logger.debug("Creating SATPGatewayConfig...");
@@ -157,6 +164,7 @@ export async function launchGateway(): Promise<void> {
     enableCrashRecovery,
     knexLocalConfig: localRepository,
     knexRemoteConfig: remoteRepository,
+    hephaestusOptions,
   };
   logger.debug("SATPGatewayConfig created successfully");
 
