@@ -8,6 +8,9 @@ import { Asset } from "./types/asset";
 import { TransactionIdUndefinedError } from "../../errors/bridge-erros";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
 import { LedgerType } from "@hyperledger/cactus-core-api";
+import { PluginLedgerConnectorBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { PluginLedgerConnectorEthereum } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { PluginLedgerConnectorFabric } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
 export class SATPBridgeManager implements BridgeManager {
   public static readonly CLASS_NAME = "SATPBridgeManager";
@@ -24,6 +27,17 @@ export class SATPBridgeManager implements BridgeManager {
   }
   public getNetworkType(): LedgerType {
     return this.config.network.getNetworkType();
+  }
+
+  public bridgeConnector():
+    | PluginLedgerConnectorBesu
+    | PluginLedgerConnectorEthereum
+    | PluginLedgerConnectorFabric {
+    return this.config.network.bridgeConnector();
+  }
+
+  public getMethodsToBeMonitored(): string[] {
+    return this.config.network.getMethodsToBeMonitored();
   }
 
   public async pauseBridge(): Promise<string> {

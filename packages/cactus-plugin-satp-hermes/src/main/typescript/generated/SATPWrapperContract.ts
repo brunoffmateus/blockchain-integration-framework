@@ -177,11 +177,14 @@ export interface SATPWrapperContractEventsContext {
 }
 export type SATPWrapperContractMethodNames =
   | 'new'
+  | 'addBridge'
+  | 'admin_bridge_address'
   | 'assign'
-  | 'bridge_address'
+  | 'bridge_addresses'
   | 'burn'
   | 'getAllAssetsIDs'
   | 'getToken'
+  | 'isBridge'
   | 'isPaused'
   | 'lock'
   | 'mint'
@@ -279,6 +282,21 @@ export interface SATPWrapperContract {
    * Constant: false
    * StateMutability: nonpayable
    * Type: function
+   * @param _bridge Type: address, Indexed: false
+   */
+  addBridge(_bridge: string): MethodReturnContext;
+  /**
+   * Payable: false
+   * Constant: true
+   * StateMutability: view
+   * Type: function
+   */
+  admin_bridge_address(): MethodConstantReturnContext<string>;
+  /**
+   * Payable: false
+   * Constant: false
+   * StateMutability: nonpayable
+   * Type: function
    * @param tokenId Type: string, Indexed: false
    * @param receiver_account Type: address, Indexed: false
    * @param amount Type: uint256, Indexed: false
@@ -293,8 +311,9 @@ export interface SATPWrapperContract {
    * Constant: true
    * StateMutability: view
    * Type: function
+   * @param parameter0 Type: uint256, Indexed: false
    */
-  bridge_address(): MethodConstantReturnContext<string>;
+  bridge_addresses(parameter0: string): MethodConstantReturnContext<string>;
   /**
    * Payable: false
    * Constant: false
@@ -319,6 +338,14 @@ export interface SATPWrapperContract {
    * @param tokenId Type: string, Indexed: false
    */
   getToken(tokenId: string): MethodConstantReturnContext<TokenResponse>;
+  /**
+   * Payable: false
+   * Constant: true
+   * StateMutability: view
+   * Type: function
+   * @param _address Type: address, Indexed: false
+   */
+  isBridge(_address: string): MethodConstantReturnContext<boolean>;
   /**
    * Payable: false
    * Constant: true

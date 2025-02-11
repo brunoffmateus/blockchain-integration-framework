@@ -406,13 +406,26 @@ beforeAll(async () => {
     expect(balance.toString()).toBe(initTransferValue);
   }
   {
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Fabric2, [
+      "CreateAsset",
+      "LockAsset",
+      "DeleteAsset",
+    ]);
+    methodsToMonitor.set(LedgerType.Ethereum, [
+      "createAsset",
+      "lockAsset",
+      "unLockAsset",
+      "deleteAsset",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       ethTxObservable: ethereumConnector.getTxSubjectObservable(),
       fabricTxObservable: fabricConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Ethereum,
-      targetLedger: LedgerType.Fabric2,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -529,7 +542,7 @@ beforeAll(async () => {
   {
     hephaestus.monitorTransactions(0);
 
-    hephaestus.setCaseId("cctx1");
+    hephaestus.newCaseId("cctx1");
 
     const lockResEth1 = await ethereumApiClient.invokeContractV1({
       contract: {
@@ -575,7 +588,7 @@ beforeAll(async () => {
     modeledTransactions = 3;
     expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
-    hephaestus.setCaseId("cctx2");
+    hephaestus.newCaseId("cctx2");
 
     const lockResEth2 = await ethereumApiClient.invokeContractV1({
       contract: {
@@ -625,13 +638,12 @@ beforeAll(async () => {
     const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
     const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
-    hephaestus.setIsModeling(false);
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
   }
 });
 
 test("Tx1 - Unlock after lock", async () => {
-  hephaestus.setCaseId("unmodeled_cctx1");
+  hephaestus.newCaseId("unmodeled_cctx1");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -675,7 +687,7 @@ test("Tx1 - Unlock after lock", async () => {
 });
 
 test("Tx2 - Skip escrow", async () => {
-  hephaestus.setCaseId("unmodeled_cctx2");
+  hephaestus.newCaseId("unmodeled_cctx2");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -696,7 +708,7 @@ test("Tx2 - Skip escrow", async () => {
 });
 
 test("Tx3 - Skip burn", async () => {
-  hephaestus.setCaseId("unmodeled_cctx3");
+  hephaestus.newCaseId("unmodeled_cctx3");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -734,7 +746,7 @@ test("Tx3 - Skip burn", async () => {
 });
 
 test("Tx4 - Double mint", async () => {
-  hephaestus.setCaseId("unmodeled_cctx4");
+  hephaestus.newCaseId("unmodeled_cctx4");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -798,54 +810,6 @@ test("Tx4 - Double mint", async () => {
   expect(createResFabric2).toBeTruthy();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-});
-
-test("Tx5 - Asset transfer from Fabric to Ethereum", async () => {
-  hephaestus.setCaseId("unmodeled_cctx5");
-  hephaestus.purgeNonConformedEvents();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const lockResFabric1 = await fabricApiClient.runTransactionV1({
-    contractName: fabricContractName,
-    channelName,
-    params: ["tx5_asset_fabric"],
-    methodName: "LockAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: fabricSigningCredential,
-  });
-  expect(lockResFabric1).toBeTruthy();
-
-  const deleteResFabric1 = await fabricApiClient.runTransactionV1({
-    contractName: fabricContractName,
-    channelName,
-    params: ["tx5_asset_fabric"],
-    methodName: "DeleteAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: fabricSigningCredential,
-  });
-  expect(deleteResFabric1).toBeTruthy();
-
-  const createResEth = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "createAsset",
-    params: ["asset2_eth", 10],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(createResEth).toBeTruthy();
-
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 

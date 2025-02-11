@@ -47,7 +47,8 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
 
     string[] ids;
 
-    address public bridge_address;
+    address[] public bridge_addresses;
+    address public admin_bridge_address;
 
     event Wrap(string indexed tokenId, address contractAddress, TokenType tokenType, address owner);
     event Unwrap(string indexed tokenId);
@@ -57,14 +58,40 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
     event Burn(string indexed tokenId, uint256 amount);
     event Assign(string indexed tokenId, address receiver_account, uint256 amount);
 
-    constructor(address _bridge_address)  Ownable(_bridge_address) {
-        bridge_address = address(_bridge_address);
+    modifier onlyBridge() {
+        require(isBridge(msg.sender), "Caller is not a bridge");
+        _;
     }
 
-    function unpause() external onlyOwner whenPaused {
+    modifier onlyAdminBridge() {
+        require(msg.sender == admin_bridge_address, "Caller is not the admin bridge");
+        _;
+    }
+
+    constructor(address _bridge_address)  Ownable(_bridge_address) {
+        bridge_addresses.push(_bridge_address);
+        admin_bridge_address = address(_bridge_address);
+    }
+
+    function isBridge(address _address) public view returns (bool) {
+        for (uint i = 0; i < bridge_addresses.length; i++) {
+            if (bridge_addresses[i] == _address) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function addBridge(address _bridge) external onlyOwner {
+        require(!isBridge(_bridge), "Address is already a bridge");
+        bridge_addresses.push(_bridge);
+    }
+
+    function unpause() external onlyAdminBridge whenPaused {
         _unpause();
     }
-    function pause() external onlyOwner whenNotPaused{
+
+    function pause() external onlyAdminBridge whenNotPaused {
         _pause();
     }
     
@@ -72,7 +99,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         return paused();
     }
 
-    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner, InteractionSignature[] memory interactions ) external onlyOwner whenNotPaused returns (bool wrapSuccess) {
+    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner, InteractionSignature[] memory interactions ) external onlyBridge whenNotPaused returns (bool wrapSuccess) {
         if(tokens[tokenId].contractAddress != address(0)) {
             revert TokenAlreadyWrapped(tokenId);
         }
@@ -91,11 +118,11 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         return true;
     }
 
-    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner) external onlyOwner whenNotPaused returns (bool wrapSuccess) {
+    function wrap(address contractAddress, TokenType tokenType, string memory tokenId, address owner) external onlyBridge whenNotPaused returns (bool wrapSuccess) {
         return this.wrap(contractAddress, tokenType, tokenId, owner, new InteractionSignature[](0));
     }
 
-    function unwrap(string memory tokenId) external onlyOwner whenNotPaused returns (bool success) {
+    function unwrap(string memory tokenId) external onlyBridge whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)) {
             revert TokenNotAvailable(tokenId);
         }
@@ -109,7 +136,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         return true;
     }
 
-    function lock(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
+    function lock(string memory tokenId, uint256 amount) external onlyBridge whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -125,7 +152,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         revert TokenNotLocked(tokenId);
     } 
 
-    function unlock(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) { //ammount
+    function unlock(string memory tokenId, uint256 amount) external onlyBridge whenNotPaused returns (bool success) { //ammount
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -145,7 +172,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         revert TokenNotUnlocked(tokenId);
     } 
 
-    function mint(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
+    function mint(string memory tokenId, uint256 amount) external onlyBridge whenNotPaused returns (bool success) {
         if(tokens[tokenId].contractAddress == address(0)){
             revert TokenNotAvailable(tokenId);
         }
@@ -157,7 +184,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         return true;
     }
 
-    function burn(string memory tokenId, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
+    function burn(string memory tokenId, uint256 amount) external onlyBridge whenNotPaused returns (bool success) {
         require(tokens[tokenId].amount >= amount, "burn asset asset is not locked");
 
         require(interact(tokenId, InteractionType.BURN, amount), "burn asset call failed");
@@ -168,7 +195,7 @@ contract SATPWrapperContract is Ownable, ITraceableContract, Pausable{
         return true;
     }
 
-    function assign(string memory tokenId, address receiver_account, uint256 amount) external onlyOwner whenNotPaused returns (bool success) {
+    function assign(string memory tokenId, address receiver_account, uint256 amount) external onlyBridge whenNotPaused returns (bool success) {
         require(tokens[tokenId].amount >= amount, "assign asset asset is not locked");
 
         require(interact(tokenId, InteractionType.ASSIGN, amount, receiver_account), "assign asset call failed");

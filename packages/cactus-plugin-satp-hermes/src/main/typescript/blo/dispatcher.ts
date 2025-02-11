@@ -36,6 +36,17 @@ import {
   ILocalLogRepository,
   IRemoteLogRepository,
 } from "../repository/interfaces/repository";
+import {
+  CcModelHephaestus,
+  IPluginCcModelHephaestusOptions,
+  ProcessMiningAlgorithm,
+} from "@hyperledger/cactus-plugin-ccmodel-hephaestus";
+import { PluginLedgerConnectorBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { PluginLedgerConnectorEthereum } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { PluginLedgerConnectorFabric } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { SATPBridgeManager } from "../core/stage-services/satp-bridge/satp-bridge-manager";
+import { Observable } from "rxjs";
+import { NonConformingTx } from "@hyperledger/cactus-plugin-ccmodel-hephaestus/dist/types/main/typescript/plugin-ccmodel-hephaestus";
 
 export interface BLODispatcherOptions {
   logger: Logger;
@@ -48,6 +59,8 @@ export interface BLODispatcherOptions {
   defaultRepository: boolean;
   localRepository: ILocalLogRepository;
   remoteRepository?: IRemoteLogRepository;
+  hephaestusOptions?: IPluginCcModelHephaestusOptions;
+  nonConformedTxObservable?: Observable<NonConformingTx>;
 }
 
 export class BLODispatcher {
@@ -64,6 +77,10 @@ export class BLODispatcher {
   private defaultRepository: boolean;
   private localRepository: ILocalLogRepository;
   private remoteRepository: IRemoteLogRepository | undefined;
+  private hephaestus?: CcModelHephaestus;
+  private nonConformedTxObservable?: Observable<NonConformingTx>;
+  // private pausedBridges: boolean = false;
+  private allowTransactions: boolean = true;
 
   constructor(public readonly options: BLODispatcherOptions) {
     const fnTag = `${BLODispatcher.CLASS_NAME}#constructor()`;
@@ -100,20 +117,135 @@ export class BLODispatcher {
     };
 
     this.manager = new SATPManager(SATPManagerOpts);
+
+    this.nonConformedTxObservable = options.nonConformedTxObservable;
+
+    if (options.hephaestusOptions) {
+      this.hephaestus = new CcModelHephaestus(options.hephaestusOptions);
+      const bridgeList = this.bridgeManager.getBridgesList();
+      bridgeList.forEach((network) => {
+        const bridge = this.bridgeManager.getBridge(network);
+        const connector = bridge.bridgeConnector();
+        if (connector instanceof PluginLedgerConnectorBesu) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setBesuTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        } else if (connector instanceof PluginLedgerConnectorEthereum) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setEthTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        } else if (connector instanceof PluginLedgerConnectorFabric) {
+          this.logger.debug(`Connector is ${network}`);
+          this.hephaestus!.setFabricTxObservable(
+            connector.getTxSubjectObservable(),
+          );
+        }
+      });
+    }
   }
 
   public get className(): string {
     return BLODispatcher.CLASS_NAME;
   }
 
-  public async pauseBridges(): Promise<void> {
-    await this.bridgeManager.pauseBridges();
+  // for testing:
+  public getBridge(network: string): SATPBridgeManager {
+    return this.bridgeManager.getBridge(network);
   }
-  public async unpauseBridges(): Promise<void> {
-    await this.bridgeManager.unpauseBridges();
+
+  public getBridgesList(): string[] {
+    return this.bridgeManager.getBridgesList();
+  }
+
+  public setNonConformingTxObservable(
+    nonConformedTxObservable: Observable<NonConformingTx>,
+  ): void {
+    this.nonConformedTxObservable = nonConformedTxObservable;
+    this.monitorNonConformingTxs();
+  }
+
+  private monitorNonConformingTxs(): void {
+    const fnTag = `${this.className}#monitorNonConformingTxs()`;
+    this.logger.debug(fnTag);
+
+    if (!this.nonConformedTxObservable) {
+      this.logger.debug(
+        `${fnTag}-No Non-conformed Transaction observable provided, monitoring skipped`,
+      );
+      return;
+    }
+
+    this.nonConformedTxObservable.subscribe({
+      next: async (data: NonConformingTx) => {
+        // Pauses the bridge automatically whenever a new value is received by the observer
+        const receivedTime = new Date().getTime();
+        const paused = await this.pauseBridges();
+        const createdTime = data.timestamp.getTime();
+        const ccEventTime = data.nonConformingEventEvent?.timestamp.getTime();
+        if (ccEventTime) {
+          this.logger.debug(
+            `NON CONFORMITY CAPTURED AT: ${createdTime}. OBSERVER RECEIVED AT: ${receivedTime} | ` +
+              `Latency: ${receivedTime - createdTime} ms | ` +
+              `Latency from \"invokeContract()\": ${receivedTime - ccEventTime} ms\n` +
+              `Latency in \"pauseBridges()\": ${paused.getTime() - ccEventTime} ms | ` +
+              `Latency in \"pauseBridges()\" from \"invokeContract()\": ${paused.getTime() - ccEventTime} ms`,
+          );
+        } else {
+          this.logger.debug(
+            `CaseId changed without full transaction being completed...`,
+            `NON CONFORMITY CAPTURED AT: ${createdTime}. OBSERVER RECEIVED AT: ${receivedTime} | ` +
+              `Latency: ${receivedTime - createdTime} ms | ` +
+              `Latency in \"pauseBridges()\": ${paused.getTime() - createdTime} ms | `,
+          );
+        }
+      },
+      error: (error: unknown) => {
+        this.logger.error(
+          `${fnTag}- error`,
+          error,
+          `receiving NonConformingTx by observable`,
+          this.nonConformedTxObservable,
+        );
+        throw error;
+      },
+    });
+  }
+
+  public startMonitoring(duration: number = -1): void {
+    this.hephaestus?.monitorTransactions(duration);
+  }
+
+  public async getCCModel(
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Inductive,
+  ): Promise<string> {
+    return (
+      this.hephaestus?.getModel(miningAlgorithm) ||
+      "Hephaestus not active in this Gateway"
+    );
+  }
+
+  public async createModel(
+    miningAlgorithm: ProcessMiningAlgorithm = ProcessMiningAlgorithm.Inductive,
+  ): Promise<string> {
+    return (
+      this.hephaestus?.createModel(miningAlgorithm) ||
+      "Hephaestus not active in this Gateway"
+    );
+  }
+
+  public async pauseBridges(): Promise<Date> {
+    this.allowTransactions = false;
+    return await this.bridgeManager.pauseBridges();
+  }
+  public async unpauseBridges(): Promise<Date> {
+    const unpauseTime = await this.bridgeManager.unpauseBridges();
+    this.allowTransactions = true;
+    return unpauseTime;
   }
   public async bridgesArePaused(): Promise<void> {
-    await this.bridgeManager.bridgesArePaused();
+    return await this.bridgeManager.bridgesArePaused();
   }
 
   public async getOrCreateWebServices(): Promise<IWebServiceEndpoint[]> {
@@ -204,7 +336,28 @@ export class BLODispatcher {
     return executeGetStatus(this.level, req, this.manager);
   }
 
-  public async Transact(req: TransactRequest): Promise<TransactResponse> {
+  public async Transact(
+    req: TransactRequest,
+  ): Promise<TransactResponse | null> {
+    // This variable prevents method calls while they are paused, avoiding test failures.
+    if (!this.allowTransactions) {
+      this.logger.info(
+        `Transactions not available at the moment, request canceled: ${req}`,
+      );
+      return null;
+    }
+    // this.pausedBridges = await this.checkMisbehaviour();
+    // if (this.pausedBridges) {
+    //   this.logger.info(
+    //     `Bridges are currently paused, transaction request canceled: ${req}`,
+    //   );
+    //   return null;
+    // }
+
+    // const caseId = `TxId_${new Date().getTime()}`;
+    // this.logger.debug(`CaseId: ${caseId}`);
+    // this.hephaestus?.newCaseId(caseId);
+
     //TODO pre-verify verify input
     this.logger.info(`Transact request: ${req}`);
     const res = await executeTransact(
@@ -213,8 +366,26 @@ export class BLODispatcher {
       this.manager,
       this.orchestrator,
     );
+
+    // await this.checkMisbehaviour();
+
     return res;
   }
+
+  // private async checkMisbehaviour(): Promise<boolean> {
+  //   if (this.hephaestus && !this.hephaestus.isCurrentlyModeling) {
+  //     const nonConformedEvents = this.hephaestus.numberEventsNonConformedLog;
+  //     this.logger.debug(
+  //       `Number of non conforming events in asset transaction: ${nonConformedEvents}`,
+  //     );
+  //     if (nonConformedEvents > 0) {
+  //       console.log(`pausing bridges: ${this.pausedBridges}`);
+  //       await this.pauseBridges();
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
 
   public async GetSessionIds(): Promise<string[]> {
     this.logger.info(`Get Session Ids request`);

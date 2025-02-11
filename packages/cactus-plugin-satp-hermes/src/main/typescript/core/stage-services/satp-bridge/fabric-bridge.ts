@@ -64,6 +64,10 @@ export class FabricBridge implements NetworkBridge {
     return this.connector;
   }
 
+  public getMethodsToBeMonitored(): string[] {
+    return ["wrap", "unwrap", "lock", "unlock", "mint", "burn", "assign"];
+  }
+
   public async pauseBridge(): Promise<TransactionResponse> {
     this.log.debug(`Pausing Bridge`);
     const response = await this.connector.transact({

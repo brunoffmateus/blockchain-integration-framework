@@ -73,7 +73,7 @@ The plugin employs a structured pipeline to create a cross-chain model from moni
 
 2. **Receipt Polling**: Upon receiving of transactional data, the plugin processes it into transaction receipts. This step involves precessing transactional information received such as transaction IDs, timestamps, and other parameters.
 
-3. **Cross-Chain Event Logging**: Processed receipts information can then be used to create cross-chain events, forming a cross-chain event log.
+3. **Cross-Chain Event Logging**: Processed receipt information can then be used to create cross-chain events, forming a cross-chain event log.
 
 4. **Cross-Chain Model**: The plugin uses the cross chain event log to create the cross-chain model with the information received from the connectors, using the Process Mining for Python (PM4PY) library. This model can then be used to verify new and unmodeled transactional information received from the connectors.
 
@@ -113,7 +113,7 @@ hephaestus = new CcModelHephaestus(hephaestusOptions);
 We set the desired caseID and start monitoring transactions. These are then processed into cross-chain events when received and added to the cross-chain event log:
 
 ```typescript
-hephaestus.setCaseId("Desired_CaseID");
+hephaestus.newCaseId("Desired_CaseID");
 hephaestus.monitorTransactions();
 ```
 
@@ -126,7 +126,7 @@ await hephaestus.createModel();
 After creating a model with the desired event logs, we can turn off modeling so that newly received transactional data will be compared against the model through a conformance check:
 
 ```typescript
-hephaestus.setIsModeling(false);
+hephaestus.stopModeling();
 ```
 
 ## Contributing

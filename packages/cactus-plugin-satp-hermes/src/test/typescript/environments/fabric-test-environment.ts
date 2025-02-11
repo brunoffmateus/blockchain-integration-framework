@@ -71,6 +71,7 @@ export class FabricTestEnvironment {
   public configFabric!: Configuration;
   public fabricChannelName!: string;
   public satpContractName!: string;
+  public satpWrapperContractName!: string;
   public clientId!: string;
   public fabricConfig!: FabricConfig;
   public fabricServer!: Server;
@@ -293,7 +294,7 @@ export class FabricTestEnvironment {
   // Deploys smart contracts and sets up configurations for testing
   public async deployAndSetupContracts(claimFormat: ClaimFormat) {
     this.satpContractName = "satp-contract";
-    const satpWrapperContractName = "satp-wrapper-contract";
+    this.satpWrapperContractName = "satp-wrapper-contract";
     const satpContractRelPath =
       "./../fabric/contracts/satp-contract/chaincode-typescript";
     const wrapperSatpContractRelPath =
@@ -563,7 +564,7 @@ export class FabricTestEnvironment {
       channelId: this.fabricChannelName,
       ccVersion: "1.0.0",
       sourceFiles: wrapperSourceFiles,
-      ccName: satpWrapperContractName,
+      ccName: this.satpWrapperContractName,
       targetOrganizations: [
         FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
         FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
@@ -630,7 +631,7 @@ export class FabricTestEnvironment {
     );
 
     const initializeResponse2 = await this.apiClient.runTransactionV1({
-      contractName: satpWrapperContractName,
+      contractName: this.satpWrapperContractName,
       channelName: this.fabricChannelName,
       params: [this.userIdentity.mspId],
       methodName: "Initialize",
@@ -656,7 +657,7 @@ export class FabricTestEnvironment {
     });
 
     const setBridgeResponse2 = await this.apiClient.runTransactionV1({
-      contractName: satpWrapperContractName,
+      contractName: this.satpWrapperContractName,
       channelName: this.fabricChannelName,
       params: ["Org2MSP", this.bridge_id],
       methodName: "setBridge",
@@ -672,8 +673,21 @@ export class FabricTestEnvironment {
       `SATPWrapper.setBridge(): ${JSON.stringify(setBridgeResponse.data)}`,
     );
 
+    const setAdminBridgeResponse = await this.apiClient.runTransactionV1({
+      contractName: this.satpWrapperContractName,
+      channelName: this.fabricChannelName,
+      params: ["Org2MSP"],
+      methodName: "setAdminBridge",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: this.fabricSigningCredential,
+    });
+
+    expect(setAdminBridgeResponse).not.toBeUndefined();
+    expect(setAdminBridgeResponse.status).toBeGreaterThan(199);
+    expect(setAdminBridgeResponse.status).toBeLessThan(300);
+
     const responseClientId = await this.apiClient.runTransactionV1({
-      contractName: satpWrapperContractName,
+      contractName: this.satpWrapperContractName,
       channelName: this.fabricChannelName,
       params: [],
       methodName: "ClientAccountID",
@@ -710,7 +724,7 @@ export class FabricTestEnvironment {
       network: this.network,
       signingCredential: this.bridgeFabricSigningCredential,
       channelName: this.fabricChannelName,
-      contractName: satpWrapperContractName,
+      contractName: this.satpWrapperContractName,
       options: this.connectorOptions,
       bungeeOptions: this.bungeeOptions,
       claimFormat: claimFormat,

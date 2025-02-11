@@ -1,0 +1,271 @@
+[33m59347d9ca[m[33m ([m[1;36mHEAD -> [m[1;32m3104-pausing-RxJS[m[33m, [m[1;31morigin/3104-pausing-RxJS[m[33m)[m HEAD@{0}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33m658dd792d[m HEAD@{1}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33m4f44d1634[m HEAD@{2}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33m91b3d0080[m HEAD@{3}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33ma67e2b8cb[m[33m ([m[1;31morigin/3104-pausing-and-hephaestus[m[33m, [m[1;32m3104-pausing-and-hephaestus[m[33m)[m HEAD@{4}: checkout: moving from 3104-pausing-and-hephaestus to 3104-pausing-RxJS
+[33ma67e2b8cb[m[33m ([m[1;31morigin/3104-pausing-and-hephaestus[m[33m, [m[1;32m3104-pausing-and-hephaestus[m[33m)[m HEAD@{5}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33m186f6791c[m HEAD@{6}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33m004a0ff0f[m HEAD@{7}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33mc52f11fe4[m HEAD@{8}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33mb1349ec11[m HEAD@{9}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33me1d0e07d8[m HEAD@{10}: commit (amend): feat(satp-hermes): integrating Hephaestus with SATP
+[33mdf3c8081a[m HEAD@{11}: commit: feat(satp-hermes): integrating Hephaestus with SATP
+[33m2aee771db[m HEAD@{12}: commit (amend): feat(hephaestus): SATP cross chain modeling
+[33m841ef12cc[m HEAD@{13}: commit (amend): feat(hephaestus): SATP cross chain modeling
+[33m5aaf87a32[m HEAD@{14}: checkout: moving from main to 3104-pausing-and-hephaestus
+[33mdba6162ad[m[33m ([m[1;31mupstream/main[m[33m, [m[1;32mmain[m[33m)[m HEAD@{15}: checkout: moving from dba6162ad5cedbd6afc8d23a8a9fb1a0c8996ad4 to main
+[33mdba6162ad[m[33m ([m[1;31mupstream/main[m[33m, [m[1;32mmain[m[33m)[m HEAD@{16}: checkout: moving from 3104-pausing-and-hephaestus to upstream/main
+[33m5aaf87a32[m HEAD@{17}: commit (amend): feat(hephaestus): process mining changes
+[33m9871d4caf[m HEAD@{18}: checkout: moving from satp-3104 to 3104-pausing-and-hephaestus
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{19}: checkout: moving from 3104-pausing-and-hephaestus to satp-3104
+[33m9871d4caf[m HEAD@{20}: commit: feat(hephaestus): process mining changes
+[33m9f07ae292[m[33m ([m[1;31morigin/3104-updated[m[33m, [m[1;32m3104-updated[m[33m)[m HEAD@{21}: checkout: moving from 3104-updated to 3104-pausing-and-hephaestus
+[33m9f07ae292[m[33m ([m[1;31morigin/3104-updated[m[33m, [m[1;32m3104-updated[m[33m)[m HEAD@{22}: commit (amend): feat(hephaestus): bridge pausing
+[33m0055ec413[m HEAD@{23}: commit (amend): feat(hephaestus): bridge pausing
+[33m9e38b59d8[m HEAD@{24}: commit (amend): feat(hephaestus): bridge pausing
+[33m2832489bf[m HEAD@{25}: commit (amend): feat(hephaestus): bridge pausing
+[33maffc45fd2[m HEAD@{26}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m25af14632[m HEAD@{27}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m93d7edbad[m HEAD@{28}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m45f795103[m HEAD@{29}: commit (amend): feat(hephaestus): smart contract defense mechanisms 2025
+[33m8d0287901[m HEAD@{30}: commit (amend): feat(hephaestus): smart contract defense mechanisms 2025
+[33m9af7b63a3[m HEAD@{31}: reset: moving to 9af7b63a3
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{32}: reset: moving to 28df880fc
+[33m9af7b63a3[m HEAD@{33}: checkout: moving from satp-hephaestus-3104 to 3104-updated
+[33mf0e66d933[m[33m ([m[1;31morigin/satp-hephaestus-3104[m[33m, [m[1;32msatp-hephaestus-3104[m[33m)[m HEAD@{34}: checkout: moving from 3104-updated to satp-hephaestus-3104
+[33m9af7b63a3[m HEAD@{35}: commit (amend): feat(hephaestus): smart contract defense mechanisms 2025
+[33m423a59928[m HEAD@{36}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m20c3ef697[m HEAD@{37}: commit: feat(hephaestus): smart contract defense mechanisms
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{38}: checkout: moving from satp-dev to 3104-updated
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{39}: checkout: moving from satp-dev-copy to satp-dev
+[33m07423873f[m HEAD@{40}: commit (cherry-pick): feat(hephaestus): smart contract defense mechanisms
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{41}: checkout: moving from satp-dev to satp-dev-copy
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{42}: checkout: moving from satp-hephaestus-3104 to satp-dev
+[33mf0e66d933[m[33m ([m[1;31morigin/satp-hephaestus-3104[m[33m, [m[1;32msatp-hephaestus-3104[m[33m)[m HEAD@{43}: checkout: moving from satp-3104 to satp-hephaestus-3104
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{44}: checkout: moving from satp-hephaestus-3104 to satp-3104
+[33mf0e66d933[m[33m ([m[1;31morigin/satp-hephaestus-3104[m[33m, [m[1;32msatp-hephaestus-3104[m[33m)[m HEAD@{45}: checkout: moving from satp-dev to satp-hephaestus-3104
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{46}: checkout: moving from satp-hephaestus-3104 to satp-dev
+[33mf0e66d933[m[33m ([m[1;31morigin/satp-hephaestus-3104[m[33m, [m[1;32msatp-hephaestus-3104[m[33m)[m HEAD@{47}: commit (amend): feat(satp-hermes): pausing in SATP bridges
+[33m3f4c7291b[m HEAD@{48}: commit: feat(satp-hermes): pausing in SATP bridges
+[33m41fbf54c2[m HEAD@{49}: checkout: moving from satp-hephaestus-idea to satp-hephaestus-3104
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{50}: checkout: moving from satp-dev to satp-hephaestus-idea
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{51}: checkout: moving from satp-3104 to satp-dev
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{52}: checkout: moving from satp-hephaestus-modeling-rebase to satp-3104
+[33m5d8611a69[m[33m ([m[1;31morigin/satp-hephaestus-modeling-rebase[m[33m, [m[1;32msatp-hephaestus-modeling-rebase[m[33m)[m HEAD@{53}: commit: rebase gone wrong
+[33mcf88debe7[m HEAD@{54}: reset: moving to cf88debe7
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{55}: reset: moving to 28df880fcc779490f63894d74027f94e29f8381f
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{56}: reset: moving to 28df880fc
+[33m0ac7ee0e8[m HEAD@{57}: commit (cherry-pick): feat(hephaestus): smart contract defense mechanisms
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{58}: reset: moving to 28df880fc
+[33mcf88debe7[m HEAD@{59}: cherry-pick: feat(hephaestus): change ccModel to petri net file
+[33ma8eb641ef[m HEAD@{60}: commit (cherry-pick): feat(hephaestus): add process mining algorithms
+[33mb874f99b8[m HEAD@{61}: commit (cherry-pick): fix(ccmodel-hepheastus): pr fixes
+[33meb9ff3803[m HEAD@{62}: commit (cherry-pick): feat(hephaestus): smart contract defense mechanisms
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{63}: checkout: moving from satp-dev to satp-hephaestus-modeling-rebase
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{64}: checkout: moving from satp-hephaestus-modeling to satp-dev
+[33m28cc95a63[m[33m ([m[1;31morigin/satp-hephaestus-modeling[m[33m, [m[1;32msatp-hephaestus-modeling[m[33m)[m HEAD@{65}: checkout: moving from satp-hephaestus-modeling-rebase to satp-hephaestus-modeling
+[33m28cc95a63[m[33m ([m[1;31morigin/satp-hephaestus-modeling[m[33m, [m[1;32msatp-hephaestus-modeling[m[33m)[m HEAD@{66}: rebase: updating HEAD
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{67}: rebase: checkout upstream/satp-dev
+[33m28cc95a63[m[33m ([m[1;31morigin/satp-hephaestus-modeling[m[33m, [m[1;32msatp-hephaestus-modeling[m[33m)[m HEAD@{68}: checkout: moving from satp-hephaestus-modeling to satp-hephaestus-modeling-rebase
+[33m28cc95a63[m[33m ([m[1;31morigin/satp-hephaestus-modeling[m[33m, [m[1;32msatp-hephaestus-modeling[m[33m)[m HEAD@{69}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33m4ae3a385d[m HEAD@{70}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33meef70f72a[m HEAD@{71}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33m6d797704d[m HEAD@{72}: commit (cherry-pick): feat(hephaestus): change ccModel to petri net file
+[33m5ffe33806[m HEAD@{73}: reset: moving to 5ffe33806
+[33mc75ac489d[m HEAD@{74}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33maa4dc40ab[m HEAD@{75}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33m3c601444f[m HEAD@{76}: commit (cherry-pick): feat(hephaestus): change ccModel to petri net file
+[33m5ffe33806[m HEAD@{77}: commit (cherry-pick): feat(hephaestus): add process mining algorithms
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{78}: checkout: moving from satp-3104 to satp-hephaestus-modeling
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{79}: checkout: moving from hephaestus-process-mining to satp-3104
+[33m76c8b877c[m[33m ([m[1;31morigin/hephaestus-process-mining[m[33m, [m[1;32mhephaestus-process-mining[m[33m)[m HEAD@{80}: checkout: moving from satp-3104 to hephaestus-process-mining
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{81}: reset: moving to 09040f75f
+[33m6750aa935[m HEAD@{82}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{83}: checkout: moving from hephaestus-process-mining to satp-3104
+[33m76c8b877c[m[33m ([m[1;31morigin/hephaestus-process-mining[m[33m, [m[1;32mhephaestus-process-mining[m[33m)[m HEAD@{84}: commit (amend): feat(hephaestus): change ccModel to petri net file
+[33m93fda91da[m HEAD@{85}: commit: feat(hephaestus): change ccModel to petri net file
+[33mf055af41e[m HEAD@{86}: commit: feat(hephaestus): add process mining algorithms
+[33m36959b326[m HEAD@{87}: checkout: moving from main to hephaestus-process-mining
+[33m36959b326[m HEAD@{88}: checkout: moving from satp-3104 to main
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{89}: checkout: moving from satp-dev to satp-3104
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{90}: checkout: moving from 28df880fcc779490f63894d74027f94e29f8381f to satp-dev
+[33m28df880fc[m[33m ([m[1;32msatp-hephaestus-idea[m[33m, [m[1;32msatp-dev[m[33m)[m HEAD@{91}: checkout: moving from main to upstream/satp-dev
+[33m36959b326[m HEAD@{92}: checkout: moving from 36959b326f8a4c08c99fe2bf87b00c7996d49edd to main
+[33m36959b326[m HEAD@{93}: checkout: moving from satp-3104 to upstream/main
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{94}: checkout: moving from test-refactor-pr to satp-3104
+[33me527675cd[m[33m ([m[1;31morigin/test-refactor-pr[m[33m, [m[1;32mtest-refactor-pr[m[33m)[m HEAD@{95}: commit (amend): refactor(satp-hermes): improve test implementation
+[33m50fa9119b[m HEAD@{96}: commit (amend): refactor(satp-hermes): improve test implementation
+[33md4204df4e[m HEAD@{97}: commit (amend): refactor(satp-hermes): improve test implementation
+[33mddbf7051d[m HEAD@{98}: commit (amend): refactor(satp-hermes): improve test implementation
+[33m460fad4f9[m HEAD@{99}: commit (amend): refactor(satp-hermes): improve test implementation
+[33maec30866a[m HEAD@{100}: commit (amend): refactor(satp-hermes): improve test implementation
+[33m2db921863[m HEAD@{101}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m0e2d63691[m HEAD@{102}: cherry-pick: refactor(satp-hermes): tests cleanup using utility functions
+[33m9ed98cc56[m HEAD@{103}: checkout: moving from 9ed98cc56d05afff75e2d8b9b1dc22c0c434acc8 to test-refactor-pr
+[33m9ed98cc56[m HEAD@{104}: checkout: moving from tests-refactor-2 to upstream/satp-dev
+[33macfd864d7[m[33m ([m[1;31morigin/tests-refactor-2[m[33m, [m[1;32mtests-refactor-2[m[33m)[m HEAD@{105}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m8994b1339[m HEAD@{106}: checkout: moving from hephaestus-pr-changes to tests-refactor-2
+[33me1626c409[m[33m ([m[1;31morigin/hephaestus-pr-changes[m[33m, [m[1;32mhephaestus-pr-changes[m[33m)[m HEAD@{107}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m89bf3affb[m HEAD@{108}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m84935ec71[m HEAD@{109}: checkout: moving from tests-refactor-2 to hephaestus-pr-changes
+[33m8994b1339[m HEAD@{110}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m6fe69b0f8[m HEAD@{111}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33maa8f7114d[m HEAD@{112}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m5dcad4b96[m HEAD@{113}: checkout: moving from satp-3104 to tests-refactor-2
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{114}: rebase -i (abort): updating HEAD
+[33m9ed98cc56[m HEAD@{115}: rebase -i (start): checkout upstream/satp-dev
+[33m09040f75f[m[33m ([m[1;31morigin/satp-3104[m[33m, [m[1;32msatp-3104[m[33m)[m HEAD@{116}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m9663d4c3e[m HEAD@{117}: checkout: moving from hephaestus-pr-changes to satp-3104
+[33m84935ec71[m HEAD@{118}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m70154c05a[m HEAD@{119}: checkout: moving from satp-3104 to hephaestus-pr-changes
+[33m9663d4c3e[m HEAD@{120}: reset: moving to HEAD
+[33m9663d4c3e[m HEAD@{121}: commit (cherry-pick): fix(ccmodel-hepheastus): pr fixes
+[33macad41f13[m HEAD@{122}: checkout: moving from hephaestus-pr-changes to satp-3104
+[33m70154c05a[m HEAD@{123}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m714e2d73d[m HEAD@{124}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33m5b5ec5029[m HEAD@{125}: commit (amend): fix(ccmodel-hepheastus): pr fixes
+[33ma7097184d[m HEAD@{126}: commit: fix(ccmodel-hepheastus): pr fixes
+[33md2cb9620f[m HEAD@{127}: checkout: moving from tests-refactor-2 to hephaestus-pr-changes
+[33m5dcad4b96[m HEAD@{128}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m82be105c1[m HEAD@{129}: cherry-pick: refactor(satp-hermes): tests cleanup using utility functions
+[33mc625bbba8[m HEAD@{130}: checkout: moving from satp-dev to tests-refactor-2
+[33mc625bbba8[m HEAD@{131}: checkout: moving from c625bbba81631b8f75135b92bf12547c1f9d69d9 to satp-dev
+[33mc625bbba8[m HEAD@{132}: checkout: moving from tests-refactor-2 to upstream/satp-dev
+[33m35e833f79[m[33m ([m[1;31morigin/tests-refactor[m[33m, [m[1;32mtests-refactor[m[33m)[m HEAD@{133}: checkout: moving from tests-refactor to tests-refactor-2
+[33m35e833f79[m[33m ([m[1;31morigin/tests-refactor[m[33m, [m[1;32mtests-refactor[m[33m)[m HEAD@{134}: rebase: updating HEAD
+[33mc625bbba8[m HEAD@{135}: rebase: checkout upstream/satp-dev
+[33m35e833f79[m[33m ([m[1;31morigin/tests-refactor[m[33m, [m[1;32mtests-refactor[m[33m)[m HEAD@{136}: rebase: updating HEAD
+[33mc625bbba8[m HEAD@{137}: rebase: checkout upstream/satp-dev
+[33m35e833f79[m[33m ([m[1;31morigin/tests-refactor[m[33m, [m[1;32mtests-refactor[m[33m)[m HEAD@{138}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33mee6bcb16a[m HEAD@{139}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m1262b27d7[m HEAD@{140}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m81333458b[m HEAD@{141}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m80b8fe352[m HEAD@{142}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m7fc1c7a67[m HEAD@{143}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33ma401bfc57[m HEAD@{144}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m7b43a45cb[m HEAD@{145}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33mfbb2e8187[m HEAD@{146}: commit (amend): refactor(satp-hermes): tests cleanup using utility functions
+[33m889750d53[m HEAD@{147}: commit: refactor(satp-hermes): tests cleanup using utility functions
+[33m13e030224[m HEAD@{148}: checkout: moving from satp-dev to tests-refactor
+[33m13e030224[m HEAD@{149}: checkout: moving from 13e030224ce212bbb2dadba9606f117b08233d8b to satp-dev
+[33m13e030224[m HEAD@{150}: checkout: moving from satp-3104 to upstream/satp-dev
+[33macad41f13[m HEAD@{151}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33me0c1ec9e4[m HEAD@{152}: rebase -i (finish): returning to refs/heads/satp-3104
+[33me0c1ec9e4[m HEAD@{153}: rebase -i (continue): feat(hephaestus): smart contract defense mechanisms
+[33m3d863f363[m HEAD@{154}: rebase -i (start): checkout upstream/satp-dev
+[33m1c85bce30[m HEAD@{155}: checkout: moving from satp-3117-pr to satp-3104
+[33m490cb10e4[m[33m ([m[1;31morigin/satp-3117-pr[m[33m, [m[1;32msatp-3117-pr[m[33m)[m HEAD@{156}: commit (amend): feat(satp-hermes): docker and gateway runner for SATP
+[33ma8dfa05bd[m HEAD@{157}: commit (amend): feat(satp-hermes): docker and gateway runner for SATP
+[33m11039e9b8[m HEAD@{158}: commit (amend): feat(satp-hermes): docker and gateway runner for SATP
+[33m5a6ccc0dc[m HEAD@{159}: checkout: moving from satp-3104 to satp-3117-pr
+[33m1c85bce30[m HEAD@{160}: checkout: moving from satp-3117-pr to satp-3104
+[33m5a6ccc0dc[m HEAD@{161}: rebase -i (finish): returning to refs/heads/satp-3117-pr
+[33m5a6ccc0dc[m HEAD@{162}: rebase -i (start): checkout upstream/satp-dev
+[33m5a6ccc0dc[m HEAD@{163}: rebase -i (finish): returning to refs/heads/satp-3117-pr
+[33m5a6ccc0dc[m HEAD@{164}: rebase -i (continue): feat(satp-hermes): docker and gateway runner for SATP
+[33m9f1b080db[m HEAD@{165}: rebase -i (start): checkout upstream/satp-dev
+[33m4c48050a0[m HEAD@{166}: rebase -i (abort): updating HEAD
+[33m5baebec40[m HEAD@{167}: rebase -i (start): checkout upstream/satp-dev
+[33m4c48050a0[m HEAD@{168}: pull: Fast-forward
+[33m5baebec40[m HEAD@{169}: commit (amend): feat(satp-hermes): docker and gateway runner for SATP
+[33me5cbc1abd[m HEAD@{170}: commit (amend): feat(satp-hermes): docker and gateway runner for SATP
+[33m218cba27b[m HEAD@{171}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m5e06263e0[m[33m ([m[1;31morigin/satp-3117-keychain-id[m[33m, [m[1;32msatp-3117-keychain-id[m[33m)[m HEAD@{172}: checkout: moving from satp-3117-keychain-id to satp-3117-pr
+[33m5e06263e0[m[33m ([m[1;31morigin/satp-3117-keychain-id[m[33m, [m[1;32msatp-3117-keychain-id[m[33m)[m HEAD@{173}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m79ffb20ca[m HEAD@{174}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33ma607a7da4[m HEAD@{175}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m5cc61837e[m HEAD@{176}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m2b4567b52[m HEAD@{177}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33mf0ac2af1e[m HEAD@{178}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33mc69fe87bd[m HEAD@{179}: checkout: moving from satp-dev to satp-3117-keychain-id
+[33mdd47d6acd[m HEAD@{180}: checkout: moving from satp-3117-keychain-id to satp-dev
+[33mc69fe87bd[m HEAD@{181}: reset: moving to HEAD
+[33mc69fe87bd[m HEAD@{182}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33md75d90a87[m[33m ([m[1;31morigin/satp-3117-no-keychain-id[m[33m, [m[1;32msatp-3117-no-keychain-id[m[33m)[m HEAD@{183}: reset: moving to HEAD
+[33md75d90a87[m[33m ([m[1;31morigin/satp-3117-no-keychain-id[m[33m, [m[1;32msatp-3117-no-keychain-id[m[33m)[m HEAD@{184}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33mc69fe87bd[m HEAD@{185}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33md75d90a87[m[33m ([m[1;31morigin/satp-3117-no-keychain-id[m[33m, [m[1;32msatp-3117-no-keychain-id[m[33m)[m HEAD@{186}: reset: moving to HEAD
+[33md75d90a87[m[33m ([m[1;31morigin/satp-3117-no-keychain-id[m[33m, [m[1;32msatp-3117-no-keychain-id[m[33m)[m HEAD@{187}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33me82992e73[m HEAD@{188}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33mc69fe87bd[m HEAD@{189}: checkout: moving from satp-3117-keychain-id to satp-3117-keychain-id
+[33mc69fe87bd[m HEAD@{190}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m5a104cac8[m HEAD@{191}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33me82992e73[m HEAD@{192}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33m5a104cac8[m HEAD@{193}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33mc080f0656[m HEAD@{194}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33me82992e73[m HEAD@{195}: reset: moving to HEAD
+[33me82992e73[m HEAD@{196}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33mc080f0656[m HEAD@{197}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33me82992e73[m HEAD@{198}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33mc080f0656[m HEAD@{199}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33me82992e73[m HEAD@{200}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m65bc8cbaa[m HEAD@{201}: checkout: moving from satp-dev to satp-3117-no-keychain-id
+[33mdd47d6acd[m HEAD@{202}: checkout: moving from satp-3117-no-keychain-id to satp-dev
+[33m65bc8cbaa[m HEAD@{203}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m73c295e56[m HEAD@{204}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33mc080f0656[m HEAD@{205}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m792309f2a[m HEAD@{206}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m53c506945[m HEAD@{207}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m583c44569[m HEAD@{208}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33m73c295e56[m HEAD@{209}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m817b10bb2[m HEAD@{210}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33mb02ead5ee[m HEAD@{211}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m8fa2d2e2d[m HEAD@{212}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33m583c44569[m HEAD@{213}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33md212e4089[m HEAD@{214}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33m8fa2d2e2d[m HEAD@{215}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33md212e4089[m HEAD@{216}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33m8fa2d2e2d[m HEAD@{217}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33md212e4089[m HEAD@{218}: checkout: moving from satp-3117-no-keychain-id to satp-3117-keychain-id
+[33m8fa2d2e2d[m HEAD@{219}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m84375200d[m HEAD@{220}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33mf5bdb4f68[m HEAD@{221}: checkout: moving from satp-3117-keychain-id to satp-3117-no-keychain-id
+[33md212e4089[m HEAD@{222}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m228e3013b[m HEAD@{223}: Branch: renamed refs/heads/satp-3117-rebase to refs/heads/satp-3117-keychain-id
+[33m228e3013b[m HEAD@{225}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m498ec34dc[m[33m ([m[1;31morigin/satp-3117-rebase[m[33m)[m HEAD@{226}: checkout: moving from satp-3117-no-keychain-id to satp-3117-rebase
+[33mf5bdb4f68[m HEAD@{227}: checkout: moving from satp-3117-rebase to satp-3117-no-keychain-id
+[33m498ec34dc[m[33m ([m[1;31morigin/satp-3117-rebase[m[33m)[m HEAD@{228}: checkout: moving from satp-3117-no-keychain-id to satp-3117-rebase
+[33mf5bdb4f68[m HEAD@{229}: Branch: renamed refs/heads/satp-3117-rebase to refs/heads/satp-3117-no-keychain-id
+[33mf5bdb4f68[m HEAD@{231}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m498ec34dc[m[33m ([m[1;31morigin/satp-3117-rebase[m[33m)[m HEAD@{232}: checkout: moving from satp-3104 to satp-3117-rebase
+[33m1c85bce30[m HEAD@{233}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m2697de534[m HEAD@{234}: commit (amend): feat(hephaestus): smart contract defense mechanisms
+[33m26f08680d[m HEAD@{235}: checkout: moving from satp-3104 to satp-3104
+[33m26f08680d[m HEAD@{236}: commit (cherry-pick): feat(hephaestus): smart contract defense mechanisms
+[33mdd47d6acd[m HEAD@{237}: checkout: moving from satp-dev to satp-3104
+[33mdd47d6acd[m HEAD@{238}: checkout: moving from satp-hephaestus-3104 to satp-dev
+[33m41fbf54c2[m HEAD@{239}: rebase: updating HEAD
+[33mdd47d6acd[m HEAD@{240}: rebase: checkout upstream/satp-dev
+[33m41fbf54c2[m HEAD@{241}: checkout: moving from satp-dev to satp-hephaestus-3104
+[33mdd47d6acd[m HEAD@{242}: checkout: moving from satp-hephaestus-3104 to satp-dev
+[33m41fbf54c2[m HEAD@{243}: checkout: moving from satp-3117-rebase to satp-hephaestus-3104
+[33m498ec34dc[m[33m ([m[1;31morigin/satp-3117-rebase[m[33m)[m HEAD@{244}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m80cd2dcb4[m HEAD@{245}: commit (amend): feat(satp-hermes): gateway runner and docker for SATP
+[33m83978ff1f[m HEAD@{246}: commit (cherry-pick): feat(satp-hermes): gateway runner and docker for SATP
+[33mdd47d6acd[m HEAD@{247}: checkout: moving from satp-dev to satp-3117-rebase
+[33mdd47d6acd[m HEAD@{248}: checkout: moving from satp-3117 to satp-dev
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{249}: checkout: moving from satp-dev to satp-3117
+[33mdd47d6acd[m HEAD@{250}: checkout: moving from satp-3117-backup3 to satp-dev
+[33m4d178a438[m[33m ([m[1;31morigin/satp-3117-backup3[m[33m, [m[1;32msatp-3117-backup3[m[33m)[m HEAD@{251}: rebase -i (finish): returning to refs/heads/satp-3117-backup3
+[33m4d178a438[m[33m ([m[1;31morigin/satp-3117-backup3[m[33m, [m[1;32msatp-3117-backup3[m[33m)[m HEAD@{252}: rebase -i (fixup): feat(satp-hermes): gateway runner and docker for SATP
+[33m2a1e34f9e[m HEAD@{253}: rebase -i (squash): # This is a combination of 5 commits.
+[33mebb9e801f[m HEAD@{254}: rebase -i (fixup): # This is a combination of 4 commits.
+[33meb0ce487b[m HEAD@{255}: rebase -i (squash): # This is a combination of 3 commits.
+[33m8a56a35c2[m HEAD@{256}: rebase -i (fixup): # This is a combination of 2 commits.
+[33m13af9674d[m[33m ([m[1;31morigin/satp-3117-rebase-main[m[33m)[m HEAD@{257}: rebase -i (start): checkout carlos-rebase
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{258}: checkout: moving from satp-3117 to satp-3117-backup3
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{259}: checkout: moving from satp-3117-backup to satp-3117
+[33mc62b611f2[m[33m ([m[1;31morigin/satp-3117-backup[m[33m)[m HEAD@{260}: rebase -i (abort): updating HEAD
+[33m0ab08434e[m[33m ([m[1;32mcarlos-rebase[m[33m)[m HEAD@{261}: rebase -i (start): checkout carlos-rebase
+[33mc62b611f2[m[33m ([m[1;31morigin/satp-3117-backup[m[33m)[m HEAD@{262}: checkout: moving from satp-3117 to satp-3117-backup
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{263}: checkout: moving from carlos-rebase to satp-3117
+[33m0ab08434e[m[33m ([m[1;32mcarlos-rebase[m[33m)[m HEAD@{264}: reset: moving to 0ab08434e
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{265}: checkout: moving from satp-3117 to carlos-rebase
+[33mfe2ad8080[m[33m ([m[1;31morigin/satp-3117[m[33m, [m[1;32msatp-3117[m[33m)[m HEAD@{266}: commit (amend): fix test with deployContractSolBytecodeNoKeychainV1
+[33m9c2aed630[m HEAD@{267}: commit (amend): fix test with deployContractSolBytecodeNoKeychainV1
+[33mb66516c2d[m HEAD@{268}: commit (amend): fix test with deployContractSolBytecodeNoKeychainV1
+[33mafc2efb94[m HEAD@{269}: checkout: moving from satp-dev to satp-3117
+[33mdd47d6acd[m HEAD@{270}: checkout: moving from dd47d6acd0ba75db0ce31af8f6254e107b3affc0 to satp-dev
+[33mdd47d6acd[m HEAD@{271}: checkout: moving from main to upstream/satp-dev
+[33mffaeffb24[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{272}: clone: from https://github.com/brunoffmateus/blockchain-integration-framework.git
