@@ -8,6 +8,9 @@ import { Asset } from "./types/asset";
 import { TransactionIdUndefinedError } from "../../errors/bridge-erros";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
 import { LedgerType } from "@hyperledger/cactus-core-api";
+import { PluginLedgerConnectorBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { PluginLedgerConnectorEthereum } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { PluginLedgerConnectorFabric } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
 export class SATPBridgeManager implements BridgeManager {
   public static readonly CLASS_NAME = "SATPBridgeManager";
@@ -24,6 +27,17 @@ export class SATPBridgeManager implements BridgeManager {
   }
   public getNetworkType(): LedgerType {
     return this.config.network.getNetworkType();
+  }
+
+  public bridgeConnector():
+    | PluginLedgerConnectorBesu
+    | PluginLedgerConnectorEthereum
+    | PluginLedgerConnectorFabric {
+    return this.config.network.bridgeConnector();
+  }
+
+  public getMethodsToBeMonitored(): string[] {
+    return this.config.network.getMethodsToBeMonitored();
   }
 
   public async pauseBridge(): Promise<string> {
@@ -71,7 +85,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async wrapAsset(asset: Asset): Promise<string> {
     const fnTag = `${this.className}#wrap()`;
 
+    const startTime = new Date();
     const response = await this.config.network.wrapAsset(asset);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-WRAP-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (response.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -88,7 +107,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async unwrapAsset(assetId: string): Promise<string> {
     const fnTag = `${this.className}#unwrap()`;
 
+    const startTime = new Date();
     const response = await this.config.network.unwrapAsset(assetId);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-UNWRAP-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (response.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -110,7 +134,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async lockAsset(assetId: string, amount: number): Promise<string> {
     const fnTag = `${this.className}#lockAsset()`;
 
+    const startTime = new Date();
     const response = await this.config.network.lockAsset(assetId, amount);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-LOCK-ASSET:  ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (response.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -126,7 +155,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async unlockAsset(assetId: string, amount: number): Promise<string> {
     const fnTag = `${this.className}#unlockAsset()`;
 
+    const startTime = new Date();
     const response = await this.config.network.unlockAsset(assetId, amount);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-UNLOCK-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (response.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -144,7 +178,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async mintAsset(assetId: string, amount: number): Promise<string> {
     const fnTag = `${this.className}#mintAsset()`;
 
+    const startTime = new Date();
     const transaction = await this.config.network.mintAsset(assetId, amount);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-MINT-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (transaction.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -161,7 +200,12 @@ export class SATPBridgeManager implements BridgeManager {
   public async burnAsset(assetId: string, amount: number): Promise<string> {
     const fnTag = `${this.className}#burnAsset()`;
 
+    const startTime = new Date();
     const transaction = await this.config.network.burnAsset(assetId, amount);
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-BURN-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
+    );
 
     if (transaction.transactionId == undefined) {
       throw new TransactionIdUndefinedError(fnTag);
@@ -183,10 +227,15 @@ export class SATPBridgeManager implements BridgeManager {
   ): Promise<string> {
     const fnTag = `${this.className}#assignAsset()`;
 
+    const startTime = new Date();
     const response = await this.config.network.assignAsset(
       assetId,
       recipient,
       amount,
+    );
+    const finalTime = new Date();
+    console.log(
+      `ISSUE-ASSIGN-ASSET: ${finalTime.getTime() - startTime.getTime()} ms`,
     );
 
     if (response.transactionId == undefined) {

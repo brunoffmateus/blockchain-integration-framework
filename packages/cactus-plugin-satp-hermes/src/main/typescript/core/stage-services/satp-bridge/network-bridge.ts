@@ -2,6 +2,9 @@ import { LedgerType } from "@hyperledger/cactus-core-api";
 import { ClaimFormat } from "../../../generated/proto/cacti/satp/v02/common/message_pb";
 import { TransactionResponse } from "../../../types/blockchain-interaction";
 import { Asset } from "./types/asset";
+import { PluginLedgerConnectorBesu } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { PluginLedgerConnectorEthereum } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
+import { PluginLedgerConnectorFabric } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
 export abstract class NetworkBridge {
   network!: string;
@@ -14,6 +17,13 @@ export abstract class NetworkBridge {
   public getNetworkType(): LedgerType {
     return this.networkType;
   }
+
+  public abstract getMethodsToBeMonitored(): string[];
+
+  public abstract bridgeConnector():
+    | PluginLedgerConnectorBesu
+    | PluginLedgerConnectorEthereum
+    | PluginLedgerConnectorFabric;
 
   public abstract pauseBridge(): Promise<TransactionResponse>;
 

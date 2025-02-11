@@ -32,8 +32,25 @@ export class SATPContractWrapper
 
   @Transaction()
   public async Initialize(ctx: Context, ownerMSPID: string): Promise<boolean> {
+    const existingOwner = await ctx.stub.getState("ownerMSPID");
+    if (existingOwner && existingOwner.length > 0) {
+      throw new Error("Contract already initialized");
+    }
     await ctx.stub.putState("ownerMSPID", Buffer.from(ownerMSPID));
     await ctx.stub.putState("pausedBridge", Buffer.from("false"));
+    return true;
+  }
+
+  @Transaction()
+  public async setAdminBridge(
+    ctx: Context,
+    adminBridgeMSPID: string,
+  ): Promise<boolean> {
+    await this.checkPermission(ctx); // Ensure the caller has permission to set the admin bridge
+    if (!adminBridgeMSPID) {
+      throw new Error("adminBridgeMSPID cannot be empty");
+    }
+    await ctx.stub.putState("adminBridgeMSPID", Buffer.from(adminBridgeMSPID));
     return true;
   }
 
@@ -51,30 +68,21 @@ export class SATPContractWrapper
 
   @Transaction()
   public async pause(ctx: Context): Promise<void> {
-    this.checkBridgeNotPaused(ctx);
-    await this.checkPermission(ctx);
+    await this.checkBridgeNotPaused(ctx);
+    await this.checkAdminPermission(ctx);
     await ctx.stub.putState("pausedBridge", Buffer.from("true"));
   }
   @Transaction()
   public async unpause(ctx: Context): Promise<void> {
-    this.checkBridgePaused(ctx);
-    await this.checkPermission(ctx);
+    await this.checkBridgePaused(ctx);
+    await this.checkAdminPermission(ctx);
     await ctx.stub.putState("pausedBridge", Buffer.from("false"));
   }
   @Transaction()
   @Returns("boolean")
   public async isPaused(ctx: Context): Promise<boolean> {
-    // Read the paused state from the ledger
-    const pausedState = await ctx.stub.getState("pausedBridge");
-    // Convert stored value to boolean
-    const isPaused = pausedState && pausedState.toString() === "true";
-
-    if (!isPaused) {
-      throw new Error(
-        `wrapper: operation not possible, as the Bridge is not currently paused.`,
-      );
-    }
-    return isPaused;
+    await this.checkBridgePaused(ctx);
+    return true;
   }
 
   @Transaction()
@@ -100,7 +108,7 @@ export class SATPContractWrapper
     contractName: string,
     interactions: string,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const valueBytes = await ctx.stub.getState(tokenId);
@@ -155,7 +163,7 @@ export class SATPContractWrapper
   @Transaction()
   @Returns("boolean")
   public async unwrap(ctx: Context, tokenId: string): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -190,7 +198,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -216,7 +224,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -254,7 +262,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -279,7 +287,7 @@ export class SATPContractWrapper
     tokenId: string,
     amount: number,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -309,7 +317,7 @@ export class SATPContractWrapper
     to: string,
     amount: number,
   ): Promise<boolean> {
-    this.checkBridgeNotPaused(ctx);
+    await this.checkBridgeNotPaused(ctx);
     await this.checkPermission(ctx);
 
     const token = await this.getToken(ctx, tokenId);
@@ -401,6 +409,18 @@ export class SATPContractWrapper
       throw new Error(`Math: subtraction overflow occurred ${a} - ${b}`);
     }
     return c;
+  }
+
+  private async checkAdminPermission(ctx: Context) {
+    const adminBridge = await ctx.stub.getState("adminBridgeMSPID");
+    const adminBridgeMSPID = adminBridge ? adminBridge.toString() : "";
+
+    const clientMSPID = await ctx.clientIdentity.getMSPID();
+    if (clientMSPID !== adminBridgeMSPID) {
+      throw new Error(
+        `wrapper: client is not authorized to perform the admin operation. ${clientMSPID}`,
+      );
+    }
   }
 
   private async checkPermission(ctx: Context) {
