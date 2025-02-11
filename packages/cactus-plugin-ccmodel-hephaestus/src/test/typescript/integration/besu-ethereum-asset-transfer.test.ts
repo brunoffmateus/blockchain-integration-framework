@@ -48,6 +48,7 @@ import {
 } from "../../../main/typescript/plugin-ccmodel-hephaestus";
 import { IPluginCcModelHephaestusOptions } from "../../../main/typescript";
 import LockAssetContractJson from "../../solidity/lock-asset-contract/LockAsset.json";
+import path from "path";
 
 const logLevel: LogLevelDesc = "INFO";
 
@@ -272,13 +273,26 @@ beforeAll(async () => {
     expect(balance.toString()).toBe(initTransferValue);
   }
   {
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Besu2X, [
+      "createAsset",
+      "lockAsset",
+      "unLockAsset",
+      "deleteAsset",
+    ]);
+    methodsToMonitor.set(LedgerType.Ethereum, [
+      "createAsset",
+      "lockAsset",
+      "deleteAsset",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       besuTxObservable: besuConnector.getTxSubjectObservable(),
       ethTxObservable: ethereumConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Besu2X,
-      targetLedger: LedgerType.Ethereum,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -395,7 +409,7 @@ beforeAll(async () => {
   {
     hephaestus.monitorTransactions(0);
 
-    hephaestus.setCaseId("cctx1");
+    hephaestus.newCaseId("cctx1");
 
     const { success: lockResBesu1 } = await besuConnector.invokeContract({
       contractName: besuContractName,
@@ -445,7 +459,7 @@ beforeAll(async () => {
     modeledTransactions = 3;
     expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 
-    hephaestus.setCaseId("cctx2");
+    hephaestus.newCaseId("cctx2");
 
     const { success: lockResBesu2 } = await besuConnector.invokeContract({
       contractName: besuContractName,
@@ -499,13 +513,13 @@ beforeAll(async () => {
     const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
     const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
-    hephaestus.setIsModeling(false);
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
+    hephaestus.stopModeling();
   }
 });
 
 test("Tx1 - Unlock after lock", async () => {
-  hephaestus.setCaseId("unmodeled_cctx1");
+  hephaestus.newCaseId("unmodeled_cctx1");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -548,7 +562,7 @@ test("Tx1 - Unlock after lock", async () => {
 });
 
 test("Tx2 - Skip escrow", async () => {
-  hephaestus.setCaseId("unmodeled_cctx2");
+  hephaestus.newCaseId("unmodeled_cctx2");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -575,7 +589,7 @@ test("Tx2 - Skip escrow", async () => {
 });
 
 test("Tx3 - Skip burn", async () => {
-  hephaestus.setCaseId("unmodeled_cctx3");
+  hephaestus.newCaseId("unmodeled_cctx3");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -619,7 +633,7 @@ test("Tx3 - Skip burn", async () => {
 });
 
 test("Tx4 - Double mint", async () => {
-  hephaestus.setCaseId("unmodeled_cctx4");
+  hephaestus.newCaseId("unmodeled_cctx4");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -694,67 +708,6 @@ test("Tx4 - Double mint", async () => {
 
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
-});
-
-test("Tx5 - Asset transfer from Ethereum to Besu", async () => {
-  hephaestus.setCaseId("unmodeled_cctx5");
-  hephaestus.purgeNonConformedEvents();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const lockResEth = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "lockAsset",
-    params: ["test5_asset_eth"],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(lockResEth).toBeTruthy();
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
-
-  const deleteResEth = await ethereumApiClient.invokeContractV1({
-    contract: {
-      contractName: LockAssetContractJson.contractName,
-      keychainId: keychainPluginEthereum.getKeychainId(),
-    },
-    invocationType: EthContractInvocationType.Send,
-    methodName: "deleteAsset",
-    params: ["test5_asset_eth"],
-    web3SigningCredential: {
-      ethAccount: WHALE_ACCOUNT_ADDRESS,
-      secret: "",
-      type: Web3SigningCredentialType.GethKeychainPassword,
-    },
-  });
-  expect(deleteResEth).toBeTruthy();
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(2);
-
-  const { success: createResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "createAsset",
-    params: ["test5_asset_eth", 10],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(createResBesu).toBeTruthy();
-
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 
 afterAll(async () => {

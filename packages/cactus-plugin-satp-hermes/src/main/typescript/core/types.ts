@@ -15,6 +15,11 @@ import { NetworkConfig } from "../types/blockchain-interaction";
 import { Knex } from "knex";
 import { NetworkId } from "../network-identification/chainid-list";
 import { LedgerType } from "@hyperledger/cactus-core-api";
+import { Observable } from "rxjs";
+import {
+  IPluginCcModelHephaestusOptions,
+  NonConformedTx,
+} from "@hyperledger/cactus-plugin-ccmodel-hephaestus/dist/types/main/typescript/plugin-ccmodel-hephaestus";
 
 export type SATPConnectHandler = (
   gateway: SATPGateway,
@@ -82,6 +87,8 @@ export interface SATPGatewayConfig {
   knexLocalConfig?: Knex.Config;
   knexRemoteConfig?: Knex.Config;
   enableCrashRecovery?: boolean;
+  nonConformedTxObservable?: Observable<NonConformedTx>;
+  hephaestusOptions?: IPluginCcModelHephaestusOptions;
 }
 
 // export interface SATPBridgeConfig {

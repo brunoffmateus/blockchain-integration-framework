@@ -75,6 +75,10 @@ export class BesuBridge implements NetworkBridge {
     return this.connector;
   }
 
+  public getMethodsToBeMonitored(): string[] {
+    return ["wrap", "unwrap", "lock", "unlock", "mint", "burn", "assign"];
+  }
+
   public async unpauseBridge(): Promise<TransactionResponse> {
     this.log.debug(`${BesuBridge.CLASS_NAME}#unpauseBridge`);
     const response = (await this.connector.invokeContract({

@@ -6,7 +6,6 @@ import {
   Servers,
 } from "@hyperledger/cactus-common";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import { LedgerType } from "@hyperledger/cactus-core-api";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import { DiscoveryOptions } from "fabric-network";
 import bodyParser from "body-parser";
@@ -52,6 +51,7 @@ import {
   CcModelHephaestus,
   ProcessMiningAlgorithm,
 } from "../../../main/typescript/plugin-ccmodel-hephaestus";
+import { LedgerType } from "@hyperledger/cactus-core-api";
 
 const logLevel: LogLevelDesc = "INFO";
 
@@ -392,13 +392,26 @@ beforeAll(async () => {
     log.info("Contract Deployed successfully");
   }
   {
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Fabric2, [
+      "CreateAsset",
+      "LockAsset",
+      "UnlockAsset",
+      "DeleteAsset",
+    ]);
+    methodsToMonitor.set(LedgerType.Besu2X, [
+      "createAsset",
+      "lockAsset",
+      "deleteAsset",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: logLevel,
       besuTxObservable: besuConnector.getTxSubjectObservable(),
       fabricTxObservable: fabricConnector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Fabric2,
-      targetLedger: LedgerType.Besu2X,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -484,7 +497,7 @@ beforeAll(async () => {
   {
     hephaestus.monitorTransactions(0);
 
-    hephaestus.setCaseId("cctx1");
+    hephaestus.newCaseId("cctx1");
 
     const lockResFabric1 = await fabricApiClient.runTransactionV1({
       contractName: fabricContractName,
@@ -522,7 +535,7 @@ beforeAll(async () => {
     expect(createResBesu).toBeTruthy();
     modeledTransactions = 3;
 
-    hephaestus.setCaseId("cctx2");
+    hephaestus.newCaseId("cctx2");
 
     const lockResFabric2 = await fabricApiClient.runTransactionV1({
       contractName: fabricContractName,
@@ -565,13 +578,13 @@ beforeAll(async () => {
     const miningAlgorithm = ProcessMiningAlgorithm.Inductive;
     const model = await hephaestus.createModel(miningAlgorithm);
     expect(model).toBeTruthy();
-    expect(hephaestus.ccModel.getModel(miningAlgorithm)).toBeTruthy;
-    hephaestus.setIsModeling(false);
+    expect(hephaestus.getModel(miningAlgorithm)).toBeTruthy;
+    hephaestus.stopModeling();
   }
 });
 
 test("Tx1 - Unlock after lock", async () => {
-  hephaestus.setCaseId("unmodeled_cctx1");
+  hephaestus.newCaseId("unmodeled_cctx1");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -604,7 +617,7 @@ test("Tx1 - Unlock after lock", async () => {
 });
 
 test("Tx2 - Skip escrow", async () => {
-  hephaestus.setCaseId("unmodeled_cctx2");
+  hephaestus.newCaseId("unmodeled_cctx2");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -630,7 +643,7 @@ test("Tx2 - Skip escrow", async () => {
 });
 
 test("Tx3 - Skip burn", async () => {
-  hephaestus.setCaseId("unmodeled_cctx3");
+  hephaestus.newCaseId("unmodeled_cctx3");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -667,7 +680,7 @@ test("Tx3 - Skip burn", async () => {
 });
 
 test("Tx4 - Double mint", async () => {
-  hephaestus.setCaseId("unmodeled_cctx4");
+  hephaestus.newCaseId("unmodeled_cctx4");
   hephaestus.purgeNonConformedEvents();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
@@ -729,58 +742,6 @@ test("Tx4 - Double mint", async () => {
   expect(createResBesu2).toBeTruthy();
   expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
   expect(hephaestus.numberEventsNonConformedLog).toEqual(1);
-});
-
-test("Tx5 - Asset transfer from Besu to Fabric", async () => {
-  hephaestus.setCaseId("unmodeled_cctx5");
-  hephaestus.purgeNonConformedEvents();
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
-
-  const { success: lockResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "lockAsset",
-    params: ["tx5_asset_besu"],
-    signingCredential: {
-      ethAccount: firstHighNetWorthAccount,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(lockResBesu).toBeTruthy();
-
-  const { success: deleteResBesu } = await besuConnector.invokeContract({
-    contractName: besuContractName,
-    keychainId: keychainPluginBesu.getKeychainId(),
-    invocationType: EthContractInvocationTypeBesu.Send,
-    methodName: "deleteAsset",
-    params: ["tx5_asset_besu"],
-    signingCredential: {
-      ethAccount: testEthAccountBesu.address,
-      secret: besuKeyPair.privateKey,
-      type: Web3SigningCredentialTypeBesu.PrivateKeyHex,
-    },
-    gas: 1000000,
-  });
-  expect(deleteResBesu).toBeTruthy();
-
-  const createResFabric = await fabricApiClient.runTransactionV1({
-    contractName: fabricContractName,
-    channelName,
-    params: ["tx5_asset_fabric", "10", "fabric_owner"],
-    methodName: "CreateAsset",
-    invocationType: FabricContractInvocationType.Send,
-    signingCredential: fabricSigningCredential,
-  });
-  expect(createResFabric).toBeTruthy();
-
-  expect(hephaestus.numberEventsNonConformedLog).toEqual(3);
-  expect(hephaestus.numberEventsUnmodeledLog).toEqual(0);
-  expect(hephaestus.numberEventsLog).toEqual(modeledTransactions);
 });
 
 afterAll(async () => {

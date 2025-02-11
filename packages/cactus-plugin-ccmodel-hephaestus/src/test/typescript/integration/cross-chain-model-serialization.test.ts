@@ -52,6 +52,7 @@ import {
   CcModelHephaestus,
   ProcessMiningAlgorithm,
 } from "../../../main/typescript/plugin-ccmodel-hephaestus";
+import path from "path";
 
 const log: Logger = LoggerProvider.getOrCreate({
   label: "cross-chain-model-serialization.test",
@@ -182,12 +183,19 @@ describe("Test cross-chain model serialization", () => {
     expect(balance).toBeTruthy();
     expect(balance.toString()).toBe(initTransferValue);
 
+    const methodsToMonitor = new Map<LedgerType, string[]>();
+    methodsToMonitor.set(LedgerType.Ethereum, [
+      "createAsset",
+      "lockAsset",
+      "deleteAsset",
+    ]);
     hephaestusOptions = {
       instanceId: uuidv4(),
       logLevel: testLogLevel,
       ethTxObservable: connector.getTxSubjectObservable(),
-      sourceLedger: LedgerType.Ethereum,
-      targetLedger: LedgerType.Ethereum,
+      methodsToMonitor,
+      ccLogsDir: path.join(__dirname, "..", "..", "ccLogs"),
+      ccModelDir: path.join(__dirname, "..", "..", "ccModel"),
     };
 
     hephaestus = new CcModelHephaestus(hephaestusOptions);
@@ -196,7 +204,7 @@ describe("Test cross-chain model serialization", () => {
   });
 
   test("Monitor Ethereum transactions and create cross-chain model", async () => {
-    hephaestus.setCaseId("ETHEREUM_MONITORING");
+    hephaestus.newCaseId("ETHEREUM_MONITORING");
     hephaestus.monitorTransactions();
 
     const numberOfCases = 3;

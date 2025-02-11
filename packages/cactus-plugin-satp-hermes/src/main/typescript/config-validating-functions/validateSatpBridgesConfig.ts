@@ -13,6 +13,7 @@ import { isEthereumConfigJSON } from "./bridges-config-validating-functions/vali
 import { createEthereumOptions } from "./bridges-config-validating-functions/validateEthereumOptions";
 import { createBungeeOptions } from "./bridges-config-validating-functions/validateBungeeOptions";
 import { NetworkId } from "../network-identification/chainid-list";
+// import { createHephaestusOptions } from "./bridges-config-validating-functions/validateHephaestusOptions";
 
 export interface NetworkConfigJSON {
   network: NetworkId;
@@ -60,6 +61,11 @@ export function validateSatpBridgesConfig(opts: {
       console.log("Validating FabricConfig BungeeOptions...");
       const bungeeOptions = createBungeeOptions(config.bungeeOptions);
       console.log("FabricConfig BungeeOptions is valid.");
+      // console.log("Validating FabricConfig HephaestusOptions...");
+      // const hephaestusOptions = createHephaestusOptions(
+      //   config.hephaestusOptions,
+      // );
+      // console.log("FabricConfig HephaestusOptions is valid.");
       console.log("Validating FabricConfig Options...");
       const fabricOptions = createFabricOptions(config.options);
       console.log("FabricConfig Options is valid.");
@@ -71,6 +77,7 @@ export function validateSatpBridgesConfig(opts: {
         contractName: config.contractName,
         options: fabricOptions,
         bungeeOptions: bungeeOptions,
+        // hephaestusOptions: hephaestusOptions,
         fabricAssets: config.fabricAssets,
         claimFormat: config.claimFormat,
       };
@@ -80,6 +87,11 @@ export function validateSatpBridgesConfig(opts: {
       console.log("Validating BesuConfig BungeeOptions...");
       const bungeeOptions = createBungeeOptions(config.bungeeOptions);
       console.log("BesuConfig BungeeOptions is valid.");
+      // console.log("Validating BesuConfig HephaestusOptions...");
+      // const hephaestusOptions = createHephaestusOptions(
+      //   config.hephaestusOptions,
+      // );
+      // console.log("BesuConfig HephaestusOptions is valid.");
       console.log("Validating BesuConfig Options...");
       const besuOptions = createBesuOptions(config.options);
       console.log("BesuConfig Options is valid.");
@@ -93,6 +105,7 @@ export function validateSatpBridgesConfig(opts: {
         gas: config.gas,
         options: besuOptions,
         bungeeOptions: bungeeOptions,
+        // hephaestusOptions: hephaestusOptions,
         besuAssets: config.besuAssets,
         claimFormat: config.claimFormat,
       };
@@ -102,6 +115,11 @@ export function validateSatpBridgesConfig(opts: {
       console.log("Validating EthereumConfig BungeeOptions...");
       const bungeeOptions = createBungeeOptions(config.bungeeOptions);
       console.log("EthereumConfig BungeeOptions is valid.");
+      // console.log("Validating EthereumConfig HephaestusOptions...");
+      // const hephaestusOptions = createHephaestusOptions(
+      //   config.hephaestusOptions,
+      // );
+      // console.log("EthereumConfig HephaestusOptions is valid.");
       console.log("Validating EthereumConfig Options...");
       const besuOptions = createEthereumOptions(config.options);
       console.log("EthereumConfig Options is valid.");
@@ -115,6 +133,7 @@ export function validateSatpBridgesConfig(opts: {
         gas: config.gas,
         options: besuOptions,
         bungeeOptions: bungeeOptions,
+        // hephaestusOptions: hephaestusOptions,
         ethereumAssets: config.ethereumAssets,
         claimFormat: config.claimFormat,
       };

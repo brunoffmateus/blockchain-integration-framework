@@ -64,17 +64,13 @@ export class SATPContractWrapper
   @Transaction()
   @Returns("boolean")
   public async isPaused(ctx: Context): Promise<boolean> {
-    // Read the paused state from the ledger
     const pausedState = await ctx.stub.getState("pausedBridge");
-    // Convert stored value to boolean
-    const isPaused = pausedState && pausedState.toString() === "true";
 
-    if (!isPaused) {
-      throw new Error(
-        `wrapper: operation not possible, as the Bridge is not currently paused.`,
-      );
+    // Handle case where state does not exist
+    if (!pausedState || pausedState.length === 0) {
+      return false; // Default to not paused if state is not set
     }
-    return isPaused;
+    return pausedState.toString() === "true";
   }
 
   @Transaction()
